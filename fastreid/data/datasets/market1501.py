@@ -32,7 +32,7 @@ class Market1501(ImageDataset):
     dataset_name = "Market1501"
 
     def __init__(self, root='datasets', market1501_500k=False, **kwargs):
-        root='/data/pengyi/datasets/reid_data/market1501/Market-1501-v15.09.15'
+        root='/data0/yuming/reid_data/market1501/Market-1501-v15.09.15'
         # self.root = osp.abspath(osp.expanduser(root))
         self.root = root
         self.dataset_dir = osp.join(self.root, self.dataset_dir)

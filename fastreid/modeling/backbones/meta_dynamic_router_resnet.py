@@ -544,7 +544,7 @@ def init_pretrained_weights(key):
     logger.info(f"Loading pretrained model from {cached_file}")
     state_dict = torch.load(cached_file, map_location=torch.device('cpu'))
     #CHANGE Reduction Version
-    state_dict = torch.load('/home/pengyi/.cache/torch/checkpoints/resnet50_ibn_a-d9d0bb7b.pth', map_location=torch.device('cpu'))
+    state_dict = torch.load('/home/yuming/.cache/torch/checkpoints/resnet50_ibn_a-d9d0bb7b.pth', map_location=torch.device('cpu'))
 
     return state_dict
 
