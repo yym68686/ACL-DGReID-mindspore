@@ -1,10 +1,11 @@
 import os
-import time
-import shutil
+# import time
+# import shutil
 
 f = open('launch.sh', 'r')
 words = f.readlines()[-1].split(' ')
 f.close()
+config = ''
 for word in words:
     if 'configs' in word:
         config = word.strip()
