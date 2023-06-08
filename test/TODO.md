@@ -1,3 +1,21 @@
+主干网络 bagtricks_DR50_mix.yml
+
+- [ ] BACKBONE build_meta_dynamic_router_resnet_backbone
+  - [ ] model = ResNet()
+    - [X] self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
+      - [ ] torch.nn.functional.conv2d()
+    - [ ] self.bn1 = MetaBNNorm(64)
+    - [ ] self.relu = nn.ReLU(inplace=True)
+    - [ ] self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
+    - [ ] self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)
+  - [ ] state_dict = torch.load(pretrain_path, map_location=torch.device('cpu'))
+  - [ ] state_dict = init_pretrained_weights(key)
+  - [ ] 预训练模型的权重加载到当前模型
+    - [ ] model_dict = model.state_dict()
+    - [ ] model_dict[k] = F.avg_pool1d().reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
+  - [ ] incompatible = model.load_state_dict(model_dict, strict=False)
+- [ ] HEADS MetaEmbeddingHead
+
 train_net.py main()
 
 评估部分

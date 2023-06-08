@@ -2,6 +2,10 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+import mindspore
+import mindspore.nn as nn
+import numpy as np
+
 
 def update_parameter(param, step_size, opt=None, reserve=False):
     flag_update = False
@@ -69,12 +73,24 @@ class MetaConv2d(nn.Conv2d):
         super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
     
     def forward(self, inputs, opt=None):
+        pad_mode = 'pad'
+        conv = nn.Conv2d(in_channels=self.in_channels, out_channels=self.out_channels, kernel_size=self.kernel_size, stride=self.stride, pad_mode=pad_mode, padding=self.padding, dilation=self.dilation, group=self.groups)
+        inputs = mindspore.Tensor(inputs)
+
         if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-            return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
+            # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
+            conv.weight = updated_weight
+            conv.bias = updated_bias
+            output = conv(inputs)
+            return output.asnumpy()
         else:
-            return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            conv.weight = self.weight
+            conv.bias = self.bias
+            output = conv(inputs)
+            return output.asnumpy()
 
 
 class MetaLinear(nn.Linear):
