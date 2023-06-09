@@ -5,9 +5,11 @@
     - [X] self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
       - [X] torch.nn.functional.conv2d()
     - [X] self.bn1 = MetaBNNorm(64)
-    - [ ] self.relu = nn.ReLU(inplace=True)
-    - [ ] self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
+    - [x] self.relu = nn.ReLU(inplace=True)
+    - [x] self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
     - [ ] self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)
+      - [ ] downsample = Sequential_ext(MetaConv2d(),MetaBNNorm(),)
+      - [ ] return nn.Sequential(*layers)
   - [ ] state_dict = torch.load(pretrain_path, map_location=torch.device('cpu'))
   - [ ] state_dict = init_pretrained_weights(key)
   - [ ] 预训练模型的权重加载到当前模型
