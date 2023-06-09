@@ -3,8 +3,8 @@
 - [ ] BACKBONE build_meta_dynamic_router_resnet_backbone
   - [ ] model = ResNet()
     - [X] self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
-      - [ ] torch.nn.functional.conv2d()
-    - [ ] self.bn1 = MetaBNNorm(64)
+      - [X] torch.nn.functional.conv2d()
+    - [X] self.bn1 = MetaBNNorm(64)
     - [ ] self.relu = nn.ReLU(inplace=True)
     - [ ] self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
     - [ ] self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)

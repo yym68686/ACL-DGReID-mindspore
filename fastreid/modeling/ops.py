@@ -4,7 +4,6 @@ import torch.nn.functional as F
 
 import mindspore
 import mindspore.nn as nn
-import numpy as np
 
 
 def update_parameter(param, step_size, opt=None, reserve=False):
@@ -168,17 +167,27 @@ class MetaBNNorm(nn.BatchNorm2d):
 
 
         if norm_type == "general": # update, but not apply running_mean/var
-            result = F.batch_norm(inputs, self.running_mean, self.running_var,
-                                    updated_weight, updated_bias,
-                                    self.training, self.momentum, self.eps)
+            bn = nn.BatchNorm2d(self.num_features, moving_mean_init=self.running_mean, moving_var_init=self.running_var, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=self.training, momentum=self.momentum, eps=self.eps)
+            result = bn(inputs)
         elif norm_type == "hold": # not update, not apply running_mean/var
-            result = F.batch_norm(inputs, None, None,
-                                    updated_weight, updated_bias,
-                                    True, self.momentum, self.eps)
+            bn = nn.BatchNorm2d(self.num_features, moving_mean_init=None, moving_var_init=None, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=True, momentum=self.momentum, eps=self.eps)
+            result = bn(inputs)
         elif norm_type == "eval": # fix and apply running_mean/var,
-            result = F.batch_norm(inputs, self.running_mean, self.running_var,
-                                    updated_weight, updated_bias,
-                                    False, self.momentum, self.eps)
+            bn = nn.BatchNorm2d(self.num_features, moving_mean_init=self.running_mean, moving_var_init=self.running_var, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=False, momentum=self.momentum, eps=self.eps)
+            result = bn(inputs)
+
+        # if norm_type == "general": # update, but not apply running_mean/var
+        #     result = F.batch_norm(inputs, self.running_mean, self.running_var,
+        #                             updated_weight, updated_bias,
+        #                             self.training, self.momentum, self.eps)
+        # elif norm_type == "hold": # not update, not apply running_mean/var
+        #     result = F.batch_norm(inputs, None, None,
+        #                             updated_weight, updated_bias,
+        #                             True, self.momentum, self.eps)
+        # elif norm_type == "eval": # fix and apply running_mean/var,
+        #     result = F.batch_norm(inputs, self.running_mean, self.running_var,
+        #                             updated_weight, updated_bias,
+        #                             False, self.momentum, self.eps)
         return result
 
 
