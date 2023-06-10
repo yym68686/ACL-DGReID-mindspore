@@ -47,7 +47,8 @@ def repackage_hidden(h):
     else:
         return tuple(repackage_hidden(v) for v in h)
 
-class Sequential_ext(nn.Module):
+# class Sequential_ext(nn.Module):
+class Sequential_ext(nn.Cell):
     """A Sequential container extended to also propagate the gating information
     that is needed in the target rate loss.
     """
@@ -355,7 +356,8 @@ class ResNet(nn.Module):
         for i in range(1, blocks):
             layers.append(block(self.inplanes, planes, bn_norm, with_ibn, with_se))
 
-        return nn.Sequential(*layers)
+        # return nn.Sequential(*layers)
+        return nn.SequentialCell(*layers)
 
     def _build_nonlocal(self, layers, non_layers, bn_norm):
         self.NL_1 = nn.ModuleList(
