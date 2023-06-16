@@ -140,7 +140,7 @@ class MetaSELayer(nn.Module):
         return x * y.expand_as(x)
 
 
-class Bottleneck2(nn.Module):
+class Bottleneck2(nn.Cell):
     expansion = 4*K
 
     def __init__(self, inplanes, planes, bn_norm, with_ibn=False, with_se=False,
@@ -165,7 +165,8 @@ class Bottleneck2(nn.Module):
         self.downsample = downsample
         self.stride = stride
         
-    def forward(self, x, opt=None):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
         
         residual = x
         
@@ -272,7 +273,7 @@ class HyperRouter(nn.Module):
         return x, domain_cls_logits
 
 
-class ResNet(nn.Module):
+class ResNet(nn.Cell):
     def __init__(self, last_stride, bn_norm, with_ibn, with_se, with_nl, block, layers, non_layers):
         self.inplanes = 64
         super().__init__()

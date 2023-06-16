@@ -115,7 +115,8 @@ class MetaIBNNorm(nn.Module):
         self.IN = MetaINNorm(half1, **kwargs)
         self.BN = MetaBNNorm(half2, **kwargs)
 
-    def forward(self, inputs, opt=None):
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
         
@@ -139,7 +140,8 @@ class MetaBNNorm(nn.BatchNorm2d):
         self.bias.requires_grad_(not bias_freeze)
 
 
-    def forward(self, inputs, opt = None, reserve = False):
+    # def forward(self, inputs, opt = None, reserve = False):
+    def construct(self, inputs, opt = None, reserve = False):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
         if opt != None and opt['meta']:
@@ -205,7 +207,8 @@ class MetaINNorm(nn.InstanceNorm2d):
             self.bias.requires_grad_(not bias_freeze)
         self.in_fc_multiply = 0.0
 
-    def forward(self, inputs, opt=None):
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -227,6 +230,8 @@ class MetaINNorm(nn.InstanceNorm2d):
 
 
             if self.running_mean is None:
-                return F.instance_norm(inputs, None, None,
-                                        updated_weight, updated_bias,
-                                        True, self.momentum, self.eps)
+                net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, gamma_init=updated_weight, beta_init=updated_bias, affine=self.affine)
+                return net(inputs)
+                # return F.instance_norm(inputs, None, None,
+                #                         updated_weight, updated_bias,
+                #                         True, self.momentum, self.eps)

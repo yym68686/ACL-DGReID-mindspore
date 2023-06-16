@@ -2,15 +2,32 @@
 
 - [ ] BACKBONE build_meta_dynamic_router_resnet_backbone
   - [ ] model = ResNet()
-    - [X] self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
-      - [X] torch.nn.functional.conv2d()
-    - [X] self.bn1 = MetaBNNorm(64)
-    - [X] self.relu = nn.ReLU(inplace=True)
-    - [X] self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
-    - [X] self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)
-      - [X] downsample = Sequential_ext(MetaConv2d(),MetaBNNorm(),)
-      - [X] return nn.Sequential(*layers)
+    - [X] 6.16 class ResNet(nn.Module): 
+    - [X] 6.11 self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
+      - [X] 6.11 torch.nn.functional.conv2d()
+    - [X] 6.11 self.bn1 = MetaBNNorm(64)
+    - [X] 6.11 self.relu = nn.ReLU(inplace=True)
+    - [X] 6.11 self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
+    - [X] 6.11 self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)
+      - [X] 6.11 downsample = Sequential_ext(MetaConv2d(),MetaBNNorm(),)
+      - [X] 6.11 return nn.Sequential(*layers)
     - [ ] self.adaptor1_sub = Bottleneck2()
+      - [X] 6.16 class Bottleneck2(nn.Module):
+      - [X] 6.11 self.conv1 = MetaConv2d()
+      - [ ] self.bn1 = MetaIBNNorm()
+        - [X] 6.16 self.IN = MetaINNorm(half1, **kwargs)
+          - [X] 6.16 def forward(self, inputs, opt=None):
+          - [X] 6.16 return F.instance_norm()
+        - [X] 6.11 self.BN = MetaBNNorm(half2, **kwargs)
+        - [X] 6.16 def forward(self, inputs, opt=None):
+        - [ ] split = torch.split(inputs, self.half, 1)
+        - [ ] out1 = self.IN(split[0].contiguous(), opt)
+        - [ ] out2 = self.BN(split[1].contiguous(), opt)
+        - [ ] out = torch.cat((out1, out2), 1)
+      - [X] 6.11 self.bn1 = MetaBNNorm(planes)
+      - [ ] self.se = SELayer(planes * self.expansion, reduction)
+      - [ ] self.se = nn.Identity()
+      - [X] 6.16 def forward(self, x, opt=None):
     - [ ] self.router1 = HyperRouter(256)
     - [ ] self.meta_fuse1 = MetaGate(256)
     - [ ] self.meta_se1 = MetaSELayer(256)
