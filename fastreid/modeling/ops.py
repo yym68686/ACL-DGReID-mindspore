@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 import mindspore
 import mindspore.nn as nn
+from mindspore import ops
 
 
 def update_parameter(param, step_size, opt=None, reserve=False):
@@ -25,13 +26,16 @@ def update_parameter(param, step_size, opt=None, reserve=False):
     return updated_param
 
     
-class MetaGate(nn.Module):
+# class MetaGate(nn.Module):
+class MetaGate(nn.Cell):
     def __init__(self, feat_dim):
         super().__init__()
-        self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
+        self.gate = mindspore.Parameter(ops.randn(feat_dim) * 0.1)
+        # self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, inputs1, inputs2, opt=None):
+    # def forward(self, inputs1, inputs2, opt=None):
+    def construct(self, inputs1, inputs2, opt=None):
         if opt != None and opt['meta']:
             updated_gate = self.sigmoid(update_parameter(self.gate, self.w_step_size, opt)).reshape(1, -1, 1, 1)
 
@@ -92,21 +96,30 @@ class MetaConv2d(nn.Conv2d):
             return output.asnumpy()
 
 
-class MetaLinear(nn.Linear):
+class MetaLinear(nn.Dense):
     def __init__(self, in_feat, reduction_dim, bias=False):
         super().__init__(in_feat, reduction_dim, bias=bias)
 
-    def forward(self, inputs, opt = None, reserve = False):
+    def construct(self, inputs, opt = None, reserve = False):
+        linear = nn.Dense(self.in_feat, self.bias.shape[0])
         if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
 
-            return F.linear(inputs, updated_weight, updated_bias)
+            linear.weight = updated_weight
+            linear.bias = updated_bias
+            output = linear(inputs)
+            return output
+            # return F.linear(inputs, updated_weight, updated_bias)
         else:
-            return F.linear(inputs, self.weight, self.bias)
+            linear.weight = self.weight
+            linear.bias = self.bias
+            output = linear(inputs)
+            return output
+            # return F.linear(inputs, self.weight, self.bias)
 
 
-class MetaIBNNorm(nn.Module):
+class MetaIBNNorm(nn.Cell):
     def __init__(self, num_features, **kwargs):
         super().__init__()
         half1 = int(num_features / 2)
@@ -120,10 +133,14 @@ class MetaIBNNorm(nn.Module):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
         
-        split = torch.split(inputs, self.half, 1)
-        out1 = self.IN(split[0].contiguous(), opt)
-        out2 = self.BN(split[1].contiguous(), opt)
-        out = torch.cat((out1, out2), 1)
+        # split = torch.split(inputs, self.half, 1)
+        split = ops.split(inputs, self.half, 1)
+        out1 = self.IN(split[0], opt)
+        out2 = self.BN(split[1], opt)
+        # out1 = self.IN(split[0].contiguous(), opt)
+        # out2 = self.BN(split[1].contiguous(), opt)
+        # out = torch.cat((out1, out2), 1)
+        out = ops.cat((out1, out2), 1)
         return out
 
 

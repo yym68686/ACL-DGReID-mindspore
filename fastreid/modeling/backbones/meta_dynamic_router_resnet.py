@@ -25,7 +25,8 @@ from .build import BACKBONE_REGISTRY
 from fastreid.utils import comm
 
 from mindspore import nn
-
+import mindspore.ops as ops
+import mindspore
 
 K = 4
 logger = logging.getLogger(__name__)
@@ -122,7 +123,8 @@ class BasicBlock(nn.Module):
         return out
 
 
-class MetaSELayer(nn.Module):
+# class MetaSELayer(nn.Module):
+class MetaSELayer(nn.Cell):
     def __init__(self, channel, reduction=16):
         super(MetaSELayer, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
@@ -157,7 +159,8 @@ class Bottleneck2(nn.Cell):
         self.conv3 = MetaConv2d(planes, planes * self.expansion, kernel_size=1, bias=False, groups=K)
         self.bn3 = MetaBNNorm(planes * self.expansion)
 
-        self.relu = nn.ReLU(inplace=True)
+        # self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
         if with_se:
             self.se = SELayer(planes * self.expansion, reduction)
         else:
@@ -210,7 +213,8 @@ class Bottleneck(nn.Module):
         self.bn2 = norm(planes)
         self.conv3 = MetaConv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
         self.bn3 = norm(planes * self.expansion)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
+        # self.relu = nn.ReLU(inplace=True)
         if with_se:
             self.se = SELayer(planes * self.expansion, reduction)
         else:
@@ -250,7 +254,7 @@ class Identity(nn.Module):
         return x, None
 
 
-class HyperRouter(nn.Module):
+class HyperRouter(nn.Cell):
     def __init__(self, planes):
         super().__init__()
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -261,14 +265,18 @@ class HyperRouter(nn.Module):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
     
-    def forward(self, x, opt=None):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
 
         x = self.avgpool(x).squeeze(-1).squeeze(-1)
-        
-        weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
+        # weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
+        l2_normalize = ops.L2Normalize(axis=-1)
+        x_normalized = l2_normalize(self.fc1(x, opt))
+        weight = self.relu(x_normalized)
         weight = self.fc2(weight, opt).reshape(-1, self.planes, K)
         domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)
-        x = self.softmax(torch.einsum('bi,bil->bl', x, weight))
+        x = self.softmax(ops.einsum('bi,bil->bl', x, weight))
+        # x = self.softmax(torch.einsum('bi,bil->bl', x, weight))
 
         return x, domain_cls_logits
 
@@ -381,7 +389,8 @@ class ResNet(nn.Cell):
                     if isinstance(_m, nn.Conv2d):
                         yield _m
 
-    def forward(self, x, epoch, opt=None):
+    def construct(self, x, epoch, opt=None):
+    # def forward(self, x, epoch, opt=None):
 
 
         x = self.conv1(x, opt)
@@ -414,7 +423,10 @@ class ResNet(nn.Cell):
         x = self.meta_fuse1(x_invariant, x_specific, opt)
         x = self.meta_se1(x, opt)
         temp = self.map1(self.avgpool(x), opt)
-        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+        l2_normalize = ops.L2Normalize(axis=1)
+        x_normalized = l2_normalize(temp)
+        out_features.append(x_normalized[..., 0, 0])
+        # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 2
         NL2_counter = 0
@@ -438,7 +450,10 @@ class ResNet(nn.Cell):
         x = self.meta_fuse2(x_invariant, x_specific, opt)
         x = self.meta_se2(x, opt)
         temp = self.map2(self.avgpool(x), opt)
-        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+        l2_normalize = ops.L2Normalize(axis=1)
+        x_normalized = l2_normalize(temp)
+        out_features.append(x_normalized[..., 0, 0])
+        # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 3
         NL3_counter = 0
@@ -462,7 +477,10 @@ class ResNet(nn.Cell):
         x = self.meta_fuse3(x_invariant, x_specific, opt)
         x = self.meta_se3(x, opt)
         temp = self.map3(self.avgpool(x), opt)
-        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+        l2_normalize = ops.L2Normalize(axis=1)
+        x_normalized = l2_normalize(temp)
+        out_features.append(x_normalized[..., 0, 0])
+        # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 4
         NL4_counter = 0
@@ -486,9 +504,13 @@ class ResNet(nn.Cell):
         x = self.meta_fuse4(x_invariant, x_specific, opt)
         x = self.meta_se4(x, opt)
         temp = self.map4(self.avgpool(x), opt)
-        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+        l2_normalize = ops.L2Normalize(axis=1)
+        x_normalized = l2_normalize(temp)
+        out_features.append(x_normalized[..., 0, 0])
+        # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
-        weights = torch.cat(weights, -1)
+        # weights = torch.cat(weights, -1)
+        weights = ops.cat(weights, -1)
 
         return x, weights, out_features
 
@@ -496,10 +518,15 @@ class ResNet(nn.Cell):
         for name, m in self.named_modules():
             if isinstance(m, MetaConv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                nn.init.normal_(m.weight, 0, math.sqrt(2. / n))
+                mindspore.common.initializer.Normal(m.weight, 0, math.sqrt(2. / n))
+                # nn.init.normal_(m.weight, 0, math.sqrt(2. / n))
             elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
+                constant_init = mindspore.common.initializer.Constant(value=1)
+                out_constant = constant_init(m.weight)
+                # nn.init.constant_(m.weight, 1)
+                constant_init = mindspore.common.initializer.Constant(value=0)
+                out_constant = constant_init(m.bias)
+                # nn.init.constant_(m.bias, 0)
 
 
 def init_pretrained_weights(key):

@@ -11,32 +11,62 @@
     - [X] 6.11 self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)
       - [X] 6.11 downsample = Sequential_ext(MetaConv2d(),MetaBNNorm(),)
       - [X] 6.11 return nn.Sequential(*layers)
-    - [ ] self.adaptor1_sub = Bottleneck2()
+    - [X] 6.29 self.adaptor1_sub = Bottleneck2()
       - [X] 6.16 class Bottleneck2(nn.Module):
       - [X] 6.11 self.conv1 = MetaConv2d()
-      - [ ] self.bn1 = MetaIBNNorm()
+      - [X] 6.25 self.bn1 = MetaIBNNorm()
+        - [X] 6.18 class MetaIBNNorm(nn.Module):
         - [X] 6.16 self.IN = MetaINNorm(half1, **kwargs)
           - [X] 6.16 def forward(self, inputs, opt=None):
           - [X] 6.16 return F.instance_norm()
         - [X] 6.11 self.BN = MetaBNNorm(half2, **kwargs)
         - [X] 6.16 def forward(self, inputs, opt=None):
-        - [ ] split = torch.split(inputs, self.half, 1)
-        - [ ] out1 = self.IN(split[0].contiguous(), opt)
-        - [ ] out2 = self.BN(split[1].contiguous(), opt)
-        - [ ] out = torch.cat((out1, out2), 1)
+        - [X] 6.17 split = torch.split(inputs, self.half, 1)
+        - [X] 6.25 out1 = self.IN(split[0].contiguous(), opt)
+        - [X] 6.25 out2 = self.BN(split[1].contiguous(), opt)
+        - [X] 6.18 out = torch.cat((out1, out2), 1)
       - [X] 6.11 self.bn1 = MetaBNNorm(planes)
-      - [ ] self.se = SELayer(planes * self.expansion, reduction)
-      - [ ] self.se = nn.Identity()
+      - [X] 6.25 self.relu = nn.ReLU(inplace=True)
+      - [X] 6.29 self.se = SELayer(planes * self.expansion, reduction)
+        - [X] 6.29 class SELayer(nn.Module):
+        - [X] 6.29 self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        - [X] 6.29 self.fc = nn.Sequential()
+        - [X] 6.29 def forward(self, x):
+      - [X] 6.25 self.se = nn.Identity()
       - [X] 6.16 def forward(self, x, opt=None):
-    - [ ] self.router1 = HyperRouter(256)
-    - [ ] self.meta_fuse1 = MetaGate(256)
-    - [ ] self.meta_se1 = MetaSELayer(256)
-    - [ ] self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-    - [ ] self.softmax = nn.Softmax(1)
-    - [ ] self.sigmoid = nn.Sigmoid()
-    - [ ] self.relu = nn.ReLU()
-    - [ ] self.random_init()
+    - [X] 6.25 self.router1 = HyperRouter(256)
+      - [X] 6.18 class HyperRouter(nn.Module):
+      - [X] 6.18 self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+      - [X] 6.18 self.fc1 = MetaLinear(planes, planes//16)
+        - [X] 6.18 class MetaLinear(nn.Linear):
+        - [X] 6.18 def forward(self, inputs, opt = None, reserve = False):
+        - [X] 6.18 return F.linear(inputs, updated_weight, updated_bias)
+        - [X] 6.18 return F.linear(inputs, self.weight, self.bias)
+      - [X] 6.19 self.relu = nn.ReLU()
+      - [X] 6.25 self.softmax = nn.Softmax(-1)
+      - [X] 6.25 def forward(self, x, opt=None):
+      - [X] 6.25 x = self.avgpool(x).squeeze(-1).squeeze(-1)
+      - [X] 6.25 weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
+      - [X] 6.25 x = self.softmax(torch.einsum('bi,bil->bl', x, weight))
+    - [X] 6.25 self.meta_fuse1 = MetaGate(256)
+      - [X] 6.25 class MetaGate(nn.Module):
+      - [X] 6.25 self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
+      - [X] 6.25 def forward(self, inputs1, inputs2, opt=None):
+    - [X] 6.25 self.meta_se1 = MetaSELayer(256)
+      - [X] 6.25 class MetaSELayer(nn.Module):
+    - [X] 6.18 self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+    - [X] 6.25 self.softmax = nn.Softmax(1)
+    - [X] 6.25 self.sigmoid = nn.Sigmoid()
+    - [X] 6.25 self.relu = nn.ReLU()
+    - [X] 6.25 self.random_init()
+      - [X] 6.25 nn.init.normal_(m.weight, 0, math.sqrt(2. / n))
+      - [X] 6.25 nn.init.constant_(m.weight, 1)
+      - [X] 6.25 nn.init.constant_(m.bias, 0)
     - [ ] if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
+      - [ ] self.NL_1 = nn.ModuleList()
+    - [X] 6.25 def forward(self, x, epoch, opt=None):
+      - [X] 6.25 out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+      - [X] 6.25 weights = torch.cat(weights, -1)
   - [ ] state_dict = torch.load(pretrain_path, map_location=torch.device('cpu'))
   - [ ] state_dict = init_pretrained_weights(key)
   - [ ] 预训练模型的权重加载到当前模型
