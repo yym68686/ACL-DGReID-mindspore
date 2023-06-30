@@ -10,8 +10,8 @@ from collections import OrderedDict
 
 # import torch
 # from torch import nn
-import torch.nn.functional as F
-from torch.autograd.variable import Variable
+# import torch.nn.functional as F
+# from torch.autograd.variable import Variable
 from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
 
 from fastreid.layers import (
@@ -43,8 +43,8 @@ model_urls = {
 }
 
 def repackage_hidden(h):
-    if type(h) == Variable:
-        return Variable(h.data)
+    if type(h) == mindspore.Tensor:
+        return mindspore.Tensor(h.data)
     else:
         return tuple(repackage_hidden(v) for v in h)
 
@@ -369,17 +369,25 @@ class ResNet(nn.Cell):
         return nn.SequentialCell(*layers)
 
     def _build_nonlocal(self, layers, non_layers, bn_norm):
-        self.NL_1 = nn.ModuleList(
+        self.NL_1 = nn.SequentialCell(
             [Non_local(256, bn_norm) for _ in range(non_layers[0])])
+        # self.NL_1 = nn.ModuleList(
+        #     [Non_local(256, bn_norm) for _ in range(non_layers[0])])
         self.NL_1_idx = sorted([layers[0] - (i + 1) for i in range(non_layers[0])])
-        self.NL_2 = nn.ModuleList(
+        self.NL_2 = nn.SequentialCell(
             [Non_local(512, bn_norm) for _ in range(non_layers[1])])
+        # self.NL_2 = nn.ModuleList(
+        #     [Non_local(512, bn_norm) for _ in range(non_layers[1])])
         self.NL_2_idx = sorted([layers[1] - (i + 1) for i in range(non_layers[1])])
-        self.NL_3 = nn.ModuleList(
+        self.NL_3 = nn.SequentialCell(
             [Non_local(1024, bn_norm) for _ in range(non_layers[2])])
+        # self.NL_3 = nn.ModuleList(
+        #     [Non_local(1024, bn_norm) for _ in range(non_layers[2])])
         self.NL_3_idx = sorted([layers[2] - (i + 1) for i in range(non_layers[2])])
-        self.NL_4 = nn.ModuleList(
+        self.NL_4 = nn.SequentialCell(
             [Non_local(2048, bn_norm) for _ in range(non_layers[3])])
+        # self.NL_4 = nn.ModuleList(
+        #     [Non_local(2048, bn_norm) for _ in range(non_layers[3])])
         self.NL_4_idx = sorted([layers[3] - (i + 1) for i in range(non_layers[3])])
 
     def get_all_conv_layers(self, module):

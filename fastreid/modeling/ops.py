@@ -1,6 +1,6 @@
-import torch
-from torch import nn
-import torch.nn.functional as F
+# import torch
+# from torch import nn
+# import torch.nn.functional as F
 
 import mindspore
 import mindspore.nn as nn
@@ -75,7 +75,8 @@ class MetaConv2d(nn.Conv2d):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
         super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
     
-    def forward(self, inputs, opt=None):
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
         pad_mode = 'pad'
         conv = nn.Conv2d(in_channels=self.in_channels, out_channels=self.out_channels, kernel_size=self.kernel_size, stride=self.stride, pad_mode=pad_mode, padding=self.padding, dilation=self.dilation, group=self.groups)
         inputs = mindspore.Tensor(inputs)

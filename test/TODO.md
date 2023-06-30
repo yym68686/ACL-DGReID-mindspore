@@ -1,6 +1,18 @@
 主干网络 bagtricks_DR50_mix.yml
 
 - [ ] BACKBONE build_meta_dynamic_router_resnet_backbone
+  - [ ] from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
+    - [X] 6.30 MetaConv2d
+    - [ ] MetaLinear
+    - [ ] MetaBNNorm
+    - [ ] MetaINNorm
+    - [ ] MetaIBNNorm
+    - [ ] MetaGate
+  - [ ] from fastreid.layers import (IBN, SELayer, Non_local, get_norm,)
+    - [ ] IBN
+    - [ ] SELayer
+    - [ ] Non_local
+    - [ ] get_norm
   - [ ] model = ResNet()
     - [X] 6.16 class ResNet(nn.Module): 
     - [X] 6.11 self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
@@ -62,8 +74,9 @@
       - [X] 6.25 nn.init.normal_(m.weight, 0, math.sqrt(2. / n))
       - [X] 6.25 nn.init.constant_(m.weight, 1)
       - [X] 6.25 nn.init.constant_(m.bias, 0)
-    - [ ] if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
-      - [ ] self.NL_1 = nn.ModuleList()
+    - [X] 6.30 if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
+      - [X] 6.30 self.NL_1 = nn.ModuleList()
+    - [ ] def get_all_conv_layers(self, module):
     - [X] 6.25 def forward(self, x, epoch, opt=None):
       - [X] 6.25 out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
       - [X] 6.25 weights = torch.cat(weights, -1)
