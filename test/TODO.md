@@ -71,7 +71,7 @@
   - [ ] state_dict = init_pretrained_weights(key)
   - [ ] 预训练模型的权重加载到当前模型
     - [ ] model_dict = model.state_dict()
-    - [ ] model_dict[k] = F.avg_pool1d().reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
+    - [X] 6.30 model_dict[k] = F.avg_pool1d().reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
   - [ ] incompatible = model.load_state_dict(model_dict, strict=False)
 - [ ] HEADS MetaEmbeddingHead
 

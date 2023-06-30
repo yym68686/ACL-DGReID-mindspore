@@ -676,7 +676,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         if 'conv3' in k:
                             v = state_dict['layer1.2'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2)).tile((K, 1, 1, 1))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
                         elif 'bn3' in k:
                             v = state_dict['layer1.2'+k[12:]]
                             model_dict[k] = v.repeat(K)
@@ -685,7 +687,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         else:
                             v = state_dict['layer1.2'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         print('Done, adaptor', k)
                     elif 'adaptor2_base' in k:
                         if model_dict[k].shape == state_dict['layer2.3'+k[13:]].shape:
@@ -697,7 +701,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         if 'conv3' in k:
                             v = state_dict['layer2.3'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2)).tile((K, 1, 1, 1))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
                         elif 'bn3' in k:
                             v = state_dict['layer2.3'+k[12:]]
                             model_dict[k] = v.repeat(K)
@@ -706,7 +712,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         else:
                             v = state_dict['layer2.3'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         print('Done, adaptor', k)
                         
                     elif 'adaptor3_base' in k:
@@ -719,7 +727,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         if 'conv3' in k:
                             v = state_dict['layer3.5'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2)).tile((K, 1, 1, 1))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
                         elif 'bn3' in k:
                             v = state_dict['layer3.5'+k[12:]]
                             model_dict[k] = v.repeat(K)
@@ -728,7 +738,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         else:
                             v = state_dict['layer3.5'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         print('Done, adaptor', k)
                     
                     elif 'adaptor4_base' in k:
@@ -741,7 +753,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         if 'conv3' in k:
                             v = state_dict['layer4.2'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2)).tile((K, 1, 1, 1))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2).repeat(K, 1, 1, 1)
                         elif 'bn3' in k:
                             v = state_dict['layer4.2'+k[12:]]
                             model_dict[k] = v.repeat(K)
@@ -755,7 +769,9 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                         else:
                             v = state_dict['layer4.2'+k[12:]]
                             Cout, Cin, H, W = v.shape
-                            model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
+                            temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
+                            model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
+                            # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         print('Done, adaptor', k)
                             
                 except Exception:
