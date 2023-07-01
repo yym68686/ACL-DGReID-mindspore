@@ -10,10 +10,15 @@
     - [X] 7.1 MetaGate
     - [X] 7.1 ops.py 附加 MetaParam
   - [ ] from fastreid.layers import (IBN, SELayer, Non_local, get_norm,)
-    - [ ] IBN
+    - [X] 7.1 IBN
     - [X] 7.1 SELayer
     - [ ] Non_local
-    - [ ] get_norm
+    - [X] 7.1 get_norm
+  - [ ] BasicBlock
+  - [ ] MetaSELayer
+  - [ ] Bottleneck
+  - [ ] Identity
+  - [ ] HyperRouter
   - [ ] model = ResNet()
     - [X] 6.16 class ResNet(nn.Module): 
     - [X] 6.11 self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)

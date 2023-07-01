@@ -76,7 +76,8 @@ class Sequential_ext(nn.Cell):
     def __len__(self):
         return len(self._modules)
 
-    def forward(self, input, opt=None):
+    # def forward(self, input, opt=None):
+    def construct(self, input, opt=None):
         for i, module in enumerate(self._modules.values()):
             input = module(input, opt)
         return input
