@@ -256,11 +256,13 @@ class Bottleneck(nn.Cell):
         return out
 
 
-class Identity(nn.Module):
+# class Identity(nn.Module):
+class Identity(nn.Cell):
     def __init__(self):
         super(Identity, self).__init__()
 
-    def forward(self, x):
+    # def forward(self, x):
+    def construct(self, x):
         return x, None
 
 

@@ -17,7 +17,7 @@
   - [X] 7.1 BasicBlock
   - [X] 7.1 MetaSELayer
   - [X] 7.1 Bottleneck
-  - [ ] Identity
+  - [X] 7.1 Identity
   - [ ] HyperRouter
   - [ ] model = ResNet()
     - [X] 6.16 class ResNet(nn.Module): 
