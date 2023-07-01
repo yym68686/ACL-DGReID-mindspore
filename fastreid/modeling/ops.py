@@ -45,18 +45,23 @@ class MetaGate(nn.Cell):
             return gate * inputs1 + (1. - gate) * inputs2
             
 
-class MetaParam(nn.Module):
+# class MetaParam(nn.Module):
+class MetaParam(nn.Cell):
     def __init__(self, feat_dim, num_classes):
         super().__init__()
-        self.centers = nn.Parameter(torch.randn(num_classes, feat_dim))
+        self.centers = mindspore.Parameter(ops.randn(num_classes, feat_dim))
+        # self.centers = nn.Parameter(torch.randn(num_classes, feat_dim))
 
     def forward(self, inputs, opt=None):
+        op = ops.ReduceSum(keep_dims=True)
         if opt != None and opt['meta']:
             updated_centers = update_parameter(self.centers, self.w_step_size, opt)
             batch_size = inputs.size(0)
             num_classes = self.centers.size(0)
-            distmat = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(batch_size, num_classes) + \
-                        torch.pow(updated_centers, 2).sum(dim=1, keepdim=True).expand(num_classes, batch_size).t()
+            distmat = op(ops.pow(inputs, 2), axis=1).expand(batch_size, num_classes) + \
+                        op(ops.pow(updated_centers, 2), axis=1).expand(num_classes, batch_size).t()
+            # distmat = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(batch_size, num_classes) + \
+            #             torch.pow(updated_centers, 2).sum(dim=1, keepdim=True).expand(num_classes, batch_size).t()
             distmat.addmm_(1, -2, inputs, updated_centers.t())
 
             return distmat
@@ -64,8 +69,10 @@ class MetaParam(nn.Module):
         else:
             batch_size = inputs.size(0)
             num_classes = self.centers.size(0)
-            distmat = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(batch_size, num_classes) + \
-                        torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(num_classes, batch_size).t()
+            distmat = op(ops.pow(inputs, 2), axis=1).expand(batch_size, num_classes) + \
+                        op(ops.pow(self.centers, 2), axis=1).expand(num_classes, batch_size).t()
+            # distmat = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(batch_size, num_classes) + \
+            #             torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(num_classes, batch_size).t()
             distmat.addmm_(1, -2, inputs, self.centers.t())
 
             return distmat

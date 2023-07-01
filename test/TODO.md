@@ -8,7 +8,7 @@
     - [X] 7.1 MetaINNorm
     - [X] 7.1 MetaIBNNorm
     - [X] 7.1 MetaGate
-    - [ ] ops.py 附加 MetaParam
+    - [X] 7.1 ops.py 附加 MetaParam
   - [ ] from fastreid.layers import (IBN, SELayer, Non_local, get_norm,)
     - [ ] IBN
     - [ ] SELayer
