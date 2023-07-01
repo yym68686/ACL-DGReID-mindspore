@@ -2,7 +2,6 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 import mindspore
-import mindspore.ops as ops
 import mindspore.nn as nn
 
 # inputs：输入张量，形状为 (batch_size, in_channels, height, width)，其中 batch_size 表示批次大小，in_channels 表示输入通道数，height 和 width 分别表示输入特征图的高度和宽度。
@@ -20,8 +19,8 @@ in_channels = 3
 batch_size = 1
 
 input = torch.randn(batch_size, in_channels, 3, 3)
-running_mean = torch.zeros(in_channels)
-running_var = torch.ones(in_channels)
+# running_mean = torch.zeros(in_channels)
+# running_var = torch.ones(in_channels)
 updated_weight = torch.randn(in_channels)
 updated_bias = torch.randn(in_channels)
 
@@ -29,13 +28,11 @@ updated_bias = torch.randn(in_channels)
 training = True
 momentum = 0.1
 eps = 1e-5
-result = F.batch_norm(input, running_mean, running_var, updated_weight, updated_bias, training, momentum, eps)
+result = F.instance_norm(input, None, None, updated_weight, updated_bias, training, momentum, eps)
 print(result)
-# output = F.batch_norm(input, running_mean, running_var)
-# print(output.shape)
 
 
-# 文档 https://www.mindspore.cn/docs/zh-CN/r2.0/api_python/nn/mindspore.nn.BatchNorm2d.html?highlight=batchnorm2d#mindspore.nn.BatchNorm2d
+# 文档 https://www.mindspore.cn/docs/zh-CN/r2.0/note/api_mapping/pytorch_diff/InstanceNorm2d.html
 input = mindspore.Tensor(input.numpy().astype(np.float32))
 # running_mean =  mindspore.Tensor(running_mean.numpy().astype(np.float32))
 # running_var =  mindspore.Tensor(running_var.numpy().astype(np.float32))
@@ -43,17 +40,12 @@ updated_weight = mindspore.Tensor(updated_weight.numpy().astype(np.float32))
 updated_bias = mindspore.Tensor(updated_bias.numpy().astype(np.float32))
 
 num_features = in_channels
-# num_features,
-# eps=1e-5,
-# momentum=0.9,
-# affine=True,
-# gamma_init='ones',
-# beta_init='zeros',
-# moving_mean_init='zeros',
-# moving_var_init='ones',
-# use_batch_statistics=None,
-# data_format='NCHW'
-bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=training, momentum=momentum, eps=eps)
+#  num_features,
+#  eps=1e-5,
+#  momentum=0.1,
+#  affine=True,
+#  gamma_init='ones',
+#  beta_init='zeros'
+bn = nn.InstanceNorm2d(num_features, affine=False, gamma_init=updated_weight, beta_init=updated_bias, momentum=momentum, eps=eps)
 output = bn(input)
-# output = ops.batch_norm(input, running_mean, running_var, updated_weight, updated_bias, training, momentum, eps)
 print(output)

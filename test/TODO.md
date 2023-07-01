@@ -5,7 +5,7 @@
     - [X] 6.30 MetaConv2d
     - [X] 7.1 MetaLinear
     - [X] 7.1 MetaBNNorm
-    - [ ] MetaINNorm
+    - [X] 7.1 MetaINNorm
     - [ ] MetaIBNNorm
     - [ ] MetaGate
   - [ ] from fastreid.layers import (IBN, SELayer, Non_local, get_norm,)
