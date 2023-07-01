@@ -149,8 +149,10 @@ class MetaIBNNorm(nn.Cell):
 class MetaBNNorm(nn.BatchNorm2d):
     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
 
-        track_running_stats = True
-        super().__init__(num_features, eps, momentum, affine, track_running_stats)
+        # track_running_stats = True
+        # super().__init__(num_features, eps, momentum, affine, track_running_stats)
+        use_batch_statistics = True
+        super().__init__(num_features, eps, momentum, affine, use_batch_statistics)
 
         if weight_init is not None: self.weight.data.fill_(weight_init)
         if bias_init is not None: self.bias.data.fill_(bias_init)
@@ -188,14 +190,17 @@ class MetaBNNorm(nn.BatchNorm2d):
 
 
         if norm_type == "general": # update, but not apply running_mean/var
-            bn = nn.BatchNorm2d(self.num_features, moving_mean_init=self.running_mean, moving_var_init=self.running_var, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=self.training, momentum=self.momentum, eps=self.eps)
-            result = bn(inputs)
+            result = ops.batch_norm(inputs, self.running_mean, self.running_var,
+                                updated_weight, updated_bias,
+                                self.training, self.momentum, self.eps)
         elif norm_type == "hold": # not update, not apply running_mean/var
-            bn = nn.BatchNorm2d(self.num_features, moving_mean_init=None, moving_var_init=None, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=True, momentum=self.momentum, eps=self.eps)
-            result = bn(inputs)
+            result = ops.batch_norm(inputs, None, None,
+                                updated_weight, updated_bias,
+                                True, self.momentum, self.eps)
         elif norm_type == "eval": # fix and apply running_mean/var,
-            bn = nn.BatchNorm2d(self.num_features, moving_mean_init=self.running_mean, moving_var_init=self.running_var, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=False, momentum=self.momentum, eps=self.eps)
-            result = bn(inputs)
+            result = ops.batch_norm(inputs, self.running_mean, self.running_var,
+                                updated_weight, updated_bias,
+                                False, self.momentum, self.eps)
 
         # if norm_type == "general": # update, but not apply running_mean/var
         #     result = F.batch_norm(inputs, self.running_mean, self.running_var,

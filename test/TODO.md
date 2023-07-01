@@ -4,7 +4,7 @@
   - [ ] from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
     - [X] 6.30 MetaConv2d
     - [X] 7.1 MetaLinear
-    - [ ] MetaBNNorm
+    - [X] 7.1 MetaBNNorm
     - [ ] MetaINNorm
     - [ ] MetaIBNNorm
     - [ ] MetaGate
