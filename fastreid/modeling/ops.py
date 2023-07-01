@@ -79,8 +79,10 @@ class MetaParam(nn.Cell):
 
 
 class MetaConv2d(nn.Conv2d):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
-        super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
+    # def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, pad_mode='pad'):
+        super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, has_bias=bias, pad_mode)
+        # super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
     
     # def forward(self, inputs, opt=None):
     def construct(self, inputs, opt=None):

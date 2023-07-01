@@ -201,7 +201,8 @@ class Bottleneck2(nn.Cell):
 
         return out
         
-class Bottleneck(nn.Module):
+# class Bottleneck(nn.Module):
+class Bottleneck(nn.Cell):
     expansion = 4
 
     def __init__(self, inplanes, planes, bn_norm, with_ibn=False, with_se=False,
@@ -230,7 +231,8 @@ class Bottleneck(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-    def forward(self, x, opt=None):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
         residual = x
         
         out = self.conv1(x, opt)

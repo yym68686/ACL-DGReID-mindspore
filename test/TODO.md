@@ -16,7 +16,7 @@
     - [X] 7.1 get_norm
   - [X] 7.1 BasicBlock
   - [X] 7.1 MetaSELayer
-  - [ ] Bottleneck
+  - [X] 7.1 Bottleneck
   - [ ] Identity
   - [ ] HyperRouter
   - [ ] model = ResNet()
