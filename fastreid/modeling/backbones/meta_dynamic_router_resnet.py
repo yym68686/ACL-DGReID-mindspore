@@ -269,7 +269,8 @@ class Identity(nn.Cell):
 class HyperRouter(nn.Cell):
     def __init__(self, planes):
         super().__init__()
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.avgpool = ops.ReduceMean(keep_dims=True)
         self.planes = planes
         self.fc1 = MetaLinear(planes, planes//16)
         self.fc2 = MetaLinear(planes//16, planes*K)
@@ -280,7 +281,7 @@ class HyperRouter(nn.Cell):
     # def forward(self, x, opt=None):
     def construct(self, x, opt=None):
 
-        x = self.avgpool(x).squeeze(-1).squeeze(-1)
+        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)
         # weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         l2_normalize = ops.L2Normalize(axis=-1)
         x_normalized = l2_normalize(self.fc1(x, opt))

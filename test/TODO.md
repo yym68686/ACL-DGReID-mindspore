@@ -18,7 +18,7 @@
   - [X] 7.1 MetaSELayer
   - [X] 7.1 Bottleneck
   - [X] 7.1 Identity
-  - [ ] HyperRouter
+  - [X] 7.1 HyperRouter
   - [ ] model = ResNet()
     - [X] 6.16 class ResNet(nn.Module): 
     - [X] 6.11 self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
