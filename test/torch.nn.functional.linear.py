@@ -8,7 +8,7 @@ bias = torch.randn(2)  # 2 output features
 print(bias.shape[0])
 
 output = F.linear(x, weight, bias)
-print(output.shape)  # should be (10, 2) representing 10 examples, each with 2 output features
+print(output)  # should be (10, 2) representing 10 examples, each with 2 output features
 
 import mindspore.nn as nn
 import mindspore
@@ -23,4 +23,4 @@ linear = nn.Dense(5, 2)
 linear.weight = weight
 linear.bias = bias
 output = linear(x)
-print(output.shape)  # should be (10, 2) representing 10 examples, each with 2 output features
+print(output)  # should be (10, 2) representing 10 examples, each with 2 output features

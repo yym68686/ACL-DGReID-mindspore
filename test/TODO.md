@@ -3,7 +3,7 @@
 - [ ] BACKBONE build_meta_dynamic_router_resnet_backbone
   - [ ] from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
     - [X] 6.30 MetaConv2d
-    - [ ] MetaLinear
+    - [X] 7.1 MetaLinear
     - [ ] MetaBNNorm
     - [ ] MetaINNorm
     - [ ] MetaIBNNorm

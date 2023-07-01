@@ -88,21 +88,22 @@ class MetaConv2d(nn.Conv2d):
             conv.weight = updated_weight
             conv.bias = updated_bias
             output = conv(inputs)
-            return output.asnumpy()
+            return output
         else:
             # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
             conv.weight = self.weight
             conv.bias = self.bias
             output = conv(inputs)
-            return output.asnumpy()
+            return output
 
 
 class MetaLinear(nn.Dense):
     def __init__(self, in_feat, reduction_dim, bias=False):
-        super().__init__(in_feat, reduction_dim, bias=bias)
+        super().__init__(in_feat, reduction_dim, has_bias=bias)
+        # super().__init__(in_feat, reduction_dim, bias=bias)
 
     def construct(self, inputs, opt = None, reserve = False):
-        linear = nn.Dense(self.in_feat, self.bias.shape[0])
+        linear = nn.Dense(self.in_feat, self.reduction_dim)
         if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
