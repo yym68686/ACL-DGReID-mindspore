@@ -406,7 +406,8 @@ class ResNet(nn.Cell):
     def get_all_conv_layers(self, module):
         for m in module:
             if isinstance(m, Bottleneck):
-                for _m in m.modules():
+                # for _m in m.modules():
+                for _m in m.cells_and_names():
                     if isinstance(_m, nn.Conv2d):
                         yield _m
 

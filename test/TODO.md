@@ -82,7 +82,7 @@
       - [X] 6.25 nn.init.constant_(m.bias, 0)
     - [X] 6.30 if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
       - [X] 6.30 self.NL_1 = nn.ModuleList()
-    - [ ] def get_all_conv_layers(self, module):
+    - [X] 7.1 def get_all_conv_layers(self, module):
     - [X] 6.25 def forward(self, x, epoch, opt=None):
       - [X] 6.25 out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
       - [X] 6.25 weights = torch.cat(weights, -1)
