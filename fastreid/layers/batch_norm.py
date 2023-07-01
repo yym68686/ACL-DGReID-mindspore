@@ -42,10 +42,13 @@ class IBN(nn.Module):
         self.IN = nn.InstanceNorm2d(half1, affine=True)
         self.BN = get_norm(bn_norm, half2, **kwargs)
 
-    def forward(self, x):
+    # def forward(self, x):
+    def construct(self, x):
         split = torch.split(x, self.half, 1)
-        out1 = self.IN(split[0].contiguous())
-        out2 = self.BN(split[1].contiguous())
+        out1 = self.IN(split[0])
+        out2 = self.BN(split[1])
+        # out1 = self.IN(split[0].contiguous())
+        # out2 = self.BN(split[1].contiguous())
         out = torch.cat((out1, out2), 1)
         return out
 

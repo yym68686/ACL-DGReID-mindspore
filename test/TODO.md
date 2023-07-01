@@ -1,7 +1,7 @@
 主干网络 bagtricks_DR50_mix.yml
 
 - [ ] BACKBONE build_meta_dynamic_router_resnet_backbone
-  - [ ] from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
+  - [X] 7.1 from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
     - [X] 6.30 MetaConv2d
     - [X] 7.1 MetaLinear
     - [X] 7.1 MetaBNNorm
@@ -11,7 +11,7 @@
     - [X] 7.1 ops.py 附加 MetaParam
   - [ ] from fastreid.layers import (IBN, SELayer, Non_local, get_norm,)
     - [ ] IBN
-    - [ ] SELayer
+    - [X] 7.1 SELayer
     - [ ] Non_local
     - [ ] get_norm
   - [ ] model = ResNet()

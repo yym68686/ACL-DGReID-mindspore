@@ -20,9 +20,9 @@ class SELayer(nn.Cell):
         # output = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]) 才一样，见 torch.nn.AdaptiveAvgPool2d.py
         self.avg_pool = ops.ReduceMean(keep_dims=True)
         self.fc = nn.SequentialCell(
-            nn.Linear(channel, int(channel / reduction), has_bias=False),
+            nn.Dense(channel, int(channel / reduction), has_bias=False),
             nn.ReLU(),
-            nn.Linear(int(channel / reduction), channel, has_bias=False),
+            nn.Dense(int(channel / reduction), channel, has_bias=False),
             nn.Sigmoid()
         )
         # self.fc = nn.Sequential(
