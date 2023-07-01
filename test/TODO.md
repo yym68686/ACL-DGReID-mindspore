@@ -9,13 +9,13 @@
     - [X] 7.1 MetaIBNNorm
     - [X] 7.1 MetaGate
     - [X] 7.1 ops.py 附加 MetaParam
-  - [ ] from fastreid.layers import (IBN, SELayer, Non_local, get_norm,)
+  - [X] 7.1 from fastreid.layers import (IBN, SELayer, Non_local, get_norm,)
     - [X] 7.1 IBN
     - [X] 7.1 SELayer
     - [X] 7.1 Non_local
     - [X] 7.1 get_norm
-  - [ ] BasicBlock
-  - [ ] MetaSELayer
+  - [X] 7.1 BasicBlock
+  - [X] 7.1 MetaSELayer
   - [ ] Bottleneck
   - [ ] Identity
   - [ ] HyperRouter

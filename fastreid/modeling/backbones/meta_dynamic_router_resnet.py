@@ -83,20 +83,24 @@ class Sequential_ext(nn.Cell):
         return input
 
 
-class BasicBlock(nn.Module):
+# class BasicBlock(nn.Module):
+class BasicBlock(nn.Cell):
     expansion = 1
 
     def __init__(self, inplanes, planes, bn_norm, with_ibn=False, with_se=False,
                  stride=1, downsample=None, reduction=16):
         super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, pad_mode='pad', padding=1, has_bias=False)
+        # self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         if with_ibn:
             self.bn1 = IBN(planes, bn_norm)
         else:
             self.bn1 = get_norm(bn_norm, planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, pad_mode='pad', padding=1, has_bias=False)
+        # self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = get_norm(bn_norm, planes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU()
+        # self.relu = nn.ReLU(inplace=True)
         if with_se:
             self.se = SELayer(planes, reduction)
         else:
@@ -104,7 +108,8 @@ class BasicBlock(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-    def forward(self, x):
+    # def forward(self, x):
+    def construct(self, x):
         identity = x
 
         out = self.conv1(x)
@@ -128,15 +133,17 @@ class BasicBlock(nn.Module):
 class MetaSELayer(nn.Cell):
     def __init__(self, channel, reduction=16):
         super(MetaSELayer, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.avg_pool = ops.ReduceMean(keep_dims=True)
+        # self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc1 = MetaLinear(channel, int(channel / reduction), bias=False)
         self.relu = nn.ReLU()
         self.fc2 = MetaLinear(int(channel / reduction), channel, bias=False)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x, opt=None):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
         b, c, _, _ = x.size()
-        y = self.avg_pool(x).view(b, c)
+        y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
         y = self.relu(self.fc1(y, opt))
         y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
 
