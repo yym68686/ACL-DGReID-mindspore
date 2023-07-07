@@ -231,17 +231,24 @@ class MetaBNNorm(nn.BatchNorm2d):
 
 
 class MetaINNorm(nn.InstanceNorm2d):
-    def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
+    # def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
+    def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, beta_freeze=False, gamma_init="ones", beta_init="zeros"):
 
-        track_running_stats = False
-        super().__init__(num_features, eps, momentum, affine, track_running_stats)
+        # track_running_stats = False
+        # super().__init__(num_features, eps, momentum, affine, track_running_stats)
+        super().__init__(num_features, eps, momentum, affine)
+        self.affine = affine
 
-        if self.weight is not None:
-            if weight_init is not None: self.weight.data.fill_(weight_init)
-            self.weight.requires_grad_(True)
-        if self.bias is not None:
-            if bias_init is not None: self.bias.data.fill_(bias_init)
-            self.bias.requires_grad_(not bias_freeze)
+        if self.gamma is not None:
+            if gamma_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=affine)
+        if self.beta is not None:
+            if beta_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(beta_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not beta_freeze)
+        # if self.weight is not None:
+        #     if weight_init is not None: self.weight.data.fill_(weight_init)
+        #     self.weight.requires_grad_(True)
+        # if self.bias is not None:
+        #     if bias_init is not None: self.bias.data.fill_(bias_init)
+        #     self.bias.requires_grad_(not bias_freeze)
         self.in_fc_multiply = 0.0
 
     # def forward(self, inputs, opt=None):
@@ -259,16 +266,15 @@ class MetaINNorm(nn.InstanceNorm2d):
                 use_meta_learning = False
 
             if use_meta_learning and self.affine:
-                updated_weight = update_parameter(self.weight, self.w_step_size, opt)
-                updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+                updated_gamma = update_parameter(self.gamma, self.w_step_size, opt)
+                updated_beta = update_parameter(self.beta, self.b_step_size, opt)
             else:
-                updated_weight = self.weight
-                updated_bias = self.bias
+                updated_gamma = self.gamma
+                updated_beta = self.beta
 
-
-            if self.running_mean is None:
-                net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, gamma_init=updated_weight, beta_init=updated_bias, affine=self.affine)
-                return net(inputs)
+            net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, gamma_init=updated_gamma, beta_init=updated_beta, affine=self.affine)
+            return net(inputs)
+            # if self.moving_mean is None:
                 # return F.instance_norm(inputs, None, None,
                 #                         updated_weight, updated_bias,
                 #                         True, self.momentum, self.eps)

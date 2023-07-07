@@ -1,7 +1,4 @@
 import torch
-import torch.nn as nn
-
-import torch
 from torch import nn
 import torch.nn.functional as F
 
@@ -89,3 +86,111 @@ class MetaBNNorm(nn.BatchNorm2d):
                                     updated_weight, updated_bias,
                                     False, self.momentum, self.eps)
         return result
+
+class MetaINNorm(nn.InstanceNorm2d):
+    def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
+
+        track_running_stats = False
+        super().__init__(num_features, eps, momentum, affine, track_running_stats)
+
+        if self.weight is not None:
+            if weight_init is not None: self.weight.data.fill_(weight_init)
+            self.weight.requires_grad_(True)
+        if self.bias is not None:
+            if bias_init is not None: self.bias.data.fill_(bias_init)
+            self.bias.requires_grad_(not bias_freeze)
+        self.in_fc_multiply = 0.0
+
+    def forward(self, inputs, opt=None):
+        if inputs.dim() != 4:
+            raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
+
+        if (inputs.shape[2] == 1) and (inputs.shape[2] == 1):
+            inputs[:] *= self.in_fc_multiply
+            return inputs
+        else:
+            if opt != None and opt['meta']:
+                use_meta_learning = True
+            else:
+                use_meta_learning = False
+
+            if use_meta_learning and self.affine:
+                updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+                updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+            else:
+                updated_weight = self.weight
+                updated_bias = self.bias
+
+            if self.running_mean is None:
+                return F.instance_norm(inputs, None, None,
+                                        updated_weight, updated_bias,
+                                        True, self.momentum, self.eps)
+
+class MetaIBNNorm(nn.Module):
+    def __init__(self, num_features, **kwargs):
+        super().__init__()
+        half1 = int(num_features / 2)
+        self.half = half1
+        half2 = num_features - half1
+        self.IN = MetaINNorm(half1, **kwargs)
+        self.BN = MetaBNNorm(half2, **kwargs)
+
+    def forward(self, inputs, opt=None):
+        if inputs.dim() != 4:
+            raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
+        
+        split = torch.split(inputs, self.half, 1)
+        out1 = self.IN(split[0].contiguous(), opt)
+        out2 = self.BN(split[1].contiguous(), opt)
+        out = torch.cat((out1, out2), 1)
+        return out
+
+K = 4
+class Bottleneck2(nn.Module):
+    expansion = 4*K
+
+    def __init__(self, inplanes, planes, bn_norm, with_ibn=False, with_se=False,
+                 stride=1, downsample=None, reduction=16):
+        super(Bottleneck2, self).__init__()
+        self.conv1 = MetaConv2d(inplanes * K, planes, kernel_size=1, bias=False, groups=K)
+        if with_ibn:
+            self.bn1 = MetaIBNNorm(planes)
+        else:
+            self.bn1 = MetaBNNorm(planes)
+        self.conv2 = MetaConv2d(planes, planes, kernel_size=3, stride=stride,
+                            padding=1, bias=False, groups=K)
+        self.bn2 = MetaBNNorm(planes)
+        self.conv3 = MetaConv2d(planes, planes * self.expansion, kernel_size=1, bias=False, groups=K)
+        self.bn3 = MetaBNNorm(planes * self.expansion)
+
+        self.relu = nn.ReLU(inplace=True)
+        if with_se:
+            self.se = SELayer(planes * self.expansion, reduction)
+        else:
+            self.se = nn.Identity()
+        self.downsample = downsample
+        self.stride = stride
+        
+    def forward(self, x, opt=None):
+        
+        residual = x
+        
+        out = self.conv1(x, opt)
+        out = self.bn1(out, opt)
+        out = self.relu(out)
+
+        out = self.conv2(out, opt)
+        out = self.bn2(out, opt)
+        out = self.relu(out)
+
+        out = self.conv3(out, opt)
+        out = self.bn3(out, opt)
+        out = self.se(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x, opt)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
