@@ -107,12 +107,12 @@ class MetaConv2d(nn.Conv2d):
 
 
 class MetaLinear(nn.Dense):
-    def __init__(self, in_feat, reduction_dim, bias=False):
-        super().__init__(in_feat, reduction_dim, has_bias=bias)
+    def __init__(self, in_channels, out_channels, has_bias=False):
+        super().__init__(in_channels, out_channels, has_bias=has_bias)
         # super().__init__(in_feat, reduction_dim, bias=bias)
 
     def construct(self, inputs, opt = None, reserve = False):
-        linear = nn.Dense(self.in_feat, self.reduction_dim)
+        linear = nn.Dense(self.in_channels, self.out_channels)
         if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)

@@ -194,3 +194,16 @@ class Bottleneck2(nn.Module):
         out = self.relu(out)
 
         return out
+    
+class MetaLinear(nn.Linear):
+    def __init__(self, in_feat, reduction_dim, bias=False):
+        super().__init__(in_feat, reduction_dim, bias=bias)
+
+    def forward(self, inputs, opt = None, reserve = False):
+        if opt != None and opt['meta']:
+            updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
+            updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
+
+            return F.linear(inputs, updated_weight, updated_bias)
+        else:
+            return F.linear(inputs, self.weight, self.bias)

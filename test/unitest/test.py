@@ -61,28 +61,44 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_MetaIBNNorm(self):
+        planes = 64
+        num_features = 3
+        input_tensor = ops.randn(1, num_features, 32, 32)
+        model = test_ops_mindspore.MetaIBNNorm(planes)
+        output_tensor = model(input_tensor)
+        input_tensor = torch.randn(1, num_features, 32, 32)
+        model = test_pytorch.MetaIBNNorm(planes)
+        expected_tensor = model(input_tensor)
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
-    # def test_MetaIBNNorm(self):
-    #     planes = 64
-    #     num_features = 3
-    #     input_tensor = ops.randn(1, num_features, 32, 32)
-    #     model = test_ops_mindspore.MetaIBNNorm(planes)
-    #     output_tensor = model(input_tensor)
-    #     input_tensor = torch.randn(1, num_features, 32, 32)
-    #     model = test_pytorch.MetaIBNNorm(planes)
-    #     expected_tensor = model(input_tensor)
-    #     self.assertEqual(output_tensor.shape, expected_tensor.shape)
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_Bottleneck2(self):
+        num_features = 3
+        bn_norm, with_ibn, with_se = None, False, False
+        input_tensor = ops.randn(1, num_features, 32, 32)
+        model = test_meta_dynamic_router_resnet_mindspore.Bottleneck2(256, 64, bn_norm, with_ibn, with_se)
+        output_tensor = model(input_tensor)
+        input_tensor = torch.randn(1, num_features, 32, 32)
+        model = test_pytorch.Bottleneck2(256, 64, bn_norm, with_ibn, with_se)
+        expected_tensor = model(input_tensor)
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
-    # def test_Bottleneck2(self):
-    #     num_features = 3
-    #     bn_norm, with_ibn, with_se = None, False, False
-    #     input_tensor = ops.randn(1, num_features, 32, 32)
-    #     model = test_meta_dynamic_router_resnet_mindspore.Bottleneck2(256, 64, bn_norm, with_ibn, with_se)
-    #     output_tensor = model(input_tensor)
-    #     input_tensor = torch.randn(1, num_features, 32, 32)
-    #     model = test_pytorch.Bottleneck2(256, 64, bn_norm, with_ibn, with_se)
-    #     expected_tensor = model(input_tensor)
-    #     self.assertEqual(output_tensor.shape, expected_tensor.shape)
+    def test_MetaLinear(self):
+        # 输入张量的形状应该是(N, C, H, W)，其中 N 是批次大小，C 是通道数，H 是高度，W 是宽度。num_features 应该等于 C，否则会报错。
+        in_channels = 3
+        out_channels = 4
+
+        input_tensor = ops.randn(1, in_channels)
+        model = test_ops_mindspore.MetaLinear(in_channels, out_channels, has_bias=True)
+        output_tensor = model(input_tensor)
+
+        input_tensor = torch.randn(1, in_channels)
+        model = test_pytorch.MetaLinear(in_channels, out_channels, bias=True)
+        expected_tensor = model(input_tensor)
+
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
 if __name__ == '__main__':
     unittest.main()
