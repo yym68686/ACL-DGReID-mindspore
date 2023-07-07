@@ -156,18 +156,22 @@ class MetaIBNNorm(nn.Cell):
 
 
 class MetaBNNorm(nn.BatchNorm2d):
-    def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
+    # def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
+    def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, beta_freeze=False, gamma_init='ones', beta_init='zeros'):
 
         # track_running_stats = True
         # super().__init__(num_features, eps, momentum, affine, track_running_stats)
         use_batch_statistics = True
         super().__init__(num_features, eps, momentum, affine, use_batch_statistics)
 
-        if weight_init is not None: self.weight.data.fill_(weight_init)
-        if bias_init is not None: self.bias.data.fill_(bias_init)
-        self.bias_freeze = bias_freeze
-        self.weight.requires_grad_(True)
-        self.bias.requires_grad_(not bias_freeze)
+        # if weight_init is not None: self.weight.data.fill_(weight_init)
+        # if bias_init is not None: self.bias.data.fill_(bias_init)
+        if gamma_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=affine)
+        if beta_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(beta_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not beta_freeze)
+        self.beta_freeze = beta_freeze
+        # self.weight.requires_grad_(True)
+        # self.bias.requires_grad_(not bias_freeze)
+        # self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, num_features), name="gamma", requires_grad=affine)
 
 
     # def forward(self, inputs, opt = None, reserve = False):
@@ -188,27 +192,27 @@ class MetaBNNorm(nn.BatchNorm2d):
             norm_type = "eval"
 
         if use_meta_learning and self.affine:
-            updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
-            if not self.bias_freeze:
-                updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
+            updated_gamma = update_parameter(self.gamma, self.w_step_size, opt, reserve)
+            if not self.beta_freeze:
+                updated_beta = update_parameter(self.beta, self.b_step_size, opt, reserve)
             else:
-                updated_bias = self.bias
+                updated_beta = self.beta
         else:
-            updated_weight = self.weight
-            updated_bias = self.bias
+            updated_gamma = self.gamma
+            updated_beta = self.beta
 
 
         if norm_type == "general": # update, but not apply running_mean/var
-            result = ops.batch_norm(inputs, self.running_mean, self.running_var,
-                                updated_weight, updated_bias,
+            result = ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
+                                updated_gamma, updated_beta,
                                 self.training, self.momentum, self.eps)
         elif norm_type == "hold": # not update, not apply running_mean/var
             result = ops.batch_norm(inputs, None, None,
-                                updated_weight, updated_bias,
+                                updated_gamma, updated_beta,
                                 True, self.momentum, self.eps)
         elif norm_type == "eval": # fix and apply running_mean/var,
-            result = ops.batch_norm(inputs, self.running_mean, self.running_var,
-                                updated_weight, updated_bias,
+            result = ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
+                                updated_gamma, updated_beta,
                                 False, self.momentum, self.eps)
 
         # if norm_type == "general": # update, but not apply running_mean/var
