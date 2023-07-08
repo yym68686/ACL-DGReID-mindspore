@@ -207,3 +207,25 @@ class MetaLinear(nn.Linear):
             return F.linear(inputs, updated_weight, updated_bias)
         else:
             return F.linear(inputs, self.weight, self.bias)
+        
+class HyperRouter(nn.Module):
+    def __init__(self, planes):
+        super().__init__()
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.planes = planes
+        self.fc1 = MetaLinear(planes, planes//16)
+        self.fc2 = MetaLinear(planes//16, planes*K)
+        self.fc_classifier = MetaLinear(planes*K, 3)
+        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(-1)
+    
+    def forward(self, x, opt=None):
+
+        x = self.avgpool(x).squeeze(-1).squeeze(-1)
+        
+        weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
+        weight = self.fc2(weight, opt).reshape(-1, self.planes, K)
+        domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)
+        x = self.softmax(torch.einsum('bi,bil->bl', x, weight))
+
+        return x, domain_cls_logits

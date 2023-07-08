@@ -107,7 +107,8 @@ class MetaConv2d(nn.Conv2d):
 
 
 class MetaLinear(nn.Dense):
-    def __init__(self, in_channels, out_channels, has_bias=False):
+    # def __init__(self, in_channels, out_channels, has_bias=False):
+    def __init__(self, in_channels, out_channels, has_bias=True):
         super().__init__(in_channels, out_channels, has_bias=has_bias)
         # super().__init__(in_feat, reduction_dim, bias=bias)
 

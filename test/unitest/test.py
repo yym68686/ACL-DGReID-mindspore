@@ -86,7 +86,6 @@ class TestBackbones(unittest.TestCase):
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
     def test_MetaLinear(self):
-        # 输入张量的形状应该是(N, C, H, W)，其中 N 是批次大小，C 是通道数，H 是高度，W 是宽度。num_features 应该等于 C，否则会报错。
         in_channels = 3
         out_channels = 4
 
@@ -96,6 +95,20 @@ class TestBackbones(unittest.TestCase):
 
         input_tensor = torch.randn(1, in_channels)
         model = test_pytorch.MetaLinear(in_channels, out_channels, bias=True)
+        expected_tensor = model(input_tensor)
+
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
+
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_HyperRouter(self):
+        planes = in_channels = 256
+
+        input_tensor = ops.randn(1, planes, 32, 32)
+        model = test_meta_dynamic_router_resnet_mindspore.HyperRouter(planes)
+        output_tensor = model(input_tensor)
+
+        input_tensor = torch.randn(1, planes, 32, 32)
+        model = test_pytorch.HyperRouter(planes)
         expected_tensor = model(input_tensor)
 
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
