@@ -99,6 +99,19 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
+    def test_MetaSELayer(self):
+        in_channels = 16
+
+        input_tensor = ops.randn(1, in_channels, 32, 32)
+        model = test_meta_dynamic_router_resnet_mindspore.MetaSELayer(in_channels)
+        output_tensor = model(input_tensor)
+
+        input_tensor = torch.randn(1, in_channels, 32, 32)
+        model = test_pytorch.MetaSELayer(in_channels)
+        expected_tensor = model(input_tensor)
+
+        self.assertEqual(output_tensor.shape, expected_tensor.size())
+
     @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
     def test_HyperRouter(self):
         planes = in_channels = 256
@@ -110,6 +123,19 @@ class TestBackbones(unittest.TestCase):
         input_tensor = torch.randn(1, planes, 32, 32)
         model = test_pytorch.HyperRouter(planes)
         expected_tensor = model(input_tensor)
+
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
+
+    def test_MetaGate(self):
+        feat_dim = in_channels = 256
+
+        input_tensor = ops.randn(1, feat_dim, 32, 32)
+        model = test_ops_mindspore.MetaGate(feat_dim)
+        output_tensor = model(input_tensor, input_tensor)
+
+        input_tensor = torch.randn(1, feat_dim, 32, 32)
+        model = test_pytorch.MetaGate(feat_dim)
+        expected_tensor = model(input_tensor, input_tensor)
 
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 

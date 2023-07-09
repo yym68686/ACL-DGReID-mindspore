@@ -229,3 +229,35 @@ class HyperRouter(nn.Module):
         x = self.softmax(torch.einsum('bi,bil->bl', x, weight))
 
         return x, domain_cls_logits
+
+class MetaGate(nn.Module):
+    def __init__(self, feat_dim):
+        super().__init__()
+        self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, inputs1, inputs2, opt=None):
+        if opt != None and opt['meta']:
+            updated_gate = self.sigmoid(update_parameter(self.gate, self.w_step_size, opt)).reshape(1, -1, 1, 1)
+
+            return updated_gate * inputs1 + (1. - updated_gate) * inputs2
+        else:
+            gate = self.sigmoid(self.gate).reshape(1, -1, 1, 1)
+            return gate * inputs1 + (1. - gate) * inputs2
+        
+class MetaSELayer(nn.Module):
+    def __init__(self, channel, reduction=16):
+        super(MetaSELayer, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc1 = MetaLinear(channel, int(channel / reduction), bias=False)
+        self.relu = nn.ReLU()
+        self.fc2 = MetaLinear(int(channel / reduction), channel, bias=False)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x, opt=None):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.relu(self.fc1(y, opt))
+        y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
+
+        return x * y.expand_as(x)

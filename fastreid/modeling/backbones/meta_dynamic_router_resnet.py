@@ -135,14 +135,15 @@ class MetaSELayer(nn.Cell):
         super(MetaSELayer, self).__init__()
         self.avg_pool = ops.ReduceMean(keep_dims=True)
         # self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = MetaLinear(channel, int(channel / reduction), bias=False)
+        self.fc1 = MetaLinear(channel, int(channel / reduction), has_bias=False)
         self.relu = nn.ReLU()
-        self.fc2 = MetaLinear(int(channel / reduction), channel, bias=False)
+        self.fc2 = MetaLinear(int(channel / reduction), channel, has_bias=False)
         self.sigmoid = nn.Sigmoid()
 
     # def forward(self, x, opt=None):
     def construct(self, x, opt=None):
-        b, c, _, _ = x.size()
+        # b, c, _, _ = x.size()
+        b, c, _, _ = x.shape
         y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
         y = self.relu(self.fc1(y, opt))
         y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
