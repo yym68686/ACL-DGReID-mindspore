@@ -261,3 +261,10 @@ class MetaSELayer(nn.Module):
         y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
 
         return x * y.expand_as(x)
+    
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        return x, None

@@ -85,6 +85,14 @@ class TestBackbones(unittest.TestCase):
         expected_tensor = model(input_tensor)
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_BasicBlock(self):
+        pass
+
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_Bottleneck(self):
+        pass
+
     def test_MetaLinear(self):
         in_channels = 3
         out_channels = 4
@@ -138,6 +146,30 @@ class TestBackbones(unittest.TestCase):
         expected_tensor = model(input_tensor, input_tensor)
 
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
+
+    def test_Identity(self):
+        in_channels = 256
+        input_tensor = ops.randn(1, in_channels, 32, 32)
+        model = test_meta_dynamic_router_resnet_mindspore.Identity()
+        output_tensor = model(input_tensor)
+
+        input_tensor = torch.randn(1, in_channels, 32, 32)
+        model = test_pytorch.Identity()
+        expected_tensor = model(input_tensor)
+
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
+
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_ResNet(self):
+        pass
+
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_IBN(self):
+        pass
+
+    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    def test_MetaParam(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
