@@ -46,7 +46,6 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
-    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
     def test_MetaINNorm(self):
         num_features = 3
         mindspore.set_context(device_target="GPU")
@@ -61,10 +60,9 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
-    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
     def test_MetaIBNNorm(self):
-        planes = 64
-        num_features = 3
+        # num_features 必须是偶数
+        num_features = planes = 4
         input_tensor = ops.randn(1, num_features, 32, 32)
         model = test_ops_mindspore.MetaIBNNorm(planes)
         output_tensor = model(input_tensor)
