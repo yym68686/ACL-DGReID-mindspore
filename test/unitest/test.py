@@ -157,7 +157,7 @@ class TestBackbones(unittest.TestCase):
         model = test_pytorch.Identity()
         expected_tensor = model(input_tensor)
 
-        self.assertEqual(output_tensor.shape, expected_tensor.shape)
+        self.assertEqual(output_tensor[0].shape, expected_tensor[0].shape)
 
     @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
     def test_ResNet(self):
