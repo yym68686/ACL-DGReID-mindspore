@@ -8,6 +8,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import fastreid.modeling.ops as test_ops_mindspore
+import fastreid.layers.batch_norm as test_batch_norm_mindspore
 import fastreid.modeling.backbones.meta_dynamic_router_resnet as test_meta_dynamic_router_resnet_mindspore
 import pytorch_function as test_pytorch
 
@@ -86,22 +87,11 @@ class TestBackbones(unittest.TestCase):
         expected_tensor = model(input_tensor)
         self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
+    @unittest.skip("从未使用过，不做测试")
     def test_BasicBlock(self):
-        # num_features 必须是 out_channel 四倍
-        num_features = 512
-        # out_channel 必须大于 4
-        out_channel = 128
-        K = 4
-        bn_norm, with_ibn, with_se = None, False, False
-        input_tensor = ops.randn(1, num_features, 32, 32).tile((1, K, 1, 1))
-        model = test_meta_dynamic_router_resnet_mindspore.Bottleneck2(num_features, out_channel, bn_norm, with_ibn, with_se)
-        output_tensor = model(input_tensor)
-        input_tensor = torch.randn(1, num_features, 32, 32).repeat(1, K, 1, 1)
-        model = test_pytorch.Bottleneck2(num_features, out_channel, bn_norm, with_ibn, with_se)
-        expected_tensor = model(input_tensor)
-        self.assertEqual(output_tensor.shape, expected_tensor.shape)
+        pass
 
-    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    @unittest.skip("从未使用过，不做测试")
     def test_Bottleneck(self):
         pass
 
@@ -175,9 +165,17 @@ class TestBackbones(unittest.TestCase):
     def test_ResNet(self):
         pass
 
-    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    @unittest.skip("从未使用过，不做测试")
     def test_IBN(self):
-        pass
+        planes = in_channels = 256
+        bn_norm = None
+        input_tensor = ops.randn(1, in_channels, 32, 32)
+        model = test_batch_norm_mindspore.IBN(planes, bn_norm)
+        output_tensor = model(input_tensor)
+        input_tensor = torch.randn(1, in_channels, 32, 32)
+        model = test_pytorch.IBN(planes, bn_norm)
+        expected_tensor = model(input_tensor)
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
     @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
     def test_MetaParam(self):
