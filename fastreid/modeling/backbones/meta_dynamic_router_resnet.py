@@ -157,15 +157,15 @@ class Bottleneck2(nn.Cell):
     def __init__(self, inplanes, planes, bn_norm, with_ibn=False, with_se=False,
                  stride=1, downsample=None, reduction=16):
         super(Bottleneck2, self).__init__()
-        self.conv1 = MetaConv2d(inplanes * K, planes, kernel_size=1, bias=False, groups=K)
+        self.conv1 = MetaConv2d(inplanes * K, planes, kernel_size=1, bias=False, group=K)
         if with_ibn:
             self.bn1 = MetaIBNNorm(planes)
         else:
             self.bn1 = MetaBNNorm(planes)
         self.conv2 = MetaConv2d(planes, planes, kernel_size=3, stride=stride,
-                            padding=1, bias=False, groups=K)
+                            padding=1, bias=False, group=K)
         self.bn2 = MetaBNNorm(planes)
-        self.conv3 = MetaConv2d(planes, planes * self.expansion, kernel_size=1, bias=False, groups=K)
+        self.conv3 = MetaConv2d(planes, planes * self.expansion, kernel_size=1, bias=False, group=K)
         self.bn3 = MetaBNNorm(planes * self.expansion)
 
         # self.relu = nn.ReLU(inplace=True)
@@ -176,7 +176,7 @@ class Bottleneck2(nn.Cell):
             self.se = nn.Identity()
         self.downsample = downsample
         self.stride = stride
-        
+
     # def forward(self, x, opt=None):
     def construct(self, x, opt=None):
         

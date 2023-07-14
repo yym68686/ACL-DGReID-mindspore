@@ -195,6 +195,57 @@ class Bottleneck2(nn.Module):
 
         return out
     
+class Bottleneck(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, bn_norm, with_ibn=False, with_se=False,
+                 stride=1, downsample=None, reduction=16):
+        super(Bottleneck, self).__init__()
+        if bn_norm == 'IN':
+            norm = MetaINNorm
+        else:
+            norm = MetaBNNorm
+        self.conv1 = MetaConv2d(inplanes, planes, kernel_size=1, bias=False)
+        if with_ibn:
+            self.bn1 = MetaIBNNorm(planes)
+        else:
+            self.bn1 = norm(planes)
+        self.conv2 = MetaConv2d(planes, planes, kernel_size=3, stride=stride,
+                            padding=1, bias=False)
+        self.bn2 = norm(planes)
+        self.conv3 = MetaConv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = norm(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        if with_se:
+            self.se = SELayer(planes * self.expansion, reduction)
+        else:
+            self.se = nn.Identity()
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x, opt=None):
+        residual = x
+        
+        out = self.conv1(x, opt)
+        out = self.bn1(out, opt)
+        out = self.relu(out)
+        
+        out = self.conv2(out, opt)
+        out = self.bn2(out, opt)
+        out = self.relu(out)
+
+        out = self.conv3(out, opt)
+        out = self.bn3(out, opt)
+        out = self.se(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x, opt)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+    
 class MetaLinear(nn.Linear):
     def __init__(self, in_feat, reduction_dim, bias=False):
         super().__init__(in_feat, reduction_dim, bias=bias)
