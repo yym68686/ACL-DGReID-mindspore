@@ -58,27 +58,27 @@ class Sequential_ext(nn.Cell):
         super(Sequential_ext, self).__init__()
         if len(args) == 1 and isinstance(args[0], OrderedDict):
             for key, module in args[0].items():
-                self.add_module(key, module)
+                self.insert_child_to_cell(key, module)
         else:
             for idx, module in enumerate(args):
-                self.add_module(str(idx), module)
+                self.insert_child_to_cell(str(idx), module)
 
     def __getitem__(self, idx):
         if not (-len(self) <= idx < len(self)):
             raise IndexError('index {} is out of range'.format(idx))
         if idx < 0:
             idx += len(self)
-        it = iter(self._modules.values())
+        it = iter(self._cells.values())
         for i in range(idx):
             next(it)
         return next(it)
 
     def __len__(self):
-        return len(self._modules)
+        return len(self._cells)
 
     # def forward(self, input, opt=None):
     def construct(self, input, opt=None):
-        for i, module in enumerate(self._modules.values()):
+        for i, module in enumerate(self._cells.values()):
             input = module(input, opt)
         return input
 
@@ -437,7 +437,8 @@ class ResNet(nn.Cell):
 
         x_invariant = self.adaptor1_base(x, opt)
         N, C, H, W = x_invariant.shape
-        x_specific = self.adaptor1_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        x_specific = self.adaptor1_sub(x.tile((1, K, 1, 1)), opt).reshape(N, K, C, H, W)
+        # x_specific = self.adaptor1_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
         weight, domain_cls_logit = self.router1(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
@@ -464,7 +465,8 @@ class ResNet(nn.Cell):
 
         x_invariant = self.adaptor2_base(x, opt)
         N, C, H, W = x_invariant.shape
-        x_specific = self.adaptor2_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        x_specific = self.adaptor2_sub(x.tile((1, K, 1, 1)), opt).reshape(N, K, C, H, W)
+        # x_specific = self.adaptor2_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
         weight, domain_cls_logit = self.router2(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
@@ -491,7 +493,7 @@ class ResNet(nn.Cell):
 
         x_invariant = self.adaptor3_base(x, opt)
         N, C, H, W = x_invariant.shape
-        x_specific = self.adaptor3_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        x_specific = self.adaptor3_sub(x.tile((1, K, 1, 1)), opt).reshape(N, K, C, H, W)
         weight, domain_cls_logit = self.router3(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
@@ -518,7 +520,7 @@ class ResNet(nn.Cell):
 
         x_invariant = self.adaptor4_base(x, opt)
         N, C, H, W = x_invariant.shape
-        x_specific = self.adaptor4_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        x_specific = self.adaptor4_sub(x.tile((1, K, 1, 1)), opt).reshape(N, K, C, H, W)
         weight, domain_cls_logit = self.router4(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
@@ -538,17 +540,15 @@ class ResNet(nn.Cell):
         return x, weights, out_features
 
     def random_init(self):
-        for name, m in self.named_modules():
+        for name, m in self.cells_and_names():
             if isinstance(m, MetaConv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                mindspore.common.initializer.Normal(m.weight, 0, math.sqrt(2. / n))
+                m.weight.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=math.sqrt(2. / n), mean=0.0), m.weight.shape, m.weight.dtype))
                 # nn.init.normal_(m.weight, 0, math.sqrt(2. / n))
             elif isinstance(m, nn.BatchNorm2d):
-                constant_init = mindspore.common.initializer.Constant(value=1)
-                out_constant = constant_init(m.weight)
+                m.gamma.set_data(mindspore.common.initializer.initializer("ones", m.gamma.shape, m.gamma.dtype))
                 # nn.init.constant_(m.weight, 1)
-                constant_init = mindspore.common.initializer.Constant(value=0)
-                out_constant = constant_init(m.bias)
+                m.beta.set_data(mindspore.common.initializer.initializer("zeros", m.beta.shape, m.beta.dtype))
                 # nn.init.constant_(m.bias, 0)
 
 

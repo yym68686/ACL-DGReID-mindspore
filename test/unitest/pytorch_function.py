@@ -1,6 +1,8 @@
+import math
 import torch
 from torch import nn
 import torch.nn.functional as F
+from collections import OrderedDict
 
 
 def update_parameter(param, step_size, opt=None, reserve=False):
@@ -245,7 +247,47 @@ class Bottleneck(nn.Module):
         out = self.relu(out)
 
         return out
-    
+
+class BasicBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, inplanes, planes, bn_norm, with_ibn=False, with_se=False,
+                 stride=1, downsample=None, reduction=16):
+        super(BasicBlock, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        if with_ibn:
+            self.bn1 = IBN(planes, bn_norm)
+        else:
+            self.bn1 = get_norm(bn_norm, planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = get_norm(bn_norm, planes)
+        self.relu = nn.ReLU(inplace=True)
+        if with_se:
+            self.se = SELayer(planes, reduction)
+        else:
+            self.se = nn.Identity()
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        identity = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.se(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(x)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
 class MetaLinear(nn.Linear):
     def __init__(self, in_feat, reduction_dim, bias=False):
         super().__init__(in_feat, reduction_dim, bias=bias)
@@ -336,6 +378,38 @@ class IBN(nn.Module):
         out = torch.cat((out1, out2), 1)
         return out
     
+class Sequential_ext(nn.Module):
+    """A Sequential container extended to also propagate the gating information
+    that is needed in the target rate loss.
+    """
+
+    def __init__(self, *args):
+        super(Sequential_ext, self).__init__()
+        if len(args) == 1 and isinstance(args[0], OrderedDict):
+            for key, module in args[0].items():
+                self.add_module(key, module)
+        else:
+            for idx, module in enumerate(args):
+                self.add_module(str(idx), module)
+
+    def __getitem__(self, idx):
+        if not (-len(self) <= idx < len(self)):
+            raise IndexError('index {} is out of range'.format(idx))
+        if idx < 0:
+            idx += len(self)
+        it = iter(self._modules.values())
+        for i in range(idx):
+            next(it)
+        return next(it)
+
+    def __len__(self):
+        return len(self._modules)
+
+    def forward(self, input, opt=None):
+        for i, module in enumerate(self._modules.values()):
+            input = module(input, opt)
+        return input
+
 class ResNet(nn.Module):
     def __init__(self, last_stride, bn_norm, with_ibn, with_se, with_nl, block, layers, non_layers):
         self.inplanes = 64

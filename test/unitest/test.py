@@ -169,17 +169,24 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(output_tensor[0].shape, expected_tensor[0].shape)
 
-    @unittest.skip("wait")
     def test_ResNet(self):
         # fmt: off
-        pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
-        pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
-        last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
-        bn_norm       = cfg.MODEL.BACKBONE.NORM
-        with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
-        with_se       = cfg.MODEL.BACKBONE.WITH_SE
-        with_nl       = cfg.MODEL.BACKBONE.WITH_NL
-        depth         = cfg.MODEL.BACKBONE.DEPTH
+        pretrain      = False
+        # pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
+        last_stride   = 1
+        bn_norm       = "BN"
+        with_ibn      = True
+        with_se       = False
+        with_nl       = False
+        depth         = "50x"
+        # pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
+        # pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
+        # last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
+        # bn_norm       = cfg.MODEL.BACKBONE.NORM
+        # with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
+        # with_se       = cfg.MODEL.BACKBONE.WITH_SE
+        # with_nl       = cfg.MODEL.BACKBONE.WITH_NL
+        # depth         = cfg.MODEL.BACKBONE.DEPTH
         # fmt: on
 
         num_blocks_per_stage = {
@@ -197,18 +204,27 @@ class TestBackbones(unittest.TestCase):
         }[depth]
 
         block = {
-            '18x': BasicBlock,
-            '34x': BasicBlock,
-            '50x': Bottleneck,
-            '101x': Bottleneck
+            '18x': test_meta_dynamic_router_resnet_mindspore.BasicBlock,
+            '34x': test_meta_dynamic_router_resnet_mindspore.BasicBlock,
+            '50x': test_meta_dynamic_router_resnet_mindspore.Bottleneck,
+            '101x': test_meta_dynamic_router_resnet_mindspore.Bottleneck
         }[depth]
-        input_tensor = ops.randn(1, in_channels, 32, 32)
+        in_channels = 3
+        epoch = 5
+        batch_size = 8
+        input_tensor = ops.randn(batch_size, in_channels, 32, 32)
         model = test_meta_dynamic_router_resnet_mindspore.ResNet(last_stride, bn_norm, with_ibn, with_se, with_nl, block, num_blocks_per_stage, nl_layers_per_stage)
-        output_tensor = model(input_tensor)
-        input_tensor = torch.randn(1, in_channels, 32, 32)
+        output_tensor = model(input_tensor, epoch)
+        input_tensor = torch.randn(batch_size, in_channels, 32, 32)
+        block = {
+            '18x': test_pytorch.BasicBlock,
+            '34x': test_pytorch.BasicBlock,
+            '50x': test_pytorch.Bottleneck,
+            '101x': test_pytorch.Bottleneck
+        }[depth]
         model = test_pytorch.ResNet(last_stride, bn_norm, with_ibn, with_se, with_nl, block, num_blocks_per_stage, nl_layers_per_stage)
-        expected_tensor = model(input_tensor)
-        self.assertEqual(output_tensor.shape, expected_tensor.shape)
+        expected_tensor = model(input_tensor, epoch)
+        self.assertEqual(output_tensor[0].shape, expected_tensor[0].shape)
 
     @unittest.skip("从未使用过，不做测试")
     def test_IBN(self):
