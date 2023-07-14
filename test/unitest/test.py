@@ -49,7 +49,6 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(np.allclose(output_tensor.numpy().astype(np.float32), expected_tensor.detach().numpy().astype(np.float32), atol=1e-5), True)
 
-    # ✅
     def test_MetaINNorm(self):
         num_features = 3
         length = width = height = 2
