@@ -335,3 +335,228 @@ class IBN(nn.Module):
         out2 = self.BN(split[1].contiguous())
         out = torch.cat((out1, out2), 1)
         return out
+    
+class ResNet(nn.Module):
+    def __init__(self, last_stride, bn_norm, with_ibn, with_se, with_nl, block, layers, non_layers):
+        self.inplanes = 64
+        super().__init__()
+        self.conv1 = MetaConv2d(3, 64, kernel_size=7, stride=2, padding=3,
+                               bias=False)
+        self.bn1 = MetaBNNorm(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
+        self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)
+
+        self.adaptor1_base = block(256, 64, 'IN', False, with_se)
+        self.adaptor1_sub = Bottleneck2(256, 64, bn_norm, with_ibn, with_se)
+        self.router1 = HyperRouter(256)
+        self.invariant_norm1 = MetaBNNorm(256)
+        self.specific_norm1 = MetaBNNorm(256)
+        self.meta_fuse1 = MetaGate(256)
+        self.meta_se1 = MetaSELayer(256)
+        self.map1 = MetaBNNorm(256, bias_freeze=True)
+
+        self.layer2 = self._make_layer(block, 128, layers[1]-1, 2, bn_norm, with_ibn, with_se)
+
+        self.adaptor2_base = block(512, 128, 'IN', False, with_se)
+        self.adaptor2_sub = Bottleneck2(512, 128, bn_norm, with_ibn, with_se)
+        self.router2 = HyperRouter(512)
+        self.invariant_norm2 = MetaBNNorm(512)
+        self.specific_norm2 = MetaBNNorm(512)
+        self.meta_fuse2 = MetaGate(512)
+        self.meta_se2 = MetaSELayer(512)
+        self.map2 = MetaBNNorm(512, bias_freeze=True)
+
+        self.layer3 = self._make_layer(block, 256, layers[2]-1, 2, bn_norm, with_ibn, with_se)
+
+        self.adaptor3_base = block(1024, 256, 'IN', False, with_se)
+        self.adaptor3_sub = Bottleneck2(1024, 256, bn_norm, with_ibn, with_se)
+        self.router3 = HyperRouter(1024)
+        self.invariant_norm3 = MetaBNNorm(1024)
+        self.specific_norm3 = MetaBNNorm(1024)
+        self.meta_fuse3 = MetaGate(1024)
+        self.meta_se3 = MetaSELayer(1024)
+        self.map3 = MetaBNNorm(1024, bias_freeze=True)
+
+        self.layer4 = self._make_layer(block, 512, layers[3]-1, last_stride, bn_norm, with_se=with_se)
+
+        self.adaptor4_base = block(2048, 512, 'IN', False, with_se)
+        self.adaptor4_sub = Bottleneck2(2048, 512, bn_norm, with_ibn, with_se)
+        self.router4 = HyperRouter(2048)
+        self.invariant_norm4 = MetaBNNorm(2048)
+        self.specific_norm4 = MetaBNNorm(2048)
+        self.meta_fuse4 = MetaGate(2048)
+        self.meta_se4 = MetaSELayer(2048)
+        self.map4 = MetaBNNorm(2048, bias_freeze=True)
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+
+        # Standard Params
+        self.softmax = nn.Softmax(1)
+        self.sigmoid = nn.Sigmoid()
+        self.relu = nn.ReLU()
+
+        self.random_init()
+
+        # fmt: off
+        if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
+        else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
+        # fmt: on
+
+    def _make_layer(self, block, planes, blocks, stride=1, bn_norm="BN", with_ibn=False, with_se=False):
+        downsample = None
+        if stride != 1 or self.inplanes != planes * block.expansion:
+            downsample = Sequential_ext(
+                MetaConv2d(self.inplanes, planes * block.expansion,
+                          kernel_size=1, stride=stride, bias=False),
+                MetaBNNorm(planes * block.expansion),
+            )
+
+        layers = []
+        layers.append(block(self.inplanes, planes, bn_norm, with_ibn, with_se, stride, downsample))
+        self.inplanes = planes * block.expansion
+        for i in range(1, blocks):
+            layers.append(block(self.inplanes, planes, bn_norm, with_ibn, with_se))
+
+        return nn.Sequential(*layers)
+
+    def _build_nonlocal(self, layers, non_layers, bn_norm):
+        self.NL_1 = nn.ModuleList(
+            [Non_local(256, bn_norm) for _ in range(non_layers[0])])
+        self.NL_1_idx = sorted([layers[0] - (i + 1) for i in range(non_layers[0])])
+        self.NL_2 = nn.ModuleList(
+            [Non_local(512, bn_norm) for _ in range(non_layers[1])])
+        self.NL_2_idx = sorted([layers[1] - (i + 1) for i in range(non_layers[1])])
+        self.NL_3 = nn.ModuleList(
+            [Non_local(1024, bn_norm) for _ in range(non_layers[2])])
+        self.NL_3_idx = sorted([layers[2] - (i + 1) for i in range(non_layers[2])])
+        self.NL_4 = nn.ModuleList(
+            [Non_local(2048, bn_norm) for _ in range(non_layers[3])])
+        self.NL_4_idx = sorted([layers[3] - (i + 1) for i in range(non_layers[3])])
+
+    def get_all_conv_layers(self, module):
+        for m in module:
+            if isinstance(m, Bottleneck):
+                for _m in m.modules():
+                    if isinstance(_m, nn.Conv2d):
+                        yield _m
+
+    def forward(self, x, epoch, opt=None):
+
+
+        x = self.conv1(x, opt)
+        x = self.bn1(x, opt)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        weights = []
+        out_features = []
+
+        # layer 1
+        NL1_counter = 0
+        if len(self.NL_1_idx) == 0:
+            self.NL_1_idx = [-1]
+        for i in range(len(self.layer1)):
+            x = self.layer1[i](x, opt)
+            if i == self.NL_1_idx[NL1_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_1[NL1_counter](x)
+                NL1_counter += 1
+
+        x_invariant = self.adaptor1_base(x, opt)
+        N, C, H, W = x_invariant.shape
+        x_specific = self.adaptor1_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        weight, domain_cls_logit = self.router1(x, opt)
+        weights.append(weight)
+        x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
+        x_invariant = self.invariant_norm1(x_invariant, opt)
+        x_specific = self.specific_norm1(x_specific, opt)
+        x = self.meta_fuse1(x_invariant, x_specific, opt)
+        x = self.meta_se1(x, opt)
+        temp = self.map1(self.avgpool(x), opt)
+        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+
+        # layer 2
+        NL2_counter = 0
+        if len(self.NL_2_idx) == 0:
+            self.NL_2_idx = [-1]
+        for i in range(len(self.layer2)):
+            x = self.layer2[i](x, opt)
+            if i == self.NL_2_idx[NL2_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_2[NL2_counter](x)
+                NL2_counter += 1
+
+        x_invariant = self.adaptor2_base(x, opt)
+        N, C, H, W = x_invariant.shape
+        x_specific = self.adaptor2_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        weight, domain_cls_logit = self.router2(x, opt)
+        weights.append(weight)
+        x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
+        x_invariant = self.invariant_norm2(x_invariant, opt)
+        x_specific = self.specific_norm2(x_specific, opt)
+        x = self.meta_fuse2(x_invariant, x_specific, opt)
+        x = self.meta_se2(x, opt)
+        temp = self.map2(self.avgpool(x), opt)
+        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+
+        # layer 3
+        NL3_counter = 0
+        if len(self.NL_3_idx) == 0:
+            self.NL_3_idx = [-1]
+        for i in range(len(self.layer3)):
+            x = self.layer3[i](x, opt)
+            if i == self.NL_3_idx[NL3_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_3[NL3_counter](x)
+                NL3_counter += 1
+
+        x_invariant = self.adaptor3_base(x, opt)
+        N, C, H, W = x_invariant.shape
+        x_specific = self.adaptor3_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        weight, domain_cls_logit = self.router3(x, opt)
+        weights.append(weight)
+        x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
+        x_invariant = self.invariant_norm3(x_invariant, opt)
+        x_specific = self.specific_norm3(x_specific, opt)
+        x = self.meta_fuse3(x_invariant, x_specific, opt)
+        x = self.meta_se3(x, opt)
+        temp = self.map3(self.avgpool(x), opt)
+        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+
+        # layer 4
+        NL4_counter = 0
+        if len(self.NL_4_idx) == 0:
+            self.NL_4_idx = [-1]
+        for i in range(len(self.layer4)):
+            x = self.layer4[i](x, opt)
+            if i == self.NL_4_idx[NL4_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_4[NL4_counter](x)
+                NL4_counter += 1
+
+        x_invariant = self.adaptor4_base(x, opt)
+        N, C, H, W = x_invariant.shape
+        x_specific = self.adaptor4_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
+        weight, domain_cls_logit = self.router4(x, opt)
+        weights.append(weight)
+        x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
+        x_invariant = self.invariant_norm4(x_invariant, opt)
+        x_specific = self.specific_norm4(x_specific, opt)
+        x = self.meta_fuse4(x_invariant, x_specific, opt)
+        x = self.meta_se4(x, opt)
+        temp = self.map4(self.avgpool(x), opt)
+        out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
+
+        weights = torch.cat(weights, -1)
+
+        return x, weights, out_features
+
+    def random_init(self):
+        for name, m in self.named_modules():
+            if isinstance(m, MetaConv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                nn.init.normal_(m.weight, 0, math.sqrt(2. / n))
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)

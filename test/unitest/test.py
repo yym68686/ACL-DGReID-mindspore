@@ -91,9 +91,17 @@ class TestBackbones(unittest.TestCase):
     def test_BasicBlock(self):
         pass
 
-    @unittest.skip("从未使用过，不做测试")
     def test_Bottleneck(self):
-        pass
+        bn_norm, with_ibn, with_se = 'IN', False, False
+        inplanes = num_features = 256
+        planes = 64
+        input_tensor = ops.randn(1, num_features, 32, 32)
+        model = test_meta_dynamic_router_resnet_mindspore.Bottleneck(inplanes, planes, bn_norm, with_ibn, with_se)
+        output_tensor = model(input_tensor)
+        input_tensor = torch.randn(1, num_features, 32, 32)
+        model = test_pytorch.Bottleneck(256, 64, 'IN', False, with_se)
+        expected_tensor = model(input_tensor)
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
     def test_MetaLinear(self):
         in_channels = 3
@@ -161,9 +169,46 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(output_tensor[0].shape, expected_tensor[0].shape)
 
-    @unittest.skip("InstanceNorm2d 只支持 GPU 上运行")
+    @unittest.skip("wait")
     def test_ResNet(self):
-        pass
+        # fmt: off
+        pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
+        pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
+        last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
+        bn_norm       = cfg.MODEL.BACKBONE.NORM
+        with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
+        with_se       = cfg.MODEL.BACKBONE.WITH_SE
+        with_nl       = cfg.MODEL.BACKBONE.WITH_NL
+        depth         = cfg.MODEL.BACKBONE.DEPTH
+        # fmt: on
+
+        num_blocks_per_stage = {
+            '18x': [2, 2, 2, 2],
+            '34x': [3, 4, 6, 3],
+            '50x': [3, 4, 6, 3],
+            '101x': [3, 4, 23, 3],
+        }[depth]
+
+        nl_layers_per_stage = {
+            '18x': [0, 0, 0, 0],
+            '34x': [0, 0, 0, 0],
+            '50x': [0, 2, 3, 0],
+            '101x': [0, 2, 9, 0]
+        }[depth]
+
+        block = {
+            '18x': BasicBlock,
+            '34x': BasicBlock,
+            '50x': Bottleneck,
+            '101x': Bottleneck
+        }[depth]
+        input_tensor = ops.randn(1, in_channels, 32, 32)
+        model = test_meta_dynamic_router_resnet_mindspore.ResNet(last_stride, bn_norm, with_ibn, with_se, with_nl, block, num_blocks_per_stage, nl_layers_per_stage)
+        output_tensor = model(input_tensor)
+        input_tensor = torch.randn(1, in_channels, 32, 32)
+        model = test_pytorch.ResNet(last_stride, bn_norm, with_ibn, with_se, with_nl, block, num_blocks_per_stage, nl_layers_per_stage)
+        expected_tensor = model(input_tensor)
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
     @unittest.skip("从未使用过，不做测试")
     def test_IBN(self):
