@@ -5,7 +5,8 @@ import torch
 from collections import OrderedDict
 import mindspore
 import mindspore.ops as ops
-mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
+mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU")
+# mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
 import os
 os.system("clear")
 import sys
@@ -27,8 +28,8 @@ class TestBackbones(unittest.TestCase):
     def test_ResNet(self):
 
         # 初始化模型
-        ms_model = test_meta_dynamic_router_resnet_mindspore.build_meta_dynamic_router_resnet_backbone(1)
-        pt_model = test_meta_dynamic_router_resnet_pytorch.build_meta_dynamic_router_resnet_backbone(1)
+        ms_model = test_meta_dynamic_router_resnet_mindspore.build_meta_dynamic_router_resnet_backbone(1).set_train(False)
+        pt_model = test_meta_dynamic_router_resnet_pytorch.build_meta_dynamic_router_resnet_backbone(1).eval()
 
         # 得到所有网络层和值的有序字典
         mindspore_model_dict = OrderedDict()
@@ -54,16 +55,43 @@ class TestBackbones(unittest.TestCase):
         mindspore.save_checkpoint([{"name": key, "data": mindspore.Tensor(value.numpy())} for key, value in mindspore_model_dict.items()], "/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt")
         incompatible = mindspore.load_checkpoint("/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt", ms_model)
 
-        # 权重验证
-        for item in Parameter_map.keys():
-            pt_parameter = eval("pt_model.{}.detach().numpy().reshape((-1,))[:10]".format(re.sub(r'\.(\d)\.', '[\\1].', re.sub(r'(\d)\.(\d)', '\\1[\\2]', item))))
-            ms_parameter = eval("ms_model.{}.data.asnumpy().reshape((-1,))[:10]".format(re.sub(r'\.(\d)\.', '[\\1].', re.sub(r'(\d)\.(\d)', '\\1[\\2]', Parameter_map[item]))))
-            print(f"========= pt_model {item} ==========")
-            print(pt_parameter)
-            print(f"========= ms_model {item} ==========")
-            print(ms_parameter)
+        # # 权重验证
+        # for item in Parameter_map.keys():
+        #     pt_parameter = eval("pt_model.{}.detach().numpy().reshape((-1,))[:10]".format(re.sub(r'\.(\d)\.', '[\\1].', re.sub(r'(\d)\.(\d)', '\\1[\\2]', item))))
+        #     ms_parameter = eval("ms_model.{}.data.asnumpy().reshape((-1,))[:10]".format(re.sub(r'\.(\d)\.', '[\\1].', re.sub(r'(\d)\.(\d)', '\\1[\\2]', Parameter_map[item]))))
+        #     print(f"========= pt_model {item} ==========")
+        #     print(pt_parameter)
+        #     print(f"========= ms_model {item} ==========")
+        #     print(ms_parameter)
+
 
         # 网络对齐
+
+        # pt_Parameter_list_for_each_layer = []
+        # ms_Parameter_list_for_each_layer = []
+        # # 定义回调函数
+        # def pt_hook_fn(module, input, output):
+        #     # print("Layer name:", module)
+        #     # print("Input shape:", input[0].shape)
+        #     if "HyperRouter" in str(module) or "ResNet" in str(module):
+        #         pt_Parameter_list_for_each_layer.append({"name": str(module), "output": output[0].detach().numpy().reshape((-1,))[:10]})
+        #         # print("Output shape:", output[0].detach().numpy().reshape((-1,))[:10])
+        #     else:
+        #         pt_Parameter_list_for_each_layer.append({"name": str(module), "output": output.detach().numpy().reshape((-1,))[:10]})
+        #         # print("Output shape:", output.shape)
+
+        # def ms_hook_fn(module, input, output):
+        #     if "HyperRouter" in str(module) or "ResNet" in str(module):
+        #         ms_Parameter_list_for_each_layer.append({"name": str(module), "output": output[0].asnumpy().reshape((-1,))[:10]})
+        #     else:
+        #         ms_Parameter_list_for_each_layer.append({"name": str(module), "output": output.asnumpy().reshape((-1,))[:10]})
+
+        # # 注册回调函数到每一层
+        # for module in pt_model.modules():
+        #     module.register_forward_hook(pt_hook_fn)
+        # for _, cell in ms_model.cells_and_names():
+        #     cell.register_forward_hook(ms_hook_fn)
+
         in_channels = 3
         epoch = 5
         batch_size = 8
@@ -74,6 +102,17 @@ class TestBackbones(unittest.TestCase):
         expected_tensor = pt_model(input_tensor, epoch)
         print(output_tensor[0].numpy().astype(np.float32).reshape((-1,))[:10])
         print(expected_tensor[0].detach().numpy().astype(np.float32).reshape((-1,))[:10])
+        # print(len(pt_Parameter_list_for_each_layer), len(ms_Parameter_list_for_each_layer))
+        # maxnum = len(pt_Parameter_list_for_each_layer) if len(pt_Parameter_list_for_each_layer) < len(ms_Parameter_list_for_each_layer) else len(ms_Parameter_list_for_each_layer)
+        # for index in range(maxnum):
+        #     print(pt_Parameter_list_for_each_layer[index]["name"])
+        #     print(pt_Parameter_list_for_each_layer[index]["output"])
+        #     print(ms_Parameter_list_for_each_layer[index]["name"])
+        #     print(ms_Parameter_list_for_each_layer[index]["output"])
+        #     print()
+        #     if np.allclose(pt_Parameter_list_for_each_layer[index]["output"], ms_Parameter_list_for_each_layer[index]["output"], atol=1e-5) == False:
+        #         break
+
         self.assertEqual(np.allclose(output_tensor[0].numpy().astype(np.float32), expected_tensor[0].detach().numpy().astype(np.float32), atol=1e-5), True)
 
     # def test_MetaConv2d(self):
@@ -91,7 +130,7 @@ class TestBackbones(unittest.TestCase):
 
     # def test_MetaBNNorm(self):
     #     # 输入张量的形状应该是(N, C, H, W)，其中 N 是批次大小，C 是通道数，H 是高度，W 是宽度。num_features 应该等于 C，否则会报错。
-    #     num_features = 3
+    #     num_features = 4
     #     length = width = height = 2
 
     #     input_tensor = ops.randn(1, num_features, length, length)

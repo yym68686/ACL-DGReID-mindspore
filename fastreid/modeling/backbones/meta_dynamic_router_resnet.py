@@ -305,7 +305,7 @@ class ResNet(nn.Cell):
         # self.relu = nn.ReLU(inplace=True)
         self.relu = nn.ReLU()
         # self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, pad_mode="same")
         self.layer1 = self._make_layer(block, 64, layers[0]-1, 1, bn_norm, with_ibn, with_se)
 
         self.adaptor1_base = block(256, 64, 'IN', False, with_se)

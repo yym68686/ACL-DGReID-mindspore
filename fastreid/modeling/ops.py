@@ -162,7 +162,7 @@ class MetaBNNorm(nn.BatchNorm2d):
         # track_running_stats = True
         # super().__init__(num_features, eps, momentum, affine, track_running_stats)
         use_batch_statistics = True
-        super().__init__(num_features, eps, momentum, affine, use_batch_statistics)
+        super().__init__(num_features, eps, momentum, affine, use_batch_statistics=use_batch_statistics)
 
         # if weight_init is not None: self.weight.data.fill_(weight_init)
         # if bias_init is not None: self.bias.data.fill_(bias_init)
@@ -235,12 +235,13 @@ class MetaINNorm(nn.InstanceNorm2d):
     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, beta_freeze=False, gamma_init="ones", beta_init="zeros"):
 
         # track_running_stats = False
+        # use_batch_statistics = False
         # super().__init__(num_features, eps, momentum, affine, track_running_stats)
         super().__init__(num_features, eps, momentum, affine)
         self.affine = affine
 
         if self.gamma is not None:
-            if gamma_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=affine)
+            if gamma_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=True)
         if self.beta is not None:
             if beta_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(beta_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not beta_freeze)
         # if self.weight is not None:
@@ -272,6 +273,8 @@ class MetaINNorm(nn.InstanceNorm2d):
                 updated_gamma = self.gamma
                 updated_beta = self.beta
 
+            # self.moving_mean = None
+            # if self.moving_mean is None:
             net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, gamma_init=updated_gamma, beta_init=updated_beta, affine=self.affine)
             return net(inputs)
             # if self.moving_mean is None:
