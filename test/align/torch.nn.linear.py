@@ -1,21 +1,34 @@
 # PyTorch
 import torch
 from torch import nn
+import torch.nn.functional as F
 import numpy as np
 
-net = nn.Linear(3, 4)
-x = torch.tensor(np.array([[180, 234, 154], [244, 48, 247]]), dtype=torch.float)
-output = net(x)
-print(output.detach().numpy())
-# (2, 4)
+torch.manual_seed(12345)
+np.random.seed(12345) 
 
-# MindSpore
+x = torch.randn(1, 5)
+weight = torch.randn(2, 5)  # 2 output features, each with 5 input features
+bias = torch.randn(2)  # 2 output features
+output = F.linear(x, weight, bias)
+print(output)
+
+# MindSpore 
 import mindspore
-from mindspore import Tensor, nn
+from mindspore import Tensor, nn, context
 import numpy as np
 
-net = nn.Dense(3, 4)
-x = Tensor(np.array([[180, 234, 154], [244, 48, 247]]), mindspore.float32)
+context.set_context(mode=context.GRAPH_MODE)
+context.set_context(device_target="CPU")
+
+np.random.seed(12345) # 与pytorch保持一致
+mindspore.set_seed(12345) # 与pytorch保持一致
+x = mindspore.Tensor(x.numpy().astype(np.float32))
+weight = mindspore.Tensor(weight.numpy().astype(np.float32))
+bias = mindspore.Tensor(bias.numpy().astype(np.float32))
+
+net = nn.Dense(5, 2)
+net.weight = weight
+net.bias = bias
 output = net(x)
 print(output)
-# (2, 4)

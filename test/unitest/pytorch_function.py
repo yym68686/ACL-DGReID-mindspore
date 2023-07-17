@@ -299,6 +299,7 @@ class MetaLinear(nn.Linear):
 
             return F.linear(inputs, updated_weight, updated_bias)
         else:
+            # print("torch", self.weight)
             return F.linear(inputs, self.weight, self.bias)
         
 class HyperRouter(nn.Module):
@@ -634,3 +635,70 @@ class ResNet(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
+
+import logging
+logger = logging.getLogger(__name__)
+model_urls = {
+    '18x': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    '34x': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+    '50x': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    '101x': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
+    'ibn_18x': 'https://github.com/XingangPan/IBN-Net/releases/download/v1.0/resnet18_ibn_a-2f571257.pth',
+    'ibn_34x': 'https://github.com/XingangPan/IBN-Net/releases/download/v1.0/resnet34_ibn_a-94bc1577.pth',
+    'ibn_50x': 'https://github.com/XingangPan/IBN-Net/releases/download/v1.0/resnet50_ibn_a-d9d0bb7b.pth',
+    'ibn_101x': 'https://github.com/XingangPan/IBN-Net/releases/download/v1.0/resnet101_ibn_a-59ea0ac6.pth',
+    'se_ibn_101x': 'https://github.com/XingangPan/IBN-Net/releases/download/v1.0/se_resnet101_ibn_a-fabed4e2.pth',
+}
+from fastreid.utils import comm
+def init_pretrained_weights(key):
+    """Initializes model with pretrained weights.
+
+    Layers that don't match with pretrained layers in name or size are kept unchanged.
+    """
+    import os
+    import errno
+    import gdown
+
+    def _get_torch_home():
+        ENV_TORCH_HOME = 'TORCH_HOME'
+        ENV_XDG_CACHE_HOME = 'XDG_CACHE_HOME'
+        DEFAULT_CACHE_DIR = '~/.cache'
+        torch_home = os.path.expanduser(
+            os.getenv(
+                ENV_TORCH_HOME,
+                os.path.join(
+                    os.getenv(ENV_XDG_CACHE_HOME, DEFAULT_CACHE_DIR), 'torch'
+                )
+            )
+        )
+        return torch_home
+
+    torch_home = _get_torch_home()
+    model_dir = os.path.join(torch_home, 'checkpoints')
+    try:
+        os.makedirs(model_dir)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            # Directory already exists, ignore.
+            pass
+        else:
+            # Unexpected OSError, re-raise.
+            raise
+
+    filename = model_urls[key].split('/')[-1]
+
+    cached_file = os.path.join(model_dir, filename)
+
+    if not os.path.exists(cached_file):
+        logger.info(f"Pretrain model don't exist, downloading from {model_urls[key]}")
+        if comm.is_main_process():
+            gdown.download(model_urls[key], cached_file, quiet=False)
+
+    comm.synchronize()
+
+    logger.info(f"Loading pretrained model from {cached_file}")
+    state_dict = torch.load(cached_file, map_location=torch.device('cpu'))
+    #CHANGE Reduction Version
+    state_dict = torch.load('/home/yuming/.cache/torch/checkpoints/resnet50_ibn_a-d9d0bb7b.pth', map_location=torch.device('cpu'))
+
+    return state_dict

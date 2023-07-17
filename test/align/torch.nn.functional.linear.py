@@ -15,6 +15,8 @@ import mindspore
 import numpy as np
 
 x = mindspore.Tensor(x.numpy().astype(np.float32))
+x = mindspore.Tensor(x)
+# x.asnumpy()
 weight = mindspore.Tensor(weight.numpy().astype(np.float32))
 bias = mindspore.Tensor(bias.numpy().astype(np.float32))
 

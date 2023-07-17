@@ -587,7 +587,7 @@ def init_pretrained_weights(key):
             # Unexpected OSError, re-raise.
             raise
 
-    filename = model_urls[key].split('/')[-1]
+    filename = model_urls[key].split('/')[-1].split(".pth")[0] + ".ckpt"
 
     cached_file = os.path.join(model_dir, filename)
 
@@ -599,9 +599,11 @@ def init_pretrained_weights(key):
     comm.synchronize()
 
     logger.info(f"Loading pretrained model from {cached_file}")
-    state_dict = torch.load(cached_file, map_location=torch.device('cpu'))
+    print(cached_file)
+    state_dict = mindspore.load_checkpoint(cached_file)
+    # state_dict = torch.load(cached_file, map_location=torch.device('cpu'))
     #CHANGE Reduction Version
-    state_dict = torch.load('/home/yuming/.cache/torch/checkpoints/resnet50_ibn_a-d9d0bb7b.pth', map_location=torch.device('cpu'))
+    # state_dict = torch.load('/home/yuming/.cache/torch/checkpoints/resnet50_ibn_a-d9d0bb7b.pth', map_location=torch.device('cpu'))
 
     return state_dict
 
@@ -614,15 +616,23 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
         ResNet: a :class:`ResNet` instance.
     """
 
+    pretrain      = True
+    pretrain_path = None
+    last_stride   = 1
+    bn_norm       = "BN"
+    with_ibn      = True
+    with_se       = False
+    with_nl       = False
+    depth         = "50x"
     # fmt: off
-    pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
-    pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
-    last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
-    bn_norm       = cfg.MODEL.BACKBONE.NORM
-    with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
-    with_se       = cfg.MODEL.BACKBONE.WITH_SE
-    with_nl       = cfg.MODEL.BACKBONE.WITH_NL
-    depth         = cfg.MODEL.BACKBONE.DEPTH
+    # pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
+    # pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
+    # last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
+    # bn_norm       = cfg.MODEL.BACKBONE.NORM
+    # with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
+    # with_se       = cfg.MODEL.BACKBONE.WITH_SE
+    # with_nl       = cfg.MODEL.BACKBONE.WITH_NL
+    # depth         = cfg.MODEL.BACKBONE.DEPTH
     # fmt: on
 
     num_blocks_per_stage = {
@@ -652,7 +662,8 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
         # Load pretrain path if specifically
         if pretrain_path:
             try:
-                state_dict = torch.load(pretrain_path, map_location=torch.device('cpu'))
+                state_dict = mindspore.load_checkpoint(pretrain_path)
+                # state_dict = torch.load(pretrain_path, map_location=torch.device('cpu'))
                 logger.info(f"Loading pretrained model from {pretrain_path}")
             except FileNotFoundError as e:
                 logger.info(f'{pretrain_path} is not found! Please check this path.')
@@ -667,9 +678,14 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
 
             state_dict = init_pretrained_weights(key)
         
-        model_dict = model.state_dict()
+        # model_dict = model.state_dict()
+        model_dict = OrderedDict()
+        for item in model.get_parameters():
+            model_dict[item.name] = item.value()
+            # print(item.name)
         
-        for k in model_dict.keys():
+        for item in model.get_parameters():
+            k = item.name
             if k in state_dict:
                 v = state_dict[k]
                 if model_dict[k].shape == v.shape:
@@ -692,7 +708,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                     if 'adaptor1_base' in k:
                         if model_dict[k].shape == state_dict['layer1.2'+k[13:]].shape:
                             model_dict[k] = state_dict['layer1.2'+k[13:]]
-                            print('Done, adaptor', k)
+                            # print('Done, adaptor', k)
                         else:
                             print('Skip, adaptor', k)
                     elif 'adaptor1_sub' in k:
@@ -713,11 +729,11 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
                             model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
                             # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
-                        print('Done, adaptor', k)
+                        # print('Done, adaptor', k)
                     elif 'adaptor2_base' in k:
                         if model_dict[k].shape == state_dict['layer2.3'+k[13:]].shape:
                             model_dict[k] = state_dict['layer2.3'+k[13:]]
-                            print('Done, adaptor', k)
+                            # print('Done, adaptor', k)
                         else:
                             print('Skip, adaptor', k)
                     elif 'adaptor2_sub' in k:
@@ -738,12 +754,12 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
                             model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
                             # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
-                        print('Done, adaptor', k)
+                        # print('Done, adaptor', k)
                         
                     elif 'adaptor3_base' in k:
                         if model_dict[k].shape == state_dict['layer3.5'+k[13:]].shape:
                             model_dict[k] = state_dict['layer3.5'+k[13:]]
-                            print('Done, adaptor', k)
+                            # print('Done, adaptor', k)
                         else:
                             print('Skip, adaptor', k)
                     elif 'adaptor3_sub' in k:
@@ -764,12 +780,12 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
                             model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
                             # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
-                        print('Done, adaptor', k)
+                        # print('Done, adaptor', k)
                     
                     elif 'adaptor4_base' in k:
                         if model_dict[k].shape == state_dict['layer4.2'+k[13:]].shape:
                             model_dict[k] = state_dict['layer4.2'+k[13:]]
-                            print('Done, adaptor', k)
+                            # print('Done, adaptor', k)
                         else:
                             print('Skip, adaptor', k)
                     elif 'adaptor4_sub' in k:
@@ -795,18 +811,21 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             temp = ops.avg_pool1d(ops.Transpose()(mindspore.Tensor(v), (0, 2, 3, 1)).reshape(Cout, H*W, Cin), kernel_size=K, stride=K).reshape(Cout, H, W, -1)
                             model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
                             # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
-                        print('Done, adaptor', k)
+                        # print('Done, adaptor', k)
                             
                 except Exception:
                     pass
-        incompatible = model.load_state_dict(model_dict, strict=False)
-        if incompatible.missing_keys:
-            logger.info(
-                get_missing_parameters_message(incompatible.missing_keys)
-            )
-        if incompatible.unexpected_keys:
-            logger.info(
-                get_unexpected_parameters_message(incompatible.unexpected_keys)
-            )
+        
+        mindspore.save_checkpoint([{"name": key, "data": mindspore.Tensor(value.numpy())} for key, value in model_dict.items()], "/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt")
+        incompatible = mindspore.load_checkpoint("/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt", model)
+        # incompatible = model.load_state_dict(model_dict, strict=False)
+        # if incompatible.missing_keys:
+        #     logger.info(
+        #         get_missing_parameters_message(incompatible.missing_keys)
+        #     )
+        # if incompatible.unexpected_keys:
+        #     logger.info(
+        #         get_unexpected_parameters_message(incompatible.unexpected_keys)
+        #     )
 
     return model
