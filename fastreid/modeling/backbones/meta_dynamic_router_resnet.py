@@ -361,7 +361,8 @@ class ResNet(nn.Cell):
 
         # fmt: off
         if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
-        else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
+        else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter([-1], requires_grad=False)
+        # else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
         # fmt: on
 
     def _make_layer(self, block, planes, blocks, stride=1, bn_norm="BN", with_ibn=False, with_se=False):
@@ -387,22 +388,26 @@ class ResNet(nn.Cell):
             [Non_local(256, bn_norm) for _ in range(non_layers[0])])
         # self.NL_1 = nn.ModuleList(
         #     [Non_local(256, bn_norm) for _ in range(non_layers[0])])
-        self.NL_1_idx = sorted([layers[0] - (i + 1) for i in range(non_layers[0])])
+        self.NL_1_idx = mindspore.Parameter(sorted([layers[0] - (i + 1) for i in range(non_layers[0])]), requires_grad=False)
+        # self.NL_1_idx = sorted([layers[0] - (i + 1) for i in range(non_layers[0])])
         self.NL_2 = nn.SequentialCell(
             [Non_local(512, bn_norm) for _ in range(non_layers[1])])
         # self.NL_2 = nn.ModuleList(
         #     [Non_local(512, bn_norm) for _ in range(non_layers[1])])
-        self.NL_2_idx = sorted([layers[1] - (i + 1) for i in range(non_layers[1])])
+        self.NL_2_idx = mindspore.Parameter(sorted([layers[1] - (i + 1) for i in range(non_layers[1])]), requires_grad=False)
+        # self.NL_2_idx = sorted([layers[1] - (i + 1) for i in range(non_layers[1])])
         self.NL_3 = nn.SequentialCell(
             [Non_local(1024, bn_norm) for _ in range(non_layers[2])])
-        # self.NL_3 = nn.ModuleList(
+        # self.NL_3 = nn.ModuleList(/
         #     [Non_local(1024, bn_norm) for _ in range(non_layers[2])])
-        self.NL_3_idx = sorted([layers[2] - (i + 1) for i in range(non_layers[2])])
+        self.NL_3_idx = mindspore.Parameter(sorted([layers[2] - (i + 1) for i in range(non_layers[2])]), requires_grad=False)
+        # self.NL_3_idx = sorted([layers[2] - (i + 1) for i in range(non_layers[2])])
         self.NL_4 = nn.SequentialCell(
             [Non_local(2048, bn_norm) for _ in range(non_layers[3])])
         # self.NL_4 = nn.ModuleList(
         #     [Non_local(2048, bn_norm) for _ in range(non_layers[3])])
-        self.NL_4_idx = sorted([layers[3] - (i + 1) for i in range(non_layers[3])])
+        self.NL_4_idx = mindspore.Parameter(sorted([layers[3] - (i + 1) for i in range(non_layers[3])]), requires_grad=False)
+        # self.NL_4_idx = sorted([layers[3] - (i + 1) for i in range(non_layers[3])])
 
     def get_all_conv_layers(self, module):
         for m in module:
@@ -427,6 +432,7 @@ class ResNet(nn.Cell):
         # layer 1
         NL1_counter = 0
         if len(self.NL_1_idx) == 0:
+            # self.NL_1_idx = mindspore.Parameter([-1])
             self.NL_1_idx = [-1]
         for i in range(len(self.layer1)):
             x = self.layer1[i](x, opt)
@@ -455,6 +461,7 @@ class ResNet(nn.Cell):
         # layer 2
         NL2_counter = 0
         if len(self.NL_2_idx) == 0:
+            # self.NL_2_idx = mindspore.Parameter([-1])
             self.NL_2_idx = [-1]
         for i in range(len(self.layer2)):
             x = self.layer2[i](x, opt)
@@ -483,6 +490,7 @@ class ResNet(nn.Cell):
         # layer 3
         NL3_counter = 0
         if len(self.NL_3_idx) == 0:
+            # self.NL_3_idx = mindspore.Parameter([-1])
             self.NL_3_idx = [-1]
         for i in range(len(self.layer3)):
             x = self.layer3[i](x, opt)
@@ -510,6 +518,7 @@ class ResNet(nn.Cell):
         # layer 4
         NL4_counter = 0
         if len(self.NL_4_idx) == 0:
+            # self.NL_4_idx = mindspore.Parameter([-1])
             self.NL_4_idx = [-1]
         for i in range(len(self.layer4)):
             x = self.layer4[i](x, opt)
@@ -599,7 +608,8 @@ def init_pretrained_weights(key):
     comm.synchronize()
 
     logger.info(f"Loading pretrained model from {cached_file}")
-    print(cached_file)
+    # print(cached_file)
+    print(1)
     state_dict = mindspore.load_checkpoint(cached_file)
     # state_dict = torch.load(cached_file, map_location=torch.device('cpu'))
     #CHANGE Reduction Version
@@ -682,7 +692,6 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
         model_dict = OrderedDict()
         for item in model.get_parameters():
             model_dict[item.name] = item.value()
-            # print(item.name)
         
         for item in model.get_parameters():
             k = item.name
@@ -815,8 +824,10 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             
                 except Exception:
                     pass
-        
+
         mindspore.save_checkpoint([{"name": key, "data": mindspore.Tensor(value.numpy())} for key, value in model_dict.items()], "/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt")
+        print(2)
+        # print([{"name": key, "data": mindspore.Tensor(value.numpy())} for key, value in model_dict.items()][0])
         incompatible = mindspore.load_checkpoint("/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt", model)
         # incompatible = model.load_state_dict(model_dict, strict=False)
         # if incompatible.missing_keys:

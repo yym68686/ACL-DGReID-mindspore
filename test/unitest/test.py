@@ -53,6 +53,7 @@ class TestBackbones(unittest.TestCase):
                     print("error: The parameter shapes are different!")
 
         mindspore.save_checkpoint([{"name": key, "data": mindspore.Tensor(value.numpy())} for key, value in mindspore_model_dict.items()], "/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt")
+        print(3)
         incompatible = mindspore.load_checkpoint("/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt", ms_model)
 
         # # 权重验证
@@ -100,8 +101,8 @@ class TestBackbones(unittest.TestCase):
         output_tensor = ms_model(input_tensor, epoch)
         input_tensor = torch.Tensor(input_tensor.numpy().astype(np.float32))
         expected_tensor = pt_model(input_tensor, epoch)
-        print(output_tensor[0].numpy().astype(np.float32).reshape((-1,))[:10])
-        print(expected_tensor[0].detach().numpy().astype(np.float32).reshape((-1,))[:10])
+        # print(output_tensor[0].numpy().astype(np.float32).reshape((-1,))[:10])
+        # print(expected_tensor[0].detach().numpy().astype(np.float32).reshape((-1,))[:10])
         # print(len(pt_Parameter_list_for_each_layer), len(ms_Parameter_list_for_each_layer))
         # maxnum = len(pt_Parameter_list_for_each_layer) if len(pt_Parameter_list_for_each_layer) < len(ms_Parameter_list_for_each_layer) else len(ms_Parameter_list_for_each_layer)
         # for index in range(maxnum):

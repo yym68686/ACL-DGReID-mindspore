@@ -738,10 +738,10 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
         incompatible = model.load_state_dict(model_dict, strict=False)
         torch.save(state_dict, "/home/yuming/.cache/torch/checkpoints/ACL-DGReID.pth")
         if incompatible.missing_keys:
-            print(get_missing_parameters_message(incompatible.missing_keys))
-            # logger.info(
-            #     get_missing_parameters_message(incompatible.missing_keys)
-            # )
+            # print(get_missing_parameters_message(incompatible.missing_keys))
+            logger.info(
+                get_missing_parameters_message(incompatible.missing_keys)
+            )
         if incompatible.unexpected_keys:
             logger.info(
                 get_unexpected_parameters_message(incompatible.unexpected_keys)

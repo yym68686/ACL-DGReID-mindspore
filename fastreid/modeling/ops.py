@@ -83,26 +83,26 @@ class MetaConv2d(nn.Conv2d):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, group=1, bias=True, pad_mode='pad'):
         super().__init__(in_channels, out_channels, kernel_size, stride, pad_mode, padding, dilation, group, has_bias=bias)
         # super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
+        pad_mode = 'pad'
+        self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
     
     # def forward(self, inputs, opt=None):
     def construct(self, inputs, opt=None):
-        pad_mode = 'pad'
-        conv = nn.Conv2d(in_channels=self.in_channels, out_channels=self.out_channels, kernel_size=self.kernel_size, stride=self.stride, pad_mode=pad_mode, padding=self.padding, dilation=self.dilation, group=self.group)
         inputs = mindspore.Tensor(inputs)
 
         if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
             # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
-            conv.weight = updated_weight
-            conv.bias = updated_bias
-            output = conv(inputs)
+            self.conv.weight = updated_weight
+            self.conv.bias = updated_bias
+            output = self.conv(inputs)
             return output
         else:
             # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-            conv.weight = self.weight
-            conv.bias = self.bias
-            output = conv(inputs)
+            self.conv.weight = self.weight
+            self.conv.bias = self.bias
+            output = self.conv(inputs)
             return output
 
 
@@ -201,7 +201,7 @@ class MetaBNNorm(nn.BatchNorm2d):
             updated_gamma = self.gamma
             updated_beta = self.beta
 
-
+        result = None
         if norm_type == "general": # update, but not apply running_mean/var
             result = ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
                                 updated_gamma, updated_beta,

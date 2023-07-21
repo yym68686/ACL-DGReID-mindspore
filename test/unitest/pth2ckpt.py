@@ -13,7 +13,7 @@ def pytorch2mindspore(pth_file):
         param_dict['name'] = name
         param_dict['data'] = ms.Tensor(parameter.numpy())
         params_list.append(param_dict)
-    print(pth_file.split(".pth")[0] + ".ckpt")
+    # print(pth_file.split(".pth")[0] + ".ckpt")
     ms.save_checkpoint(params_list, pth_file.split(".pth")[0] + ".ckpt")
 
 # from resnet_ms.src.resnet import resnet50 as ms_resnet50
