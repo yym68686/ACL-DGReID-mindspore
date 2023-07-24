@@ -5,6 +5,7 @@
 import mindspore
 import mindspore.nn as nn
 from mindspore import ops
+import numpy as np
 
 
 def update_parameter(param, step_size, opt=None, reserve=False):
@@ -88,6 +89,7 @@ class MetaConv2d(nn.Conv2d):
         # super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
         pad_mode = 'pad'
         self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
+        self.conv.weight = self.weight
     
     # def forward(self, inputs, opt=None):
     def construct(self, inputs, opt=None):
@@ -97,14 +99,14 @@ class MetaConv2d(nn.Conv2d):
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
             # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
-            self.conv.weight = updated_weight
-            self.conv.bias = updated_bias
+            # self.conv.weight = updated_weight
+            # self.conv.bias = updated_bias
             output = self.conv(inputs)
             return output
         else:
             # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-            self.conv.weight = self.weight
-            self.conv.bias = self.bias
+            # self.conv.weight = self.weight
+            # self.conv.bias = self.bias
             output = self.conv(inputs)
             return output
 
@@ -114,6 +116,12 @@ class MetaLinear(nn.Dense):
         super().__init__(in_channels, out_channels, has_bias=has_bias)
         # super().__init__(in_feat, reduction_dim, bias=bias)
         self.linear = nn.Dense(self.in_channels, self.out_channels, has_bias=self.has_bias)
+        self.linear.weight = self.weight
+        # self.linear.weight.set_data(self.weight)
+        # self.linear.bias.set_data(self.bias)
+        # self.weight = mindspore.Parameter(mindspore.Tensor(np.random.rand(in_channels, out_channels).astype(np.float32)), name='weight')
+        # self.bias = mindspore.Parameter(mindspore.Tensor(np.random.rand(out_channels).astype(np.float32)), name='bias')
+
 
     def construct(self, inputs, opt = None, reserve = False):
         if opt != None and opt['meta']:
@@ -124,18 +132,16 @@ class MetaLinear(nn.Dense):
             # self.linear.bias.set_data(updated_bias)
             # self.linear.weight.set_data(mindspore.common.initializer.initializer(updated_weight, self.linear.weight.shape, self.linear.weight.dtype))
             # self.linear.bias.set_data(mindspore.common.initializer.initializer(updated_bias, self.linear.bias.shape, self.linear.bias.dtype))
-            self.linear.weight = updated_weight
-            self.linear.bias = updated_bias
+            # self.linear.weight = updated_weight
+            # self.linear.bias = updated_bias
             output = self.linear(inputs)
             return output
             # return F.linear(inputs, updated_weight, updated_bias)
         else:
-            # self.linear.weight.set_data(self.weight)
-            # self.linear.bias.set_data(self.bias)
             # self.linear.weight.set_data(mindspore.common.initializer.initializer(self.weight, self.linear.weight.shape, self.linear.weight.dtype))
             # self.linear.bias.set_data(mindspore.common.initializer.initializer(self.bias, self.linear.bias.shape, self.linear.bias.dtype))
-            self.linear.weight = self.weight
-            self.linear.bias = self.bias
+            # self.linear.weight = self.weight
+            # self.linear.bias = self.bias
             output = self.linear(inputs)
             return output
             # return F.linear(inputs, self.weight, self.bias)

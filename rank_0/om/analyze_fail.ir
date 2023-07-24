@@ -5,241 +5,241 @@
 
 subgraph attr:
 training : 0
-subgraph instance: construct.Default.1 : 0x560dc18fade0
-# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:433/    def construct(self, x):/
-subgraph @construct.Default.1(%para1_x, %para2_NL_1_idx, %para3_router1.fc_classifier.weight, %para4_conv1.weight, %para5_router1.fc2.weight, %para6_conv1.conv.weight, %para7_meta_fuse1.gate, %para8_router1.fc1.weight, %para9_router2.fc_classifier.weight, %para10_router1.fc_classifier.linear.weight, %para11_router2.fc2.weight, %para12_router1.fc2.linear.weight, %para13_meta_se1.fc2.weight, %para14_meta_fuse2.gate, %para15_router2.fc1.weight, %para16_bn1.gamma, %para17_bn1.beta, %para18_router3.fc_classifier.weight, %para19_meta_se1.fc1.weight, %para20_router1.fc1.linear.weight, %para21_router2.fc_classifier.linear.weight, %para22_bn1.moving_mean, %para23_bn1.moving_variance, %para24_adaptor1_base.conv3.weight, %para25_meta_fuse3.gate, %para26_router3.fc2.weight, %para27_router4.fc_classifier.weight, %para28_meta_fuse4.gate, %para29_router2.fc2.linear.weight, %para30_adaptor1_base.conv2.weight, %para31_meta_se2.fc2.weight, %para32_router3.fc1.weight, %para33_meta_se1.fc2.linear.weight, %para34_invariant_norm1.gamma, %para35_invariant_norm1.beta, %para36_adaptor1_base.conv3.conv.weight, %para37_specific_norm1.gamma, %para38_specific_norm1.beta, %para39_adaptor1_sub.conv3.weight, %para40_meta_se2.fc1.weight, %para41_router2.fc1.linear.weight, %para42_adaptor1_base.conv1.weight, %para43_router4.fc2.weight, %para44_router3.fc_classifier.linear.weight, %para45_meta_se1.fc1.linear.weight, %para46_invariant_norm1.moving_mean, %para47_invariant_norm1.moving_variance, %para48_specific_norm1.moving_mean, %para49_specific_norm1.moving_variance, %para50_adaptor2_sub.conv3.weight, %para51_adaptor3_sub.conv3.weight, %para52_adaptor4_sub.conv3.weight, %para53_adaptor2_base.conv3.weight, %para54_adaptor1_base.conv2.conv.weight, %para55_adaptor1_sub.conv2.weight, %para56_adaptor3_base.conv3.weight, %para57_meta_se3.fc2.weight, %para58_adaptor4_base.conv3.weight, %para59_router4.fc1.weight, %para60_meta_se4.fc2.weight, %para61_adaptor1_sub.conv3.conv.weight, %para62_adaptor2_sub.conv2.weight, %para63_adaptor3_sub.conv2.weight, %para64_meta_se3.fc1.weight, %para65_adaptor4_sub.conv2.weight, %para66_router3.fc2.linear.weight, %para67_adaptor2_base.conv2.weight, %para68_adaptor1_base.conv1.conv.weight, %para69_adaptor1_sub.conv1.weight, %para70_adaptor3_base.conv2.weight, %para71_router4.fc_classifier.linear.weight, %para72_adaptor4_base.conv2.weight, %para73_meta_se4.fc1.weight, %para74_adaptor2_sub.conv3.conv.weight, %para75_adaptor3_sub.conv3.conv.weight, %para76_adaptor4_sub.conv3.conv.weight, %para77_meta_se2.fc2.linear.weight, %para78_invariant_norm2.gamma, %para79_invariant_norm2.beta, %para80_adaptor2_base.conv3.conv.weight, %para81_specific_norm2.gamma, %para82_specific_norm2.beta, %para83_adaptor1_sub.conv2.conv.weight, %para84_adaptor2_sub.conv1.weight, %para85_adaptor3_sub.conv1.weight, %para86_adaptor3_base.conv3.conv.weight, %para87_adaptor4_sub.conv1.weight, %para88_adaptor4_base.conv3.conv.weight, %para89_router3.fc1.linear.weight, %para90_adaptor2_base.conv1.weight, %para91_adaptor3_base.conv1.weight, %para92_adaptor4_base.conv1.weight, %para93_meta_se2.fc1.linear.weight, %para94_invariant_norm2.moving_mean, %para95_invariant_norm2.moving_variance, %para96_specific_norm2.moving_mean, %para97_specific_norm2.moving_variance, %para98_adaptor2_sub.conv2.conv.weight, %para99_adaptor3_sub.conv2.conv.weight, %para100_router4.fc2.linear.weight, %para101_adaptor4_sub.conv2.conv.weight, %para102_adaptor2_base.conv2.conv.weight, %para103_adaptor1_base.bn3.gamma, %para104_adaptor1_base.bn3.beta, %para105_adaptor1_sub.conv1.conv.weight, %para106_adaptor3_base.conv2.conv.weight, %para107_adaptor4_base.conv2.conv.weight, %para108_meta_se3.fc2.linear.weight, %para109_invariant_norm3.gamma, %para110_invariant_norm3.beta, %para111_specific_norm3.gamma, %para112_specific_norm3.beta, %para113_adaptor2_sub.conv1.conv.weight, %para114_adaptor3_sub.conv1.conv.weight, %para115_router4.fc1.linear.weight, %para116_adaptor4_sub.conv1.conv.weight, %para117_meta_se4.fc2.linear.weight, %para118_invariant_norm4.gamma, %para119_invariant_norm4.beta, %para120_specific_norm4.gamma, %para121_specific_norm4.beta, %para122_adaptor2_base.conv1.conv.weight, %para123_adaptor1_base.bn2.gamma, %para124_adaptor1_base.bn2.beta, %para125_adaptor3_base.conv1.conv.weight, %para126_meta_se3.fc1.linear.weight, %para127_invariant_norm3.moving_mean, %para128_invariant_norm3.moving_variance, %para129_specific_norm3.moving_mean, %para130_specific_norm3.moving_variance, %para131_adaptor4_base.conv1.conv.weight, %para132_map4.gamma, %para133_map4.beta, %para134_adaptor1_sub.bn3.gamma, %para135_adaptor1_sub.bn3.beta, %para136_meta_se4.fc1.linear.weight, %para137_invariant_norm4.moving_mean, %para138_invariant_norm4.moving_variance, %para139_specific_norm4.moving_mean, %para140_specific_norm4.moving_variance, %para141_map3.gamma, %para142_map3.beta, %para143_map4.moving_mean, %para144_map4.moving_variance, %para145_adaptor1_base.bn1.gamma, %para146_adaptor1_base.bn1.beta, %para147_adaptor1_sub.bn3.moving_mean, %para148_adaptor1_sub.bn3.moving_variance, %para149_adaptor2_sub.bn3.gamma, %para150_adaptor2_sub.bn3.beta, %para151_adaptor3_sub.bn3.gamma, %para152_adaptor3_sub.bn3.beta, %para153_adaptor4_sub.bn3.gamma, %para154_adaptor4_sub.bn3.beta, %para155_adaptor1_sub.bn2.gamma, %para156_adaptor1_sub.bn2.beta, %para157_map2.gamma, %para158_map2.beta, %para159_map3.moving_mean, %para160_map3.moving_variance, %para161_adaptor2_base.bn3.gamma, %para162_adaptor2_base.bn3.beta, %para163_adaptor2_sub.bn3.moving_mean, %para164_adaptor2_sub.bn3.moving_variance, %para165_adaptor3_sub.bn3.moving_mean, %para166_adaptor3_sub.bn3.moving_variance, %para167_adaptor3_base.bn3.gamma, %para168_adaptor3_base.bn3.beta, %para169_adaptor4_sub.bn3.moving_mean, %para170_adaptor4_sub.bn3.moving_variance, %para171_adaptor4_base.bn3.gamma, %para172_adaptor4_base.bn3.beta, %para173_adaptor1_sub.bn2.moving_mean, %para174_adaptor1_sub.bn2.moving_variance, %para175_adaptor2_sub.bn2.gamma, %para176_adaptor2_sub.bn2.beta, %para177_adaptor3_sub.bn2.gamma, %para178_adaptor3_sub.bn2.beta, %para179_adaptor4_sub.bn2.gamma, %para180_adaptor4_sub.bn2.beta, %para181_map1.gamma, %para182_map1.beta, %para183_map2.moving_mean, %para184_map2.moving_variance, %para185_adaptor2_base.bn2.gamma, %para186_adaptor2_base.bn2.beta, %para187_adaptor2_sub.bn2.moving_mean, %para188_adaptor2_sub.bn2.moving_variance, %para189_adaptor3_sub.bn2.moving_mean, %para190_adaptor3_sub.bn2.moving_variance, %para191_adaptor3_base.bn2.gamma, %para192_adaptor3_base.bn2.beta, %para193_adaptor4_sub.bn2.moving_mean, %para194_adaptor4_sub.bn2.moving_variance, %para195_adaptor4_base.bn2.gamma, %para196_adaptor4_base.bn2.beta, %para197_map1.moving_mean, %para198_map1.moving_variance, %para199_adaptor2_base.bn1.gamma, %para200_adaptor2_base.bn1.beta, %para201_adaptor3_base.bn1.gamma, %para202_adaptor3_base.bn1.beta, %para203_adaptor4_base.bn1.gamma, %para204_adaptor4_base.bn1.beta, %para205_adaptor1_sub.bn1.BN.gamma, %para206_adaptor1_sub.bn1.BN.beta, %para207_adaptor1_sub.bn1.IN.gamma, %para208_adaptor1_sub.bn1.IN.beta, %para209_adaptor1_sub.bn1.BN.moving_mean, %para210_adaptor1_sub.bn1.BN.moving_variance, %para211_adaptor2_sub.bn1.BN.gamma, %para212_adaptor2_sub.bn1.BN.beta, %para213_adaptor3_sub.bn1.BN.gamma, %para214_adaptor3_sub.bn1.BN.beta, %para215_adaptor4_sub.bn1.BN.gamma, %para216_adaptor4_sub.bn1.BN.beta, %para217_adaptor2_sub.bn1.IN.gamma, %para218_adaptor2_sub.bn1.IN.beta, %para219_adaptor3_sub.bn1.IN.gamma, %para220_adaptor3_sub.bn1.IN.beta, %para221_adaptor4_sub.bn1.IN.gamma, %para222_adaptor4_sub.bn1.IN.beta, %para223_adaptor2_sub.bn1.BN.moving_mean, %para224_adaptor2_sub.bn1.BN.moving_variance, %para225_adaptor3_sub.bn1.BN.moving_mean, %para226_adaptor3_sub.bn1.BN.moving_variance, %para227_adaptor4_sub.bn1.BN.moving_mean, %para228_adaptor4_sub.bn1.BN.moving_variance) {
-  %1([CNode]32) = call @print_.31(I64(4))
+subgraph instance: construct.Default.21 : 0x564d990167c0
+# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:434/    def construct(self, x, epoch, opt=None):/
+subgraph @construct.Default.21(%para1_x, %para2_epoch, %para3_NL_1_idx, %para4_router1.fc_classifier.weight, %para5_conv1.weight, %para6_router1.fc2.weight, %para7_meta_fuse1.gate, %para8_router1.fc1.weight, %para9_router2.fc_classifier.weight, %para10_router2.fc2.weight, %para11_meta_se1.fc2.weight, %para12_meta_fuse2.gate, %para13_router2.fc1.weight, %para14_bn1.gamma, %para15_bn1.beta, %para16_router3.fc_classifier.weight, %para17_meta_se1.fc1.weight, %para18_bn1.moving_mean, %para19_bn1.moving_variance, %para20_adaptor1_base.conv3.weight, %para21_meta_fuse3.gate, %para22_router3.fc2.weight, %para23_router4.fc_classifier.weight, %para24_meta_fuse4.gate, %para25_adaptor1_base.conv2.weight, %para26_meta_se2.fc2.weight, %para27_router3.fc1.weight, %para28_invariant_norm1.gamma, %para29_invariant_norm1.beta, %para30_specific_norm1.gamma, %para31_specific_norm1.beta, %para32_adaptor1_sub.conv3.weight, %para33_meta_se2.fc1.weight, %para34_adaptor1_base.conv1.weight, %para35_router4.fc2.weight, %para36_invariant_norm1.moving_mean, %para37_invariant_norm1.moving_variance, %para38_specific_norm1.moving_mean, %para39_specific_norm1.moving_variance, %para40_adaptor2_sub.conv3.weight, %para41_adaptor3_sub.conv3.weight, %para42_adaptor4_sub.conv3.weight, %para43_adaptor2_base.conv3.weight, %para44_adaptor1_sub.conv2.weight, %para45_adaptor3_base.conv3.weight, %para46_meta_se3.fc2.weight, %para47_adaptor4_base.conv3.weight, %para48_router4.fc1.weight, %para49_meta_se4.fc2.weight, %para50_adaptor2_sub.conv2.weight, %para51_adaptor3_sub.conv2.weight, %para52_meta_se3.fc1.weight, %para53_adaptor4_sub.conv2.weight, %para54_adaptor2_base.conv2.weight, %para55_adaptor1_sub.conv1.weight, %para56_adaptor3_base.conv2.weight, %para57_adaptor4_base.conv2.weight, %para58_meta_se4.fc1.weight, %para59_invariant_norm2.gamma, %para60_invariant_norm2.beta, %para61_specific_norm2.gamma, %para62_specific_norm2.beta, %para63_adaptor2_sub.conv1.weight, %para64_adaptor3_sub.conv1.weight, %para65_adaptor4_sub.conv1.weight, %para66_adaptor2_base.conv1.weight, %para67_adaptor3_base.conv1.weight, %para68_adaptor4_base.conv1.weight, %para69_invariant_norm2.moving_mean, %para70_invariant_norm2.moving_variance, %para71_specific_norm2.moving_mean, %para72_specific_norm2.moving_variance, %para73_adaptor1_base.bn3.gamma, %para74_adaptor1_base.bn3.beta, %para75_invariant_norm3.gamma, %para76_invariant_norm3.beta, %para77_specific_norm3.gamma, %para78_specific_norm3.beta, %para79_invariant_norm4.gamma, %para80_invariant_norm4.beta, %para81_specific_norm4.gamma, %para82_specific_norm4.beta, %para83_adaptor1_base.bn2.gamma, %para84_adaptor1_base.bn2.beta, %para85_invariant_norm3.moving_mean, %para86_invariant_norm3.moving_variance, %para87_specific_norm3.moving_mean, %para88_specific_norm3.moving_variance, %para89_map4.gamma, %para90_map4.beta, %para91_adaptor1_sub.bn3.gamma, %para92_adaptor1_sub.bn3.beta, %para93_invariant_norm4.moving_mean, %para94_invariant_norm4.moving_variance, %para95_specific_norm4.moving_mean, %para96_specific_norm4.moving_variance, %para97_map3.gamma, %para98_map3.beta, %para99_map4.moving_mean, %para100_map4.moving_variance, %para101_adaptor1_base.bn1.gamma, %para102_adaptor1_base.bn1.beta, %para103_adaptor1_sub.bn3.moving_mean, %para104_adaptor1_sub.bn3.moving_variance, %para105_adaptor2_sub.bn3.gamma, %para106_adaptor2_sub.bn3.beta, %para107_adaptor3_sub.bn3.gamma, %para108_adaptor3_sub.bn3.beta, %para109_adaptor4_sub.bn3.gamma, %para110_adaptor4_sub.bn3.beta, %para111_adaptor1_sub.bn2.gamma, %para112_adaptor1_sub.bn2.beta, %para113_map2.gamma, %para114_map2.beta, %para115_map3.moving_mean, %para116_map3.moving_variance, %para117_adaptor2_base.bn3.gamma, %para118_adaptor2_base.bn3.beta, %para119_adaptor2_sub.bn3.moving_mean, %para120_adaptor2_sub.bn3.moving_variance, %para121_adaptor3_sub.bn3.moving_mean, %para122_adaptor3_sub.bn3.moving_variance, %para123_adaptor3_base.bn3.gamma, %para124_adaptor3_base.bn3.beta, %para125_adaptor4_sub.bn3.moving_mean, %para126_adaptor4_sub.bn3.moving_variance, %para127_adaptor4_base.bn3.gamma, %para128_adaptor4_base.bn3.beta, %para129_adaptor1_sub.bn2.moving_mean, %para130_adaptor1_sub.bn2.moving_variance, %para131_adaptor2_sub.bn2.gamma, %para132_adaptor2_sub.bn2.beta, %para133_adaptor3_sub.bn2.gamma, %para134_adaptor3_sub.bn2.beta, %para135_adaptor4_sub.bn2.gamma, %para136_adaptor4_sub.bn2.beta, %para137_map1.gamma, %para138_map1.beta, %para139_map2.moving_mean, %para140_map2.moving_variance, %para141_adaptor2_base.bn2.gamma, %para142_adaptor2_base.bn2.beta, %para143_adaptor2_sub.bn2.moving_mean, %para144_adaptor2_sub.bn2.moving_variance, %para145_adaptor3_sub.bn2.moving_mean, %para146_adaptor3_sub.bn2.moving_variance, %para147_adaptor3_base.bn2.gamma, %para148_adaptor3_base.bn2.beta, %para149_adaptor4_sub.bn2.moving_mean, %para150_adaptor4_sub.bn2.moving_variance, %para151_adaptor4_base.bn2.gamma, %para152_adaptor4_base.bn2.beta, %para153_map1.moving_mean, %para154_map1.moving_variance, %para155_adaptor2_base.bn1.gamma, %para156_adaptor2_base.bn1.beta, %para157_adaptor3_base.bn1.gamma, %para158_adaptor3_base.bn1.beta, %para159_adaptor4_base.bn1.gamma, %para160_adaptor4_base.bn1.beta, %para161_adaptor1_sub.bn1.BN.gamma, %para162_adaptor1_sub.bn1.BN.beta, %para163_adaptor1_sub.bn1.IN.gamma, %para164_adaptor1_sub.bn1.IN.beta, %para165_adaptor1_sub.bn1.BN.moving_mean, %para166_adaptor1_sub.bn1.BN.moving_variance, %para167_adaptor2_sub.bn1.BN.gamma, %para168_adaptor2_sub.bn1.BN.beta, %para169_adaptor3_sub.bn1.BN.gamma, %para170_adaptor3_sub.bn1.BN.beta, %para171_adaptor4_sub.bn1.BN.gamma, %para172_adaptor4_sub.bn1.BN.beta, %para173_adaptor2_sub.bn1.IN.gamma, %para174_adaptor2_sub.bn1.IN.beta, %para175_adaptor3_sub.bn1.IN.gamma, %para176_adaptor3_sub.bn1.IN.beta, %para177_adaptor4_sub.bn1.IN.gamma, %para178_adaptor4_sub.bn1.IN.beta, %para179_adaptor2_sub.bn1.BN.moving_mean, %para180_adaptor2_sub.bn1.BN.moving_variance, %para181_adaptor3_sub.bn1.BN.moving_mean, %para182_adaptor3_sub.bn1.BN.moving_variance, %para183_adaptor4_sub.bn1.BN.moving_mean, %para184_adaptor4_sub.bn1.BN.moving_variance) {
+  %1([CNode]33) = call @print_.32(I64(4))
       : (<Int64, NoShape>) -> (<Tensor[Int32], (1)>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:437/        print(4)/
-  %2([CNode]33) = StopGradient(%1)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:438/        print(4)/
+  %2([CNode]34) = StopGradient(%1)
       : (<Tensor[Int32], (1)>) -> (<Tensor[Int32], (1)>)
       #scope: (Default)
-  %3([CNode]35) = call @ms_len.34(%para2_NL_1_idx)
+  %3([CNode]36) = call @ms_len.35(%para3_NL_1_idx)
       : (<Ref[Tensor[Int64]], (1)>) -> (<Int64, NoShape>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
-  %4([CNode]36) = S-Prim-equal(%3, I64(0))
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
+  %4([CNode]37) = S-Prim-equal(%3, I64(0))
       : (<Int64, NoShape>, <Int64, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
-  %5([CNode]37) = call @bool_.8(%4)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
+  %5([CNode]39) = call @bool_.38(%4)
       : (<Bool, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
-  %6([CNode]38) = Switch(%5, call @✓construct.Default.39, call @✗construct.Default.21)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
+  %6([CNode]40) = Switch(%5, call @✓construct.Default.41, call @✗construct.Default.22)
       : (<Bool, NoShape>, <Func, NoShape>, <Func, NoShape>) -> (<Func, NoShape>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
 
 #------------------------> 0
-  %7([CNode]40) = %6()
+  %7([CNode]42) = %6()
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
-  %8([CNode]41) = Depend[side_effect_propagate=I64(1)](%7, %2)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
+  %8([CNode]43) = Depend[side_effect_propagate=I64(1)](%7, %2)
       : (<null>, <Tensor[Int32], (1)>) -> (<null>)
       #scope: (Default)
   Return(%8)
       : (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
 }
 # Order:
-#   1: @construct.Default.1:[CNode]32{[0]: ValueNode<FuncGraph> print_.31, [1]: ValueNode<Int64Imm> 4}
-#   2: @construct.Default.1:x{[0]: ValueNode<FuncGraph> construct.MetaConv2d.42, [1]: x, [2]: ValueNode<None> None}
-#   3: @construct.Default.1:x{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.43, [1]: x, [2]: ValueNode<None> None}
-#   4: @construct.Default.1:x{[0]: ValueNode<FuncGraph> construct.ReLU.44, [1]: x}
-#   5: @construct.Default.1:фx{[0]: ValueNode<FuncGraph> construct.MaxPool2d.45, [1]: x}
-#   6: @construct.Default.1:[CNode]35{[0]: ValueNode<FuncGraph> ms_len.34, [1]: NL_1_idx}
-#   7: @construct.Default.1:[CNode]36{[0]: ValueNode<DoSignaturePrimitive> S-Prim-equal, [1]: [CNode]35, [2]: ValueNode<Int64Imm> 0}
-#   8: @construct.Default.1:[CNode]37{[0]: ValueNode<FuncGraph> bool_.8, [1]: [CNode]36}
-#   9: @construct.Default.1:[CNode]38{[0]: ValueNode<Primitive> Switch, [1]: [CNode]37, [2]: ValueNode<FuncGraph> ✓construct.Default.39, [3]: ValueNode<FuncGraph> ✗construct.Default.21}
-#  10: @construct.Default.1:[CNode]40{[0]: [CNode]38}
-#  11: @construct.Default.1:[CNode]46{[0]: ValueNode<Primitive> Return, [1]: [CNode]41}
+#   1: @construct.Default.21:[CNode]33{[0]: ValueNode<FuncGraph> print_.32, [1]: ValueNode<Int64Imm> 4}
+#   2: @construct.Default.21:x{[0]: ValueNode<FuncGraph> construct.MetaConv2d.44, [1]: x, [2]: ValueNode<None> None}
+#   3: @construct.Default.21:x{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.45, [1]: x, [2]: ValueNode<None> None}
+#   4: @construct.Default.21:x{[0]: ValueNode<FuncGraph> construct.ReLU.46, [1]: x}
+#   5: @construct.Default.21:фx{[0]: ValueNode<FuncGraph> construct.MaxPool2d.47, [1]: x}
+#   6: @construct.Default.21:[CNode]36{[0]: ValueNode<FuncGraph> ms_len.35, [1]: NL_1_idx}
+#   7: @construct.Default.21:[CNode]37{[0]: ValueNode<DoSignaturePrimitive> S-Prim-equal, [1]: [CNode]36, [2]: ValueNode<Int64Imm> 0}
+#   8: @construct.Default.21:[CNode]39{[0]: ValueNode<FuncGraph> bool_.38, [1]: [CNode]37}
+#   9: @construct.Default.21:[CNode]40{[0]: ValueNode<Primitive> Switch, [1]: [CNode]39, [2]: ValueNode<FuncGraph> ✓construct.Default.41, [3]: ValueNode<FuncGraph> ✗construct.Default.22}
+#  10: @construct.Default.21:[CNode]42{[0]: [CNode]40}
+#  11: @construct.Default.21:[CNode]48{[0]: ValueNode<Primitive> Return, [1]: [CNode]43}
 
 
 subgraph attr:
 training : 0
-subgraph instance: ✗construct.Default.21 : 0x560d9f386cb0
-# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
-subgraph @✗construct.Default.21 parent: [subgraph @construct.Default.1]() {
+subgraph instance: ✗construct.Default.22 : 0x564dbdcdaed0
+# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
+subgraph @✗construct.Default.22 parent: [subgraph @construct.Default.21]() {
 
 #------------------------> 1
-  %1([CNode]47) = call @↓construct.Default.22()
+  %1([CNode]49) = call @↓construct.Default.23()
       #scope: (Default)
   Return(%1)
       : (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
 }
 # Order:
-#   1: @✗construct.Default.21:[CNode]48{[0]: ValueNode<Primitive> Return, [1]: [CNode]47}
-#   2: @✗construct.Default.21:[CNode]47{[0]: ValueNode<FuncGraph> ↓construct.Default.22}
+#   1: @✗construct.Default.22:[CNode]50{[0]: ValueNode<Primitive> Return, [1]: [CNode]49}
+#   2: @✗construct.Default.22:[CNode]49{[0]: ValueNode<FuncGraph> ↓construct.Default.23}
 
 
 subgraph attr:
 after_block : 1
 training : 0
-subgraph instance: ↓construct.Default.22 : 0x560dc6a73f10
-# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:449/        if len(self.NL_1_idx) == 0:/
-subgraph @↓construct.Default.22 parent: [subgraph @construct.Default.1]() {
-  %1(x) = $(construct.Default.1):call @construct.MetaConv2d.42(%para1_x, None)
+subgraph instance: ↓construct.Default.23 : 0x564db5506170
+# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:450/        if len(self.NL_1_idx) == 0:/
+subgraph @↓construct.Default.23 parent: [subgraph @construct.Default.21]() {
+  %1(x) = $(construct.Default.21):call @construct.MetaConv2d.44(%para1_x, None)
       : (<Tensor[Float32], (8, 3, 8, 8)>, <None, NoShape>) -> (<Tensor[Float32], (8, 64, 4, 4)>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:439/        x = self.conv1(x, opt)/
-  %2(x) = $(construct.Default.1):call @construct.MetaBNNorm.43(%1, None)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:440/        x = self.conv1(x, opt)/
+  %2(x) = $(construct.Default.21):call @construct.MetaBNNorm.45(%1, None)
       : (<Tensor[Float32], (8, 64, 4, 4)>, <None, NoShape>) -> (<Tensor[Float32], (8, 64, 4, 4)>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:440/        x = self.bn1(x, opt)/
-  %3(x) = $(construct.Default.1):call @construct.ReLU.44(%2)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:441/        x = self.bn1(x, opt)/
+  %3(x) = $(construct.Default.21):call @construct.ReLU.46(%2)
       : (<Tensor[Float32], (8, 64, 4, 4)>) -> (<Tensor[Float32], (8, 64, 4, 4)>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:441/        x = self.relu(x)/
-  %4(фx) = $(construct.Default.1):call @construct.MaxPool2d.45(%3)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:442/        x = self.relu(x)/
+  %4(фx) = $(construct.Default.21):call @construct.MaxPool2d.47(%3)
       : (<Tensor[Float32], (8, 64, 4, 4)>) -> (<Tensor[Float32], (8, 64, 2, 2)>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:459/        x_invariant = self.adaptor1_base(x, opt)/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:460/        x_invariant = self.adaptor1_base(x, opt)/
 
 #------------------------> 2
-  %5([CNode]50) = call @construct.HyperRouter.49(%4, None)
+  %5([CNode]52) = call @construct.HyperRouter.51(%4, None)
       : (<Tensor[Float32], (8, 64, 2, 2)>, <None, NoShape>) -> (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:464/        weight, domain_cls_logit = self.router1(x, opt)/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:465/        weight, domain_cls_logit = self.router1(x, opt)/
   %6(domain_cls_logit) = S-Prim-getitem(%5, I64(1))
       : (<null>, <null>) -> (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:464/        weight, domain_cls_logit = self.router1(x, opt)/
-  %7([CNode]51) = StopGradient(%6)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:465/        weight, domain_cls_logit = self.router1(x, opt)/
+  %7([CNode]53) = StopGradient(%6)
       : (<null>) -> (<null>)
       #scope: (Default)
-  %8([CNode]52) = call @ms_len.34(%para2_NL_1_idx)
+  %8([CNode]54) = call @ms_len.35(%para3_NL_1_idx)
       : (<Ref[Tensor[Int64]], (1)>) -> (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:479/        if len(self.NL_2_idx) == 0:/
-  %9([CNode]53) = S-Prim-equal(%8, I64(0))
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:480/        if len(self.NL_2_idx) == 0:/
+  %9([CNode]55) = S-Prim-equal(%8, I64(0))
       : (<null>, <null>) -> (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:479/        if len(self.NL_2_idx) == 0:/
-  %10([CNode]54) = call @bool_.8(%9)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:480/        if len(self.NL_2_idx) == 0:/
+  %10([CNode]56) = call @bool_.38(%9)
       : (<null>) -> (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:479/        if len(self.NL_2_idx) == 0:/
-  %11([CNode]55) = Switch(%10, call @✓↓construct.Default.56, call @✗↓construct.Default.57)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:480/        if len(self.NL_2_idx) == 0:/
+  %11([CNode]57) = Switch(%10, call @✓↓construct.Default.58, call @✗↓construct.Default.59)
       : (<null>, <null>, <null>) -> (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:479/        if len(self.NL_2_idx) == 0:/
-  %12([CNode]58) = %11()
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:480/        if len(self.NL_2_idx) == 0:/
+  %12([CNode]60) = %11()
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:479/        if len(self.NL_2_idx) == 0:/
-  %13([CNode]59) = Depend[side_effect_propagate=I64(1)](%12, %7)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:480/        if len(self.NL_2_idx) == 0:/
+  %13([CNode]61) = Depend[side_effect_propagate=I64(1)](%12, %7)
       : (<null>, <null>) -> (<null>)
       #scope: (Default)
   Return(%13)
       : (<null>)
       #scope: (Default)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:479/        if len(self.NL_2_idx) == 0:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:480/        if len(self.NL_2_idx) == 0:/
 }
 # Order:
-#   1: @↓construct.Default.22:x_invariant{[0]: ValueNode<FuncGraph> construct.Bottleneck.60, [1]: фx, [2]: ValueNode<None> None}
-#   2: @↓construct.Default.22:[CNode]61{[0]: ValueNode<Primitive> getattr, [1]: x_invariant, [2]: ValueNode<StringImm> shape}
-#   3: @↓construct.Default.22:N{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]61, [2]: ValueNode<Int64Imm> 0}
-#   4: @↓construct.Default.22:C{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]61, [2]: ValueNode<Int64Imm> 1}
-#   5: @↓construct.Default.22:H{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]61, [2]: ValueNode<Int64Imm> 2}
-#   6: @↓construct.Default.22:W{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]61, [2]: ValueNode<Int64Imm> 3}
-#   7: @↓construct.Default.22:[CNode]62{[0]: ValueNode<Primitive> getattr, [1]: фx, [2]: ValueNode<StringImm> tile}
-#   8: @↓construct.Default.22:[CNode]63{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<Int64Imm> 1, [2]: ValueNode<Int64Imm> 4, [3]: ValueNode<Int64Imm> 1, [4]: ValueNode<Int64Imm> 1}
-#   9: @↓construct.Default.22:[CNode]64{[0]: [CNode]62, [1]: [CNode]63}
-#  10: @↓construct.Default.22:[CNode]65{[0]: ValueNode<FuncGraph> construct.Bottleneck2.66, [1]: [CNode]64, [2]: ValueNode<None> None}
-#  11: @↓construct.Default.22:[CNode]67{[0]: ValueNode<Primitive> getattr, [1]: [CNode]65, [2]: ValueNode<StringImm> reshape}
-#  12: @↓construct.Default.22:x_specific{[0]: [CNode]67, [1]: N, [2]: ValueNode<Int64Imm> 4, [3]: C, [4]: H, [5]: W}
-#  13: @↓construct.Default.22:[CNode]50{[0]: ValueNode<FuncGraph> construct.HyperRouter.49, [1]: фx, [2]: ValueNode<None> None}
-#  14: @↓construct.Default.22:weight{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]50, [2]: ValueNode<Int64Imm> 0}
-#  15: @↓construct.Default.22:domain_cls_logit{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]50, [2]: ValueNode<Int64Imm> 1}
-#  16: @↓construct.Default.22:[CNode]68{[0]: ValueNode<Primitive> getattr, [1]: ValueNode<ValueList> [], [2]: ValueNode<StringImm> append}
-#  17: @↓construct.Default.22:фweights{[0]: [CNode]68, [1]: weight}
-#  18: @↓construct.Default.22:[CNode]69{[0]: ValueNode<Primitive> getattr, [1]: weight, [2]: ValueNode<StringImm> reshape}
-#  19: @↓construct.Default.22:[CNode]70{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
-#  20: @↓construct.Default.22:[CNode]71{[0]: [CNode]69, [1]: [CNode]70, [2]: ValueNode<Int64Imm> 4, [3]: ValueNode<Int64Imm> 1, [4]: ValueNode<Int64Imm> 1, [5]: ValueNode<Int64Imm> 1}
-#  21: @↓construct.Default.22:[CNode]72{[0]: ValueNode<DoSignaturePrimitive> S-Prim-mul, [1]: x_specific, [2]: [CNode]71}
-#  22: @↓construct.Default.22:[CNode]73{[0]: ValueNode<Primitive> getattr, [1]: [CNode]72, [2]: ValueNode<StringImm> sum}
-#  23: @↓construct.Default.22:x_specific{[0]: [CNode]73, [1]: ValueNode<Int64Imm> 1}
-#  24: @↓construct.Default.22:x_invariant{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.74, [1]: x_invariant, [2]: ValueNode<None> None}
-#  25: @↓construct.Default.22:x_specific{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.75, [1]: x_specific, [2]: ValueNode<None> None}
-#  26: @↓construct.Default.22:x{[0]: ValueNode<FuncGraph> construct.MetaGate.76, [1]: x_invariant, [2]: x_specific, [3]: ValueNode<None> None}
-#  27: @↓construct.Default.22:фx{[0]: ValueNode<FuncGraph> construct.MetaSELayer.77, [1]: x, [2]: ValueNode<None> None}
-#  28: @↓construct.Default.22:[CNode]78{[0]: ValueNode<FuncGraph> construct.AdaptiveAvgPool2d.79, [1]: фx}
-#  29: @↓construct.Default.22:temp{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.80, [1]: [CNode]78, [2]: ValueNode<None> None}
-#  30: @↓construct.Default.22:[CNode]81{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<StringImm> axis}
-#  31: @↓construct.Default.22:[CNode]82{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<Int64Imm> 1}
-#  32: @↓construct.Default.22:[CNode]83{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_dict, [1]: [CNode]81, [2]: [CNode]82}
-#  33: @↓construct.Default.22:l2_normalize{[0]: ValueNode<UnpackCall> MetaFuncGraph-unpack_call.84, [1]: ValueNode<ClassType> class 'mindspore.ops.operations.nn_ops.L2Normalize', [2]: [CNode]83}
-#  34: @↓construct.Default.22:x_normalized{[0]: l2_normalize, [1]: temp}
-#  35: @↓construct.Default.22:[CNode]85{[0]: ValueNode<Primitive> getattr, [1]: ValueNode<ValueList> [], [2]: ValueNode<StringImm> append}
-#  36: @↓construct.Default.22:[CNode]86{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<Ellipsis> Ellipsis, [2]: ValueNode<Int64Imm> 0, [3]: ValueNode<Int64Imm> 0}
-#  37: @↓construct.Default.22:[CNode]87{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: x_normalized, [2]: [CNode]86}
-#  38: @↓construct.Default.22:фout_features{[0]: [CNode]85, [1]: [CNode]87}
-#  39: @↓construct.Default.22:[CNode]52{[0]: ValueNode<FuncGraph> ms_len.34, [1]: NL_1_idx}
-#  40: @↓construct.Default.22:[CNode]53{[0]: ValueNode<DoSignaturePrimitive> S-Prim-equal, [1]: [CNode]52, [2]: ValueNode<Int64Imm> 0}
-#  41: @↓construct.Default.22:[CNode]54{[0]: ValueNode<FuncGraph> bool_.8, [1]: [CNode]53}
-#  42: @↓construct.Default.22:[CNode]55{[0]: ValueNode<Primitive> Switch, [1]: [CNode]54, [2]: ValueNode<FuncGraph> ✓↓construct.Default.56, [3]: ValueNode<FuncGraph> ✗↓construct.Default.57}
-#  43: @↓construct.Default.22:[CNode]58{[0]: [CNode]55}
-#  44: @↓construct.Default.22:[CNode]88{[0]: ValueNode<Primitive> Return, [1]: [CNode]59}
+#   1: @↓construct.Default.23:x_invariant{[0]: ValueNode<FuncGraph> construct.Bottleneck.62, [1]: фx, [2]: ValueNode<None> None}
+#   2: @↓construct.Default.23:[CNode]63{[0]: ValueNode<Primitive> getattr, [1]: x_invariant, [2]: ValueNode<StringImm> shape}
+#   3: @↓construct.Default.23:N{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]63, [2]: ValueNode<Int64Imm> 0}
+#   4: @↓construct.Default.23:C{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]63, [2]: ValueNode<Int64Imm> 1}
+#   5: @↓construct.Default.23:H{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]63, [2]: ValueNode<Int64Imm> 2}
+#   6: @↓construct.Default.23:W{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]63, [2]: ValueNode<Int64Imm> 3}
+#   7: @↓construct.Default.23:[CNode]64{[0]: ValueNode<Primitive> getattr, [1]: фx, [2]: ValueNode<StringImm> tile}
+#   8: @↓construct.Default.23:[CNode]65{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<Int64Imm> 1, [2]: ValueNode<Int64Imm> 4, [3]: ValueNode<Int64Imm> 1, [4]: ValueNode<Int64Imm> 1}
+#   9: @↓construct.Default.23:[CNode]66{[0]: [CNode]64, [1]: [CNode]65}
+#  10: @↓construct.Default.23:[CNode]67{[0]: ValueNode<FuncGraph> construct.Bottleneck2.68, [1]: [CNode]66, [2]: ValueNode<None> None}
+#  11: @↓construct.Default.23:[CNode]69{[0]: ValueNode<Primitive> getattr, [1]: [CNode]67, [2]: ValueNode<StringImm> reshape}
+#  12: @↓construct.Default.23:x_specific{[0]: [CNode]69, [1]: N, [2]: ValueNode<Int64Imm> 4, [3]: C, [4]: H, [5]: W}
+#  13: @↓construct.Default.23:[CNode]52{[0]: ValueNode<FuncGraph> construct.HyperRouter.51, [1]: фx, [2]: ValueNode<None> None}
+#  14: @↓construct.Default.23:weight{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]52, [2]: ValueNode<Int64Imm> 0}
+#  15: @↓construct.Default.23:domain_cls_logit{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]52, [2]: ValueNode<Int64Imm> 1}
+#  16: @↓construct.Default.23:[CNode]70{[0]: ValueNode<Primitive> getattr, [1]: ValueNode<ValueList> [], [2]: ValueNode<StringImm> append}
+#  17: @↓construct.Default.23:фweights{[0]: [CNode]70, [1]: weight}
+#  18: @↓construct.Default.23:[CNode]71{[0]: ValueNode<Primitive> getattr, [1]: weight, [2]: ValueNode<StringImm> reshape}
+#  19: @↓construct.Default.23:[CNode]72{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
+#  20: @↓construct.Default.23:[CNode]73{[0]: [CNode]71, [1]: [CNode]72, [2]: ValueNode<Int64Imm> 4, [3]: ValueNode<Int64Imm> 1, [4]: ValueNode<Int64Imm> 1, [5]: ValueNode<Int64Imm> 1}
+#  21: @↓construct.Default.23:[CNode]74{[0]: ValueNode<DoSignaturePrimitive> S-Prim-mul, [1]: x_specific, [2]: [CNode]73}
+#  22: @↓construct.Default.23:[CNode]75{[0]: ValueNode<Primitive> getattr, [1]: [CNode]74, [2]: ValueNode<StringImm> sum}
+#  23: @↓construct.Default.23:x_specific{[0]: [CNode]75, [1]: ValueNode<Int64Imm> 1}
+#  24: @↓construct.Default.23:x_invariant{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.76, [1]: x_invariant, [2]: ValueNode<None> None}
+#  25: @↓construct.Default.23:x_specific{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.77, [1]: x_specific, [2]: ValueNode<None> None}
+#  26: @↓construct.Default.23:x{[0]: ValueNode<FuncGraph> construct.MetaGate.78, [1]: x_invariant, [2]: x_specific, [3]: ValueNode<None> None}
+#  27: @↓construct.Default.23:фx{[0]: ValueNode<FuncGraph> construct.MetaSELayer.79, [1]: x, [2]: ValueNode<None> None}
+#  28: @↓construct.Default.23:[CNode]80{[0]: ValueNode<FuncGraph> construct.AdaptiveAvgPool2d.81, [1]: фx}
+#  29: @↓construct.Default.23:temp{[0]: ValueNode<FuncGraph> construct.MetaBNNorm.82, [1]: [CNode]80, [2]: ValueNode<None> None}
+#  30: @↓construct.Default.23:[CNode]83{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<StringImm> axis}
+#  31: @↓construct.Default.23:[CNode]84{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<Int64Imm> 1}
+#  32: @↓construct.Default.23:[CNode]85{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_dict, [1]: [CNode]83, [2]: [CNode]84}
+#  33: @↓construct.Default.23:l2_normalize{[0]: ValueNode<UnpackCall> MetaFuncGraph-unpack_call.86, [1]: ValueNode<ClassType> class 'mindspore.ops.operations.nn_ops.L2Normalize', [2]: [CNode]85}
+#  34: @↓construct.Default.23:x_normalized{[0]: l2_normalize, [1]: temp}
+#  35: @↓construct.Default.23:[CNode]87{[0]: ValueNode<Primitive> getattr, [1]: ValueNode<ValueList> [], [2]: ValueNode<StringImm> append}
+#  36: @↓construct.Default.23:[CNode]88{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<Ellipsis> Ellipsis, [2]: ValueNode<Int64Imm> 0, [3]: ValueNode<Int64Imm> 0}
+#  37: @↓construct.Default.23:[CNode]89{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: x_normalized, [2]: [CNode]88}
+#  38: @↓construct.Default.23:фout_features{[0]: [CNode]87, [1]: [CNode]89}
+#  39: @↓construct.Default.23:[CNode]54{[0]: ValueNode<FuncGraph> ms_len.35, [1]: NL_1_idx}
+#  40: @↓construct.Default.23:[CNode]55{[0]: ValueNode<DoSignaturePrimitive> S-Prim-equal, [1]: [CNode]54, [2]: ValueNode<Int64Imm> 0}
+#  41: @↓construct.Default.23:[CNode]56{[0]: ValueNode<FuncGraph> bool_.38, [1]: [CNode]55}
+#  42: @↓construct.Default.23:[CNode]57{[0]: ValueNode<Primitive> Switch, [1]: [CNode]56, [2]: ValueNode<FuncGraph> ✓↓construct.Default.58, [3]: ValueNode<FuncGraph> ✗↓construct.Default.59}
+#  43: @↓construct.Default.23:[CNode]60{[0]: [CNode]57}
+#  44: @↓construct.Default.23:[CNode]90{[0]: ValueNode<Primitive> Return, [1]: [CNode]61}
 
 
 subgraph attr:
 training : 0
-subgraph instance: construct.HyperRouter.23 : 0x560dad2e8ae0
+subgraph instance: construct.HyperRouter.24 : 0x564d9bf36080
 # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:289/    def construct(self, x, opt=None):/
-subgraph @construct.HyperRouter.23 parent: [subgraph @construct.Default.1](%para229_x, %para230_opt) {
-  %1([CNode]89) = getattr(%para229_x, "shape")
+subgraph @construct.HyperRouter.24 parent: [subgraph @construct.Default.21](%para185_x, %para186_opt) {
+  %1([CNode]91) = getattr(%para185_x, "shape")
       : (<Tensor[Float32], (8, 64, 2, 2)>, <String, NoShape>) -> (<Tuple[Int64*4], TupleShape(NoShape, NoShape, NoShape, NoShape)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %2([CNode]91) = call @ms_len.90(%1)
+  %2([CNode]93) = call @ms_len.92(%1)
       : (<Tuple[Int64*4], TupleShape(NoShape, NoShape, NoShape, NoShape)>) -> (<Int64, NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %3([CNode]92) = S-Prim-make_range(%2)
+  %3([CNode]94) = S-Prim-make_range(%2)
       : (<Int64, NoShape>) -> (<Tuple[Int64*4], TupleShape(NoShape, NoShape, NoShape, NoShape)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %4([CNode]93) = ClassType(%3)
+  %4([CNode]95) = ClassType(%3)
       : (<Tuple[Int64*4], TupleShape(NoShape, NoShape, NoShape, NoShape)>) -> (<Tuple[Int64*4], TupleShape(NoShape, NoShape, NoShape, NoShape)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %5([CNode]94) = S-Prim-negative(I64(2))
+  %5([CNode]96) = S-Prim-negative(I64(2))
       : (<Int64, NoShape>) -> (<Int64, NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %6([CNode]95) = S-Prim-make_slice(%5, None, None)
+  %6([CNode]97) = S-Prim-make_slice(%5, None, None)
       : (<Int64, NoShape>, <None, NoShape>, <None, NoShape>) -> (<Slice[Int64 : None : None], NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %7([CNode]96) = S-Prim-getitem(%4, %6)
+  %7([CNode]98) = S-Prim-getitem(%4, %6)
       : (<Tuple[Int64*4], TupleShape(NoShape, NoShape, NoShape, NoShape)>, <Slice[Int64 : None : None], NoShape>) -> (<Tuple[Int64*2], TupleShape(NoShape, NoShape)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %8([CNode]97) = S-Prim-ReduceMean[output_names=["y"], keep_dims=Bool(1), input_names=["input_x", "axis"]](%para229_x, %7)
+  %8([CNode]99) = S-Prim-ReduceMean[output_names=["y"], keep_dims=Bool(1), input_names=["input_x", "axis"]](%para185_x, %7)
       : (<Tensor[Float32], (8, 64, 2, 2)>, <Tuple[Int64*2], TupleShape(NoShape, NoShape)>) -> (<Tensor[Float32], (8, 64, 1, 1)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %9([CNode]98) = getattr(%8, "squeeze")
+  %9([CNode]100) = getattr(%8, "squeeze")
       : (<Tensor[Float32], (8, 64, 1, 1)>, <String, NoShape>) -> (<Func, NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %10([CNode]99) = S-Prim-negative(I64(1))
+  %10([CNode]101) = S-Prim-negative(I64(1))
       : (<Int64, NoShape>) -> (<Int64, NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %11([CNode]100) = %9(%10)
+  %11([CNode]102) = %9(%10)
       : (<Int64, NoShape>) -> (<Tensor[Float32], (8, 64, 1)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %12([CNode]101) = getattr(%11, "squeeze")
+  %12([CNode]103) = getattr(%11, "squeeze")
       : (<Tensor[Float32], (8, 64, 1)>, <String, NoShape>) -> (<Func, NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %13([CNode]102) = S-Prim-negative(I64(1))
+  %13([CNode]104) = S-Prim-negative(I64(1))
       : (<Int64, NoShape>) -> (<Int64, NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
@@ -247,19 +247,19 @@ subgraph @construct.HyperRouter.23 parent: [subgraph @construct.Default.1](%para
       : (<Int64, NoShape>) -> (<Tensor[Float32], (8, 64)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:291/        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)/
-  %15([CNode]103) = S-Prim-MakeTuple("axis")
+  %15([CNode]105) = S-Prim-MakeTuple("axis")
       : (<String, NoShape>) -> (<Tuple[String], TupleShape(NoShape)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:293/        l2_normalize = ops.L2Normalize(axis=-1)/
-  %16([CNode]104) = S-Prim-negative(I64(1))
+  %16([CNode]106) = S-Prim-negative(I64(1))
       : (<Int64, NoShape>) -> (<Int64, NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:293/        l2_normalize = ops.L2Normalize(axis=-1)/
-  %17([CNode]105) = S-Prim-MakeTuple(%16)
+  %17([CNode]107) = S-Prim-MakeTuple(%16)
       : (<Int64, NoShape>) -> (<Tuple[Int64], TupleShape(NoShape)>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:293/        l2_normalize = ops.L2Normalize(axis=-1)/
-  %18([CNode]106) = S-Prim-make_dict(%15, %17)
+  %18([CNode]108) = S-Prim-make_dict(%15, %17)
       : (<Tuple[String], TupleShape(NoShape)>, <Tuple[Int64], TupleShape(NoShape)>) -> (<Dictionary[[axis,],[Int64]], NoShape>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:293/        l2_normalize = ops.L2Normalize(axis=-1)/
@@ -269,7 +269,7 @@ subgraph @construct.HyperRouter.23 parent: [subgraph @construct.Default.1](%para
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:293/        l2_normalize = ops.L2Normalize(axis=-1)/
 
 #------------------------> 3
-  %20([CNode]108) = call @construct.MetaLinear.107(%14, %para230_opt)
+  %20([CNode]110) = call @construct.MetaLinear.109(%14, %para186_opt)
       : (<Tensor[Float32], (8, 64)>, <None, NoShape>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:294/        x_normalized = l2_normalize(self.fc1(x, opt))/
@@ -277,19 +277,19 @@ subgraph @construct.HyperRouter.23 parent: [subgraph @construct.Default.1](%para
       : (<null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:294/        x_normalized = l2_normalize(self.fc1(x, opt))/
-  %22(weight) = call @construct.ReLU.109(%21)
+  %22(weight) = call @construct.ReLU.111(%21)
       : (<null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:297/        weight = self.relu(x_normalized)/
-  %23([CNode]111) = call @construct.MetaLinear.110(%22, %para230_opt)
+  %23([CNode]113) = call @construct.MetaLinear.112(%22, %para186_opt)
       : (<null>, <None, NoShape>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:299/        weight = self.fc2(weight, opt).reshape(-1, self.planes, K)/
-  %24([CNode]112) = getattr(%23, "reshape")
+  %24([CNode]114) = getattr(%23, "reshape")
       : (<null>, <null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:299/        weight = self.fc2(weight, opt).reshape(-1, self.planes, K)/
-  %25([CNode]113) = S-Prim-negative(I64(1))
+  %25([CNode]115) = S-Prim-negative(I64(1))
       : (<null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:299/        weight = self.fc2(weight, opt).reshape(-1, self.planes, K)/
@@ -297,35 +297,35 @@ subgraph @construct.HyperRouter.23 parent: [subgraph @construct.Default.1](%para
       : (<null>, <null>, <null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:299/        weight = self.fc2(weight, opt).reshape(-1, self.planes, K)/
-  %27([CNode]115) = call @einsum.114("bi,bil->bl", %14, %26)
+  %27([CNode]117) = call @einsum.116("bi,bil->bl", %14, %26)
       : (<null>, <Tensor[Float32], (8, 64)>, <null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:302/        x = self.softmax(ops.einsum('bi,bil->bl', x, weight))/
-  %28(x) = call @construct.Softmax.116(%27)
+  %28(x) = call @construct.Softmax.118(%27)
       : (<null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:302/        x = self.softmax(ops.einsum('bi,bil->bl', x, weight))/
-  %29([CNode]117) = getattr(%26, "reshape")
+  %29([CNode]119) = getattr(%26, "reshape")
       : (<null>, <null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:301/        domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)/
-  %30([CNode]118) = S-Prim-negative(I64(1))
+  %30([CNode]120) = S-Prim-negative(I64(1))
       : (<null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:301/        domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)/
-  %31([CNode]119) = S-Prim-mul(I64(256), I64(4))
+  %31([CNode]121) = S-Prim-mul(I64(256), I64(4))
       : (<null>, <null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:301/        domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)/
-  %32([CNode]120) = %29(%30, %31)
+  %32([CNode]122) = %29(%30, %31)
       : (<null>, <null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:301/        domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)/
-  %33(domain_cls_logits) = call @construct.MetaLinear.121(%32, %para230_opt)
+  %33(domain_cls_logits) = call @construct.MetaLinear.123(%32, %para186_opt)
       : (<null>, <None, NoShape>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:301/        domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)/
-  %34([CNode]122) = S-Prim-MakeTuple(%28, %33)
+  %34([CNode]124) = S-Prim-MakeTuple(%28, %33)
       : (<null>, <null>) -> (<null>)
       #scope: (Default/router1-HyperRouter)
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:306/        return x, domain_cls_logits/
@@ -335,142 +335,142 @@ subgraph @construct.HyperRouter.23 parent: [subgraph @construct.Default.1](%para
       # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/backbones/meta_dynamic_router_resnet.py:306/        return x, domain_cls_logits/
 }
 # Order:
-#   1: @construct.HyperRouter.23:[CNode]89{[0]: ValueNode<Primitive> getattr, [1]: x, [2]: ValueNode<StringImm> shape}
-#   2: @construct.HyperRouter.23:[CNode]91{[0]: ValueNode<FuncGraph> ms_len.90, [1]: [CNode]89}
-#   3: @construct.HyperRouter.23:[CNode]92{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_range, [1]: [CNode]91}
-#   4: @construct.HyperRouter.23:[CNode]94{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 2}
-#   5: @construct.HyperRouter.23:[CNode]95{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_slice, [1]: [CNode]94, [2]: ValueNode<None> None, [3]: ValueNode<None> None}
-#   6: @construct.HyperRouter.23:[CNode]96{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]93, [2]: [CNode]95}
-#   7: @construct.HyperRouter.23:[CNode]97{[0]: ValueNode<DoSignaturePrimitive> S-Prim-ReduceMean, [1]: x, [2]: [CNode]96}
-#   8: @construct.HyperRouter.23:[CNode]98{[0]: ValueNode<Primitive> getattr, [1]: [CNode]97, [2]: ValueNode<StringImm> squeeze}
-#   9: @construct.HyperRouter.23:[CNode]99{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
-#  10: @construct.HyperRouter.23:[CNode]100{[0]: [CNode]98, [1]: [CNode]99}
-#  11: @construct.HyperRouter.23:[CNode]101{[0]: ValueNode<Primitive> getattr, [1]: [CNode]100, [2]: ValueNode<StringImm> squeeze}
-#  12: @construct.HyperRouter.23:[CNode]102{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
-#  13: @construct.HyperRouter.23:x{[0]: [CNode]101, [1]: [CNode]102}
-#  14: @construct.HyperRouter.23:[CNode]104{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
-#  15: @construct.HyperRouter.23:[CNode]103{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<StringImm> axis}
-#  16: @construct.HyperRouter.23:[CNode]105{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: [CNode]104}
-#  17: @construct.HyperRouter.23:[CNode]106{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_dict, [1]: [CNode]103, [2]: [CNode]105}
-#  18: @construct.HyperRouter.23:l2_normalize{[0]: ValueNode<UnpackCall> MetaFuncGraph-unpack_call.123, [1]: ValueNode<ClassType> class 'mindspore.ops.operations.nn_ops.L2Normalize', [2]: [CNode]106}
-#  19: @construct.HyperRouter.23:[CNode]108{[0]: ValueNode<FuncGraph> construct.MetaLinear.107, [1]: x, [2]: opt}
-#  20: @construct.HyperRouter.23:x_normalized{[0]: l2_normalize, [1]: [CNode]108}
-#  21: @construct.HyperRouter.23:weight{[0]: ValueNode<FuncGraph> construct.ReLU.109, [1]: x_normalized}
-#  22: @construct.HyperRouter.23:[CNode]111{[0]: ValueNode<FuncGraph> construct.MetaLinear.110, [1]: weight, [2]: opt}
-#  23: @construct.HyperRouter.23:[CNode]112{[0]: ValueNode<Primitive> getattr, [1]: [CNode]111, [2]: ValueNode<StringImm> reshape}
-#  24: @construct.HyperRouter.23:[CNode]113{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
-#  25: @construct.HyperRouter.23:weight{[0]: [CNode]112, [1]: [CNode]113, [2]: ValueNode<Int64Imm> 256, [3]: ValueNode<Int64Imm> 4}
-#  26: @construct.HyperRouter.23:[CNode]117{[0]: ValueNode<Primitive> getattr, [1]: weight, [2]: ValueNode<StringImm> reshape}
-#  27: @construct.HyperRouter.23:[CNode]118{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
-#  28: @construct.HyperRouter.23:[CNode]119{[0]: ValueNode<DoSignaturePrimitive> S-Prim-mul, [1]: ValueNode<Int64Imm> 256, [2]: ValueNode<Int64Imm> 4}
-#  29: @construct.HyperRouter.23:[CNode]120{[0]: [CNode]117, [1]: [CNode]118, [2]: [CNode]119}
-#  30: @construct.HyperRouter.23:domain_cls_logits{[0]: ValueNode<FuncGraph> construct.MetaLinear.121, [1]: [CNode]120, [2]: opt}
-#  31: @construct.HyperRouter.23:[CNode]115{[0]: ValueNode<FuncGraph> einsum.114, [1]: ValueNode<StringImm> bi,bil->bl, [2]: x, [3]: weight}
-#  32: @construct.HyperRouter.23:x{[0]: ValueNode<FuncGraph> construct.Softmax.116, [1]: [CNode]115}
-#  33: @construct.HyperRouter.23:[CNode]122{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: x, [2]: domain_cls_logits}
-#  34: @construct.HyperRouter.23:[CNode]124{[0]: ValueNode<Primitive> Return, [1]: [CNode]122}
+#   1: @construct.HyperRouter.24:[CNode]91{[0]: ValueNode<Primitive> getattr, [1]: x, [2]: ValueNode<StringImm> shape}
+#   2: @construct.HyperRouter.24:[CNode]93{[0]: ValueNode<FuncGraph> ms_len.92, [1]: [CNode]91}
+#   3: @construct.HyperRouter.24:[CNode]94{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_range, [1]: [CNode]93}
+#   4: @construct.HyperRouter.24:[CNode]96{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 2}
+#   5: @construct.HyperRouter.24:[CNode]97{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_slice, [1]: [CNode]96, [2]: ValueNode<None> None, [3]: ValueNode<None> None}
+#   6: @construct.HyperRouter.24:[CNode]98{[0]: ValueNode<DoSignaturePrimitive> S-Prim-getitem, [1]: [CNode]95, [2]: [CNode]97}
+#   7: @construct.HyperRouter.24:[CNode]99{[0]: ValueNode<DoSignaturePrimitive> S-Prim-ReduceMean, [1]: x, [2]: [CNode]98}
+#   8: @construct.HyperRouter.24:[CNode]100{[0]: ValueNode<Primitive> getattr, [1]: [CNode]99, [2]: ValueNode<StringImm> squeeze}
+#   9: @construct.HyperRouter.24:[CNode]101{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
+#  10: @construct.HyperRouter.24:[CNode]102{[0]: [CNode]100, [1]: [CNode]101}
+#  11: @construct.HyperRouter.24:[CNode]103{[0]: ValueNode<Primitive> getattr, [1]: [CNode]102, [2]: ValueNode<StringImm> squeeze}
+#  12: @construct.HyperRouter.24:[CNode]104{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
+#  13: @construct.HyperRouter.24:x{[0]: [CNode]103, [1]: [CNode]104}
+#  14: @construct.HyperRouter.24:[CNode]106{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
+#  15: @construct.HyperRouter.24:[CNode]105{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: ValueNode<StringImm> axis}
+#  16: @construct.HyperRouter.24:[CNode]107{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: [CNode]106}
+#  17: @construct.HyperRouter.24:[CNode]108{[0]: ValueNode<DoSignaturePrimitive> S-Prim-make_dict, [1]: [CNode]105, [2]: [CNode]107}
+#  18: @construct.HyperRouter.24:l2_normalize{[0]: ValueNode<UnpackCall> MetaFuncGraph-unpack_call.125, [1]: ValueNode<ClassType> class 'mindspore.ops.operations.nn_ops.L2Normalize', [2]: [CNode]108}
+#  19: @construct.HyperRouter.24:[CNode]110{[0]: ValueNode<FuncGraph> construct.MetaLinear.109, [1]: x, [2]: opt}
+#  20: @construct.HyperRouter.24:x_normalized{[0]: l2_normalize, [1]: [CNode]110}
+#  21: @construct.HyperRouter.24:weight{[0]: ValueNode<FuncGraph> construct.ReLU.111, [1]: x_normalized}
+#  22: @construct.HyperRouter.24:[CNode]113{[0]: ValueNode<FuncGraph> construct.MetaLinear.112, [1]: weight, [2]: opt}
+#  23: @construct.HyperRouter.24:[CNode]114{[0]: ValueNode<Primitive> getattr, [1]: [CNode]113, [2]: ValueNode<StringImm> reshape}
+#  24: @construct.HyperRouter.24:[CNode]115{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
+#  25: @construct.HyperRouter.24:weight{[0]: [CNode]114, [1]: [CNode]115, [2]: ValueNode<Int64Imm> 256, [3]: ValueNode<Int64Imm> 4}
+#  26: @construct.HyperRouter.24:[CNode]119{[0]: ValueNode<Primitive> getattr, [1]: weight, [2]: ValueNode<StringImm> reshape}
+#  27: @construct.HyperRouter.24:[CNode]120{[0]: ValueNode<DoSignaturePrimitive> S-Prim-negative, [1]: ValueNode<Int64Imm> 1}
+#  28: @construct.HyperRouter.24:[CNode]121{[0]: ValueNode<DoSignaturePrimitive> S-Prim-mul, [1]: ValueNode<Int64Imm> 256, [2]: ValueNode<Int64Imm> 4}
+#  29: @construct.HyperRouter.24:[CNode]122{[0]: [CNode]119, [1]: [CNode]120, [2]: [CNode]121}
+#  30: @construct.HyperRouter.24:domain_cls_logits{[0]: ValueNode<FuncGraph> construct.MetaLinear.123, [1]: [CNode]122, [2]: opt}
+#  31: @construct.HyperRouter.24:[CNode]117{[0]: ValueNode<FuncGraph> einsum.116, [1]: ValueNode<StringImm> bi,bil->bl, [2]: x, [3]: weight}
+#  32: @construct.HyperRouter.24:x{[0]: ValueNode<FuncGraph> construct.Softmax.118, [1]: [CNode]117}
+#  33: @construct.HyperRouter.24:[CNode]124{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MakeTuple, [1]: x, [2]: domain_cls_logits}
+#  34: @construct.HyperRouter.24:[CNode]126{[0]: ValueNode<Primitive> Return, [1]: [CNode]124}
 
 
 subgraph attr:
 training : 0
-subgraph instance: construct.MetaLinear.24 : 0x560dbe6c7d50
-# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:118/    def construct(self, inputs, opt = None, reserve = False):/
-subgraph @construct.MetaLinear.24 parent: [subgraph @construct.Default.1](%para231_inputs, %para232_opt) {
+subgraph instance: construct.MetaLinear.25 : 0x564db7d27c80
+# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:126/    def construct(self, inputs, opt = None, reserve = False):/
+subgraph @construct.MetaLinear.25 parent: [subgraph @construct.Default.21](%para187_inputs, %para188_opt) {
 
 #------------------------> 4
-  %1([CNode]126) = call @L-construct.MetaLinear.125(%para231_inputs, %para232_opt, Bool(0), %para8_router1.fc1.weight)
+  %1([CNode]128) = call @L-construct.MetaLinear.127(%para187_inputs, %para188_opt, Bool(0), %para8_router1.fc1.weight)
       : (<Tensor[Float32], (8, 64)>, <None, NoShape>, <Bool, NoShape>, <Ref[Tensor[Float32]], (16, 256)>) -> (<null>)
       #scope: (Default)
   Return(%1)
       : (<null>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
 }
 # Order:
-#   1: @construct.MetaLinear.24:[CNode]126{[0]: ValueNode<FuncGraph> L-construct.MetaLinear.125, [1]: inputs, [2]: opt, [3]: ValueNode<BoolImm> false, [4]: router1.fc1.weight}
-#   2: @construct.MetaLinear.24:[CNode]127{[0]: ValueNode<Primitive> Return, [1]: [CNode]126}
+#   1: @construct.MetaLinear.25:[CNode]128{[0]: ValueNode<FuncGraph> L-construct.MetaLinear.127, [1]: inputs, [2]: opt, [3]: ValueNode<BoolImm> false, [4]: router1.fc1.weight}
+#   2: @construct.MetaLinear.25:[CNode]129{[0]: ValueNode<Primitive> Return, [1]: [CNode]128}
 
 
 subgraph attr:
 training : 0
-subgraph instance: L-construct.MetaLinear.25 : 0x560dbe7914a0
-# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:118/    def construct(self, inputs, opt = None, reserve = False):/
-subgraph @L-construct.MetaLinear.25 parent: [subgraph @construct.Default.1](%para233_inputs, %para234_opt, %para235_reserve, %para236_) {
-  %1([CNode]128) = S-Prim-not_equal(%para234_opt, None)
+subgraph instance: L-construct.MetaLinear.26 : 0x564db7d94e60
+# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:126/    def construct(self, inputs, opt = None, reserve = False):/
+subgraph @L-construct.MetaLinear.26(%para189_inputs, %para190_opt, %para191_reserve, %para192_) {
+  %1([CNode]130) = S-Prim-not_equal(%para190_opt, None)
       : (<None, NoShape>, <None, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
-  %2([CNode]130) = call @L-bool_.129(%1)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
+  %2([CNode]132) = call @L-bool_.131(%1)
       : (<Bool, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
-  %3([CNode]131) = Switch(%2, call @L-↰construct.MetaLinear.132, call @L-↱construct.MetaLinear.133)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
+  %3([CNode]133) = Switch(%2, call @L-↰construct.MetaLinear.134, call @L-↱construct.MetaLinear.135)
       : (<Bool, NoShape>, <Func, NoShape>, <Func, NoShape>) -> (<Func, NoShape>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
-  %4([CNode]134) = %3()
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
+  %4([CNode]136) = %3()
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
-  %5([CNode]135) = call @L-bool_.129(%4)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
+  %5([CNode]137) = call @L-bool_.131(%4)
       : (<Bool, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
-  %6([CNode]136) = Switch(%5, call @L-✓construct.MetaLinear.137, call @L-✗construct.MetaLinear.26)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
+  %6([CNode]138) = Switch(%5, call @L-✓construct.MetaLinear.139, call @L-✗construct.MetaLinear.27)
       : (<Bool, NoShape>, <Func, NoShape>, <Func, NoShape>) -> (<Func, NoShape>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
 
 #------------------------> 5
-  %7([CNode]138) = %6()
+  %7([CNode]140) = %6()
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
   Return(%7)
       : (<null>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
 }
 # Order:
-#   1: @L-construct.MetaLinear.25:[CNode]128{[0]: ValueNode<DoSignaturePrimitive> S-Prim-not_equal, [1]: opt, [2]: ValueNode<None> None}
-#   2: @L-construct.MetaLinear.25:[CNode]130{[0]: ValueNode<FuncGraph> L-bool_.129, [1]: [CNode]128}
-#   3: @L-construct.MetaLinear.25:[CNode]131{[0]: ValueNode<Primitive> Switch, [1]: [CNode]130, [2]: ValueNode<FuncGraph> L-↰construct.MetaLinear.132, [3]: ValueNode<FuncGraph> L-↱construct.MetaLinear.133}
-#   4: @L-construct.MetaLinear.25:[CNode]134{[0]: [CNode]131}
-#   5: @L-construct.MetaLinear.25:[CNode]135{[0]: ValueNode<FuncGraph> L-bool_.129, [1]: [CNode]134}
-#   6: @L-construct.MetaLinear.25:[CNode]139{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> ClassMember: 'Namespace:fastreid.modeling.ops..<MetaLinear::139711235442384>', [2]: ValueNode<Symbol> w_step_size}
-#   7: @L-construct.MetaLinear.25:[CNode]140{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> ClassMember: 'Namespace:fastreid.modeling.ops..<MetaLinear::139711235442384>', [2]: ValueNode<Symbol> b_step_size}
-#   8: @L-construct.MetaLinear.25:[CNode]136{[0]: ValueNode<Primitive> Switch, [1]: [CNode]135, [2]: ValueNode<FuncGraph> L-✓construct.MetaLinear.137, [3]: ValueNode<FuncGraph> L-✗construct.MetaLinear.26}
-#   9: @L-construct.MetaLinear.25:[CNode]138{[0]: [CNode]136}
-#  10: @L-construct.MetaLinear.25:[CNode]127{[0]: ValueNode<Primitive> Return, [1]: [CNode]138}
+#   1: @L-construct.MetaLinear.26:[CNode]130{[0]: ValueNode<DoSignaturePrimitive> S-Prim-not_equal, [1]: opt, [2]: ValueNode<None> None}
+#   2: @L-construct.MetaLinear.26:[CNode]132{[0]: ValueNode<FuncGraph> L-bool_.131, [1]: [CNode]130}
+#   3: @L-construct.MetaLinear.26:[CNode]133{[0]: ValueNode<Primitive> Switch, [1]: [CNode]132, [2]: ValueNode<FuncGraph> L-↰construct.MetaLinear.134, [3]: ValueNode<FuncGraph> L-↱construct.MetaLinear.135}
+#   4: @L-construct.MetaLinear.26:[CNode]136{[0]: [CNode]133}
+#   5: @L-construct.MetaLinear.26:[CNode]137{[0]: ValueNode<FuncGraph> L-bool_.131, [1]: [CNode]136}
+#   6: @L-construct.MetaLinear.26:[CNode]141{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> ClassMember: 'Namespace:fastreid.modeling.ops..<MetaLinear::139889259347216>', [2]: ValueNode<Symbol> w_step_size}
+#   7: @L-construct.MetaLinear.26:[CNode]142{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> ClassMember: 'Namespace:fastreid.modeling.ops..<MetaLinear::139889259347216>', [2]: ValueNode<Symbol> b_step_size}
+#   8: @L-construct.MetaLinear.26:[CNode]138{[0]: ValueNode<Primitive> Switch, [1]: [CNode]137, [2]: ValueNode<FuncGraph> L-✓construct.MetaLinear.139, [3]: ValueNode<FuncGraph> L-✗construct.MetaLinear.27}
+#   9: @L-construct.MetaLinear.26:[CNode]140{[0]: [CNode]138}
+#  10: @L-construct.MetaLinear.26:[CNode]129{[0]: ValueNode<Primitive> Return, [1]: [CNode]140}
 
 
 subgraph attr:
 training : 0
-subgraph instance: L-✗construct.MetaLinear.26 : 0x560dbe733a10
-# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:119/        if opt != None and opt['meta']:/
-subgraph @L-✗construct.MetaLinear.26 parent: [subgraph @L-construct.MetaLinear.25]() {
+subgraph instance: L-✗construct.MetaLinear.27 : 0x564db7d8d620
+# In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:127/        if opt != None and opt['meta']:/
+subgraph @L-✗construct.MetaLinear.27 parent: [subgraph @L-construct.MetaLinear.26]() {
 
 #------------------------> 6
-  %1(output) = call @L-construct.Dense.27(%para233_inputs)
+  %1(output) = call @L-construct.Dense.28(%para189_inputs)
       : (<Tensor[Float32], (8, 64)>) -> (<null>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:139/            output = self.linear(inputs)/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:145/            output = self.linear(inputs)/
   Return(%1)
       : (<null>)
       #scope: (Default/router1-HyperRouter/fc1-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:140/            return output/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:146/            return output/
 }
 # Order:
-#   1: @L-✗construct.MetaLinear.26:output{[0]: ValueNode<FuncGraph> L-construct.Dense.27, [1]: inputs}
-#   2: @L-✗construct.MetaLinear.26:[CNode]141{[0]: ValueNode<Primitive> Return, [1]: output}
+#   1: @L-✗construct.MetaLinear.27:output{[0]: ValueNode<FuncGraph> L-construct.Dense.28, [1]: inputs}
+#   2: @L-✗construct.MetaLinear.27:[CNode]143{[0]: ValueNode<Primitive> Return, [1]: output}
 
 
 subgraph attr:
 training : 0
-subgraph instance: L-construct.Dense.27 : 0x560dbe7328b0
+subgraph instance: L-construct.Dense.28 : 0x564db7da0b70
 # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:590/    def construct(self, x):/
-subgraph @L-construct.Dense.27 parent: [subgraph @construct.Default.1](%para237_x) {
+subgraph @L-construct.Dense.28 parent: [subgraph @L-construct.MetaLinear.26](%para193_x) {
 
 #------------------------> 7
-  %1([CNode]142) = call @L-L-construct.Dense.28(%para237_x, %para20_router1.fc1.linear.weight)
+  %1([CNode]144) = call @L-L-construct.Dense.29(%para193_x, %para192_L-router1.fc1.weight)
       : (<Tensor[Float32], (8, 64)>, <Ref[Tensor[Float32]], (16, 256)>) -> (<null>)
       #scope: (Default)
   Return(%1)
@@ -479,120 +479,120 @@ subgraph @L-construct.Dense.27 parent: [subgraph @construct.Default.1](%para237_
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
 }
 # Order:
-#   1: @L-construct.Dense.27:[CNode]142{[0]: ValueNode<FuncGraph> L-L-construct.Dense.28, [1]: x, [2]: router1.fc1.linear.weight}
-#   2: @L-construct.Dense.27:[CNode]143{[0]: ValueNode<Primitive> Return, [1]: [CNode]142}
+#   1: @L-construct.Dense.28:[CNode]144{[0]: ValueNode<FuncGraph> L-L-construct.Dense.29, [1]: x, [2]: L-router1.fc1.weight}
+#   2: @L-construct.Dense.28:[CNode]145{[0]: ValueNode<Primitive> Return, [1]: [CNode]144}
 
 
 subgraph attr:
 training : 0
-subgraph instance: L-L-construct.Dense.28 : 0x560dbe74b810
+subgraph instance: L-L-construct.Dense.29 : 0x564db7dadcf0
 # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:590/    def construct(self, x):/
-subgraph @L-L-construct.Dense.28(%para238_x, %para239_) {
-  %1(фx_shape) = S-Prim-Shape(%para238_x)
+subgraph @L-L-construct.Dense.29(%para194_x, %para195_) {
+  %1(фx_shape) = S-Prim-Shape(%para194_x)
       : (<Tensor[Float32], (8, 64)>) -> (<Tuple[Int64*2], TupleShape(NoShape, NoShape)>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:600/        if len(x_shape) != 2:/
-  %2([CNode]144) = S-Prim-check_dense_input_shape[constexpr_prim=Bool(1)](%1, "Dense")
+  %2([CNode]146) = S-Prim-check_dense_input_shape[constexpr_prim=Bool(1)](%1, "Dense")
       : (<Tuple[Int64*2], TupleShape(NoShape, NoShape)>, <String, NoShape>) -> (<None, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:592/        check_dense_input_shape(x_shape, self.cls_name)/
-  %3([CNode]145) = StopGradient(%2)
+  %3([CNode]147) = StopGradient(%2)
       : (<None, NoShape>) -> (<None, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:139/            output = self.linear(inputs)/
-  %4([CNode]147) = call @L-L-ms_len.146(%1)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:145/            output = self.linear(inputs)/
+  %4([CNode]149) = call @L-L-ms_len.148(%1)
       : (<Tuple[Int64*2], TupleShape(NoShape, NoShape)>) -> (<Int64, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
-  %5([CNode]148) = S-Prim-not_equal(%4, I64(2))
+  %5([CNode]150) = S-Prim-not_equal(%4, I64(2))
       : (<Int64, NoShape>, <Int64, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
-  %6([CNode]150) = call @L-L-bool_.149(%5)
+  %6([CNode]152) = call @L-L-bool_.151(%5)
       : (<Bool, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
-  %7([CNode]151) = Switch(%6, call @L-L-✓construct.Dense.152, call @L-L-✗construct.Dense.153)
+  %7([CNode]153) = Switch(%6, call @L-L-✓construct.Dense.154, call @L-L-✗construct.Dense.155)
       : (<Bool, NoShape>, <Func, NoShape>, <Func, NoShape>) -> (<Func, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
-  %8([CNode]154) = %7()
+  %8([CNode]156) = %7()
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
 
 #------------------------> 8
-  %9([CNode]155) = call @L-L-↓construct.Dense.29(%8)
+  %9([CNode]157) = call @L-L-↓construct.Dense.30(%8)
       : (<Tensor[Float32], (8, 64)>) -> (<null>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:139/            output = self.linear(inputs)/
-  %10([CNode]156) = Depend[side_effect_propagate=I64(1)](%9, %3)
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:145/            output = self.linear(inputs)/
+  %10([CNode]158) = Depend[side_effect_propagate=I64(1)](%9, %3)
       : (<null>, <None, NoShape>) -> (<null>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:139/            output = self.linear(inputs)/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:145/            output = self.linear(inputs)/
   Return(%10)
       : (<null>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
 }
 # Order:
-#   1: @L-L-construct.Dense.28:фx_shape{[0]: ValueNode<DoSignaturePrimitive> S-Prim-Shape, [1]: x}
-#   2: @L-L-construct.Dense.28:[CNode]144{[0]: ValueNode<DoSignaturePrimitive> S-Prim-check_dense_input_shape, [1]: фx_shape, [2]: ValueNode<StringImm> Dense}
-#   3: @L-L-construct.Dense.28:[CNode]147{[0]: ValueNode<FuncGraph> L-L-ms_len.146, [1]: фx_shape}
-#   4: @L-L-construct.Dense.28:[CNode]148{[0]: ValueNode<DoSignaturePrimitive> S-Prim-not_equal, [1]: [CNode]147, [2]: ValueNode<Int64Imm> 2}
-#   5: @L-L-construct.Dense.28:[CNode]150{[0]: ValueNode<FuncGraph> L-L-bool_.149, [1]: [CNode]148}
-#   6: @L-L-construct.Dense.28:[CNode]151{[0]: ValueNode<Primitive> Switch, [1]: [CNode]150, [2]: ValueNode<FuncGraph> L-L-✓construct.Dense.152, [3]: ValueNode<FuncGraph> L-L-✗construct.Dense.153}
-#   7: @L-L-construct.Dense.28:[CNode]154{[0]: [CNode]151}
-#   8: @L-L-construct.Dense.28:фself.bias_add{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> ClassMember: 'Namespace:mindspore.nn.layer.basic..<Dense::139711235492416>', [2]: ValueNode<Symbol> bias_add}
-#   9: @L-L-construct.Dense.28:[CNode]155{[0]: ValueNode<FuncGraph> L-L-↓construct.Dense.29, [1]: [CNode]154}
-#  10: @L-L-construct.Dense.28:[CNode]156{[0]: ValueNode<Primitive> Depend, [1]: [CNode]155, [2]: [CNode]145}
-#  11: @L-L-construct.Dense.28:[CNode]157{[0]: ValueNode<Primitive> Return, [1]: [CNode]156}
+#   1: @L-L-construct.Dense.29:фx_shape{[0]: ValueNode<DoSignaturePrimitive> S-Prim-Shape, [1]: x}
+#   2: @L-L-construct.Dense.29:[CNode]146{[0]: ValueNode<DoSignaturePrimitive> S-Prim-check_dense_input_shape, [1]: фx_shape, [2]: ValueNode<StringImm> Dense}
+#   3: @L-L-construct.Dense.29:[CNode]149{[0]: ValueNode<FuncGraph> L-L-ms_len.148, [1]: фx_shape}
+#   4: @L-L-construct.Dense.29:[CNode]150{[0]: ValueNode<DoSignaturePrimitive> S-Prim-not_equal, [1]: [CNode]149, [2]: ValueNode<Int64Imm> 2}
+#   5: @L-L-construct.Dense.29:[CNode]152{[0]: ValueNode<FuncGraph> L-L-bool_.151, [1]: [CNode]150}
+#   6: @L-L-construct.Dense.29:[CNode]153{[0]: ValueNode<Primitive> Switch, [1]: [CNode]152, [2]: ValueNode<FuncGraph> L-L-✓construct.Dense.154, [3]: ValueNode<FuncGraph> L-L-✗construct.Dense.155}
+#   7: @L-L-construct.Dense.29:[CNode]156{[0]: [CNode]153}
+#   8: @L-L-construct.Dense.29:фself.bias_add{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> ClassMember: 'Namespace:mindspore.nn.layer.basic..<Dense::139889259398944>', [2]: ValueNode<Symbol> bias_add}
+#   9: @L-L-construct.Dense.29:[CNode]157{[0]: ValueNode<FuncGraph> L-L-↓construct.Dense.30, [1]: [CNode]156}
+#  10: @L-L-construct.Dense.29:[CNode]158{[0]: ValueNode<Primitive> Depend, [1]: [CNode]157, [2]: [CNode]147}
+#  11: @L-L-construct.Dense.29:[CNode]159{[0]: ValueNode<Primitive> Return, [1]: [CNode]158}
 
 
 subgraph attr:
 after_block : 1
 training : 0
-subgraph instance: L-L-↓construct.Dense.29 : 0x560dbe7c2bc0
+subgraph instance: L-L-↓construct.Dense.30 : 0x564db7e231d0
 # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:593/        if len(x_shape) != 2:/
-subgraph @L-L-↓construct.Dense.29 parent: [subgraph @L-L-construct.Dense.28](%para240_) {
-  %1([CNode]158) = call @L-L-bool_.149(Bool(0))
+subgraph @L-L-↓construct.Dense.30 parent: [subgraph @L-L-construct.Dense.29](%para196_) {
+  %1([CNode]160) = call @L-L-bool_.151(Bool(0))
       : (<Bool, NoShape>) -> (<Bool, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:596/        if self.has_bias:/
-  %2([CNode]159) = Switch(%1, call @L-L-✓↓construct.Dense.160, call @L-L-✗↓construct.Dense.30)
+  %2([CNode]161) = Switch(%1, call @L-L-✓↓construct.Dense.162, call @L-L-✗↓construct.Dense.31)
       : (<Bool, NoShape>, <Func, NoShape>, <Func, NoShape>) -> (<Func, NoShape>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:596/        if self.has_bias:/
 
 #------------------------> 9
-  %3([CNode]161) = %2()
+  %3([CNode]163) = %2()
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:596/        if self.has_bias:/
-  %4([CNode]163) = call @L-L-↓↓construct.Dense.162(%3)
+  %4([CNode]165) = call @L-L-↓↓construct.Dense.164(%3)
       : (<null>) -> (<null>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear)
-      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:139/            output = self.linear(inputs)/
+      # In file /home/yuming/ACL-DGReID-mindspore/fastreid/modeling/ops.py:145/            output = self.linear(inputs)/
   Return(%4)
       : (<null>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:596/        if self.has_bias:/
 }
 # Order:
-#   1: @L-L-↓construct.Dense.29:x{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MatMul, [1]: фx, [2]: L-router1.fc_classifier.linear.weight}
-#   2: @L-L-↓construct.Dense.29:[CNode]158{[0]: ValueNode<FuncGraph> L-L-bool_.149, [1]: ValueNode<BoolImm> false}
-#   3: @L-L-↓construct.Dense.29:[CNode]159{[0]: ValueNode<Primitive> Switch, [1]: [CNode]158, [2]: ValueNode<FuncGraph> L-L-✓↓construct.Dense.160, [3]: ValueNode<FuncGraph> L-L-✗↓construct.Dense.30}
-#   4: @L-L-↓construct.Dense.29:[CNode]161{[0]: [CNode]159}
-#   5: @L-L-↓construct.Dense.29:[CNode]163{[0]: ValueNode<FuncGraph> L-L-↓↓construct.Dense.162, [1]: [CNode]161}
-#   6: @L-L-↓construct.Dense.29:[CNode]164{[0]: ValueNode<Primitive> Return, [1]: [CNode]163}
+#   1: @L-L-↓construct.Dense.30:x{[0]: ValueNode<DoSignaturePrimitive> S-Prim-MatMul, [1]: фx, [2]: L-router1.fc_classifier.weight}
+#   2: @L-L-↓construct.Dense.30:[CNode]160{[0]: ValueNode<FuncGraph> L-L-bool_.151, [1]: ValueNode<BoolImm> false}
+#   3: @L-L-↓construct.Dense.30:[CNode]161{[0]: ValueNode<Primitive> Switch, [1]: [CNode]160, [2]: ValueNode<FuncGraph> L-L-✓↓construct.Dense.162, [3]: ValueNode<FuncGraph> L-L-✗↓construct.Dense.31}
+#   4: @L-L-↓construct.Dense.30:[CNode]163{[0]: [CNode]161}
+#   5: @L-L-↓construct.Dense.30:[CNode]165{[0]: ValueNode<FuncGraph> L-L-↓↓construct.Dense.164, [1]: [CNode]163}
+#   6: @L-L-↓construct.Dense.30:[CNode]166{[0]: ValueNode<Primitive> Return, [1]: [CNode]165}
 
 
 subgraph attr:
 training : 0
-subgraph instance: L-L-✗↓construct.Dense.30 : 0x560dbe762700
+subgraph instance: L-L-✗↓construct.Dense.31 : 0x564db7e20fd0
 # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:596/        if self.has_bias:/
-subgraph @L-L-✗↓construct.Dense.30 parent: [subgraph @L-L-↓construct.Dense.29]() {
+subgraph @L-L-✗↓construct.Dense.31 parent: [subgraph @L-L-↓construct.Dense.30]() {
 
 #------------------------> 10
-  %1(x) = $(L-L-↓construct.Dense.29):S-Prim-MatMul[output_names=["output"], transpose_a=Bool(0), input_names=["x1", "x2"], transpose_x2=Bool(1), transpose_x1=Bool(0), transpose_b=Bool(1)](%para240_фx, %para239_L-router1.fc_classifier.linear.weight)
+  %1(x) = $(L-L-↓construct.Dense.30):S-Prim-MatMul[output_names=["output"], transpose_a=Bool(0), input_names=["x1", "x2"], transpose_x2=Bool(1), transpose_x1=Bool(0), transpose_b=Bool(1)](%para196_фx, %para195_L-router1.fc_classifier.weight)
       : (<Tensor[Float32], (8, 64)>, <Ref[Tensor[Float32]], (16, 256)>) -> (<null>)
       #scope: (Default/router1-HyperRouter/fc_classifier-MetaLinear/linear-Dense)
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:595/        x = self.matmul(x, self.weight)/
@@ -602,7 +602,7 @@ subgraph @L-L-✗↓construct.Dense.30 parent: [subgraph @L-L-↓construct.Dense
       # In file /home/yuming/miniconda3/envs/reid/lib/python3.9/site-packages/mindspore/nn/layer/basic.py:596/        if self.has_bias:/
 }
 # Order:
-#   1: @L-L-✗↓construct.Dense.30:[CNode]165{[0]: ValueNode<Primitive> Return, [1]: x}
+#   1: @L-L-✗↓construct.Dense.31:[CNode]167{[0]: ValueNode<Primitive> Return, [1]: x}
 
 
 #===============================================================================
