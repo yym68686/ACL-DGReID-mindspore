@@ -12,6 +12,7 @@ from collections import OrderedDict
 # from torch import nn
 # import torch.nn.functional as F
 # from torch.autograd.variable import Variable
+# from fastreid.modeling.ops import MetaConv2d, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
 from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
 
 from fastreid.layers import (
@@ -135,8 +136,10 @@ class MetaSELayer(nn.Cell):
         super(MetaSELayer, self).__init__()
         self.avg_pool = ops.ReduceMean(keep_dims=True)
         # self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        # self.fc1 = nn.Dense(channel, int(channel / reduction), has_bias=False)
         self.fc1 = MetaLinear(channel, int(channel / reduction), has_bias=False)
         self.relu = nn.ReLU()
+        # self.fc2 = nn.Dense(int(channel / reduction), channel, has_bias=False)
         self.fc2 = MetaLinear(int(channel / reduction), channel, has_bias=False)
         self.sigmoid = nn.Sigmoid()
 
@@ -273,6 +276,9 @@ class HyperRouter(nn.Cell):
         # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.avgpool = ops.ReduceMean(keep_dims=True)
         self.planes = planes
+        # self.fc1 = nn.Dense(planes, planes//16)
+        # self.fc2 = nn.Dense(planes//16, planes*K)
+        # self.fc_classifier = nn.Dense(planes*K, 3)
         self.fc1 = MetaLinear(planes, planes//16)
         self.fc2 = MetaLinear(planes//16, planes*K)
         self.fc_classifier = MetaLinear(planes*K, 3)
@@ -286,10 +292,15 @@ class HyperRouter(nn.Cell):
         # weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         l2_normalize = ops.L2Normalize(axis=-1)
         x_normalized = l2_normalize(self.fc1(x, opt))
+        # x_normalized = l2_normalize(self.fc1(x.reshape(-1, self.planes)))
+
         weight = self.relu(x_normalized)
+        # weight = self.fc2(weight).reshape(-1, self.planes, K)
         weight = self.fc2(weight, opt).reshape(-1, self.planes, K)
+        # domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K))
         domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)
         x = self.softmax(ops.einsum('bi,bil->bl', x, weight))
+        # x = self.softmax(ops.einsum('bi,bil->bl', x.reshape(-1, self.planes), weight))
         # x = self.softmax(torch.einsum('bi,bil->bl', x, weight))
 
         return x, domain_cls_logits
@@ -359,7 +370,9 @@ class ResNet(nn.Cell):
 
         self.random_init()
 
+
         # fmt: off
+        # self._build_nonlocal(layers, non_layers, bn_norm)
         if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
         else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter([-1], requires_grad=False)
         # else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
@@ -417,10 +430,13 @@ class ResNet(nn.Cell):
                     if isinstance(_m, nn.Conv2d):
                         yield _m
 
+    # def construct(self, x):
     def construct(self, x, epoch, opt=None):
     # def forward(self, x, epoch, opt=None):
 
 
+        print(4)
+        # opt=None
         x = self.conv1(x, opt)
         x = self.bn1(x, opt)
         x = self.relu(x)
@@ -432,8 +448,8 @@ class ResNet(nn.Cell):
         # layer 1
         NL1_counter = 0
         if len(self.NL_1_idx) == 0:
-            # self.NL_1_idx = mindspore.Parameter([-1])
-            self.NL_1_idx = [-1]
+            self.NL_1_idx = mindspore.Parameter([-1])
+            # self.NL_1_idx = [-1]
         for i in range(len(self.layer1)):
             x = self.layer1[i](x, opt)
             if i == self.NL_1_idx[NL1_counter]:
@@ -442,6 +458,7 @@ class ResNet(nn.Cell):
                 NL1_counter += 1
 
         x_invariant = self.adaptor1_base(x, opt)
+        # x_invariant = self.adaptor1_base(x.tile((1, K, 1, 1)), opt)
         N, C, H, W = x_invariant.shape
         x_specific = self.adaptor1_sub(x.tile((1, K, 1, 1)), opt).reshape(N, K, C, H, W)
         # x_specific = self.adaptor1_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
@@ -461,8 +478,8 @@ class ResNet(nn.Cell):
         # layer 2
         NL2_counter = 0
         if len(self.NL_2_idx) == 0:
-            # self.NL_2_idx = mindspore.Parameter([-1])
-            self.NL_2_idx = [-1]
+            self.NL_2_idx = mindspore.Parameter([-1])
+            # self.NL_2_idx = [-1]
         for i in range(len(self.layer2)):
             x = self.layer2[i](x, opt)
             if i == self.NL_2_idx[NL2_counter]:
@@ -490,8 +507,8 @@ class ResNet(nn.Cell):
         # layer 3
         NL3_counter = 0
         if len(self.NL_3_idx) == 0:
-            # self.NL_3_idx = mindspore.Parameter([-1])
-            self.NL_3_idx = [-1]
+            self.NL_3_idx = mindspore.Parameter([-1])
+            # self.NL_3_idx = [-1]
         for i in range(len(self.layer3)):
             x = self.layer3[i](x, opt)
             if i == self.NL_3_idx[NL3_counter]:
@@ -518,8 +535,8 @@ class ResNet(nn.Cell):
         # layer 4
         NL4_counter = 0
         if len(self.NL_4_idx) == 0:
-            # self.NL_4_idx = mindspore.Parameter([-1])
-            self.NL_4_idx = [-1]
+            self.NL_4_idx = mindspore.Parameter([-1])
+            # self.NL_4_idx = [-1]
         for i in range(len(self.layer4)):
             x = self.layer4[i](x, opt)
             if i == self.NL_4_idx[NL4_counter]:
@@ -619,7 +636,7 @@ def init_pretrained_weights(key):
 
 
 @BACKBONE_REGISTRY.register()
-def build_meta_dynamic_router_resnet_backbone(cfg):
+def build_meta_dynamic_router_resnet_backbone():
     """
     Create a ResNet instance from config.
     Returns:

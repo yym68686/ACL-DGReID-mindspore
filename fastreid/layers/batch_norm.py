@@ -6,11 +6,12 @@
 
 import logging
 
-import torch
-import torch.nn.functional as F
+# import torch
+# import torch.nn.functional as F
 # from torch import nn
 from mindspore import ops
 from mindspore import nn
+import mindspore
 
 __all__ = ["IBN", "get_norm"]
 
@@ -19,20 +20,24 @@ class BatchNorm(nn.BatchNorm2d):
     def __init__(self, num_features, eps=1e-05, momentum=0.1, weight_freeze=False, bias_freeze=False, weight_init=1.0,
                  bias_init=0.0, **kwargs):
         super().__init__(num_features, eps=eps, momentum=momentum)
-        if weight_init is not None: nn.init.constant_(self.weight, weight_init)
-        if bias_init is not None: nn.init.constant_(self.bias, bias_init)
-        self.weight.requires_grad_(not weight_freeze)
-        self.bias.requires_grad_(not bias_freeze)
+        if weight_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(weight_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=not weight_freeze)
+        if bias_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(bias_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not bias_freeze)
+        # if weight_init is not None: nn.init.constant_(self.weight, weight_init)
+        # if bias_init is not None: nn.init.constant_(self.bias, bias_init)
+        # self.weight.requires_grad_(not weight_freeze)
+        # self.bias.requires_grad_(not bias_freeze)
 
 
 class SyncBatchNorm(nn.SyncBatchNorm):
     def __init__(self, num_features, eps=1e-05, momentum=0.1, weight_freeze=False, bias_freeze=False, weight_init=1.0,
                  bias_init=0.0):
         super().__init__(num_features, eps=eps, momentum=momentum)
-        if weight_init is not None: nn.init.constant_(self.weight, weight_init)
-        if bias_init is not None: nn.init.constant_(self.bias, bias_init)
-        self.weight.requires_grad_(not weight_freeze)
-        self.bias.requires_grad_(not bias_freeze)
+        if weight_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(weight_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=not weight_freeze)
+        if bias_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(bias_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not bias_freeze)
+        # if weight_init is not None: nn.init.constant_(self.weight, weight_init)
+        # if bias_init is not None: nn.init.constant_(self.bias, bias_init)
+        # self.weight.requires_grad_(not weight_freeze)
+        # self.bias.requires_grad_(not bias_freeze)
 
 
 # class IBN(nn.Module):
@@ -207,7 +212,7 @@ def get_norm(norm, out_channels, **kwargs):
             "BN": BatchNorm,
             "syncBN": SyncBatchNorm,
             "GhostBN": GhostBatchNorm,
-            "FrozenBN": FrozenBatchNorm,
+            # "FrozenBN": FrozenBatchNorm,
             "GN": lambda channels, **args: nn.GroupNorm(32, channels),
         }[norm]
     return norm(out_channels, **kwargs)

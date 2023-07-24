@@ -5,8 +5,8 @@ import torch
 from collections import OrderedDict
 import mindspore
 import mindspore.ops as ops
-mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU")
-# mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
+# mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU")
+mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
 import os
 os.system("clear")
 import sys
@@ -28,7 +28,7 @@ class TestBackbones(unittest.TestCase):
     def test_ResNet(self):
 
         # 初始化模型
-        ms_model = test_meta_dynamic_router_resnet_mindspore.build_meta_dynamic_router_resnet_backbone(1).set_train(False)
+        ms_model = test_meta_dynamic_router_resnet_mindspore.build_meta_dynamic_router_resnet_backbone().set_train(False)
         pt_model = test_meta_dynamic_router_resnet_pytorch.build_meta_dynamic_router_resnet_backbone(1).eval()
 
         # 得到所有网络层和值的有序字典
@@ -97,8 +97,9 @@ class TestBackbones(unittest.TestCase):
         epoch = 5
         batch_size = 8
         length = width = height = 8
+
         input_tensor = ops.randn(batch_size, in_channels, length, length)
-        output_tensor = ms_model(input_tensor, epoch)
+        output_tensor = ms_model(input_tensor)
         input_tensor = torch.Tensor(input_tensor.numpy().astype(np.float32))
         expected_tensor = pt_model(input_tensor, epoch)
         # print(output_tensor[0].numpy().astype(np.float32).reshape((-1,))[:10])

@@ -13,6 +13,7 @@ from fastreid.config import configurable
 from fastreid.layers import *
 from fastreid.layers import pooling, any_softmax
 from fastreid.layers.weight_init import weights_init_kaiming
+# from fastreid.modeling.ops import MetaConv2d, MetaBNNorm, MetaParam
 from fastreid.modeling.ops import MetaLinear, MetaConv2d, MetaBNNorm, MetaParam
 from .build import REID_HEADS_REGISTRY
 

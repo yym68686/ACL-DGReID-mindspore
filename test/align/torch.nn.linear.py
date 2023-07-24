@@ -28,7 +28,11 @@ weight = mindspore.Tensor(weight.numpy().astype(np.float32))
 bias = mindspore.Tensor(bias.numpy().astype(np.float32))
 
 net = nn.Dense(5, 2)
-net.weight = weight
-net.bias = bias
+net.weight.set_data(weight)
+net.bias.set_data(bias)
+# net.weight.set_data(mindspore.common.initializer.initializer(weight, net.weight.shape, net.weight.dtype))
+# net.bias.set_data(mindspore.common.initializer.initializer(bias, net.bias.shape, net.bias.dtype))
+# net.weight = weight
+# net.bias = bias
 output = net(x)
 print(output)

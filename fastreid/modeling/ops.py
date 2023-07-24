@@ -9,16 +9,19 @@ from mindspore import ops
 
 def update_parameter(param, step_size, opt=None, reserve=False):
     flag_update = False
+    updated_param = None
     if step_size is not None:
         if param is not None:
             if opt['grad_params'][0] == None:
                 if not reserve:
-                    del opt['grad_params'][0]
+                    opt['grad_params'].pop(0)
+                    # del opt['grad_params'][0]
                 updated_param = param
             else:
                 updated_param = param - step_size * opt['grad_params'][0]
                 if not reserve:
-                    del opt['grad_params'][0]
+                    opt['grad_params'].pop(0)
+                    # del opt['grad_params'][0]
             flag_update = True
     if not flag_update:
         return param
@@ -88,7 +91,7 @@ class MetaConv2d(nn.Conv2d):
     
     # def forward(self, inputs, opt=None):
     def construct(self, inputs, opt=None):
-        inputs = mindspore.Tensor(inputs)
+        # inputs = mindspore.Tensor(inputs, dtype=mindspore.int32)
 
         if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
@@ -110,22 +113,30 @@ class MetaLinear(nn.Dense):
     def __init__(self, in_channels, out_channels, has_bias=False):
         super().__init__(in_channels, out_channels, has_bias=has_bias)
         # super().__init__(in_feat, reduction_dim, bias=bias)
+        self.linear = nn.Dense(self.in_channels, self.out_channels, has_bias=self.has_bias)
 
     def construct(self, inputs, opt = None, reserve = False):
-        linear = nn.Dense(self.in_channels, self.out_channels, has_bias=self.has_bias)
         if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
 
-            linear.weight = updated_weight
-            linear.bias = updated_bias
-            output = linear(inputs)
+            # self.linear.weight.set_data(updated_weight)
+            # self.linear.bias.set_data(updated_bias)
+            # self.linear.weight.set_data(mindspore.common.initializer.initializer(updated_weight, self.linear.weight.shape, self.linear.weight.dtype))
+            # self.linear.bias.set_data(mindspore.common.initializer.initializer(updated_bias, self.linear.bias.shape, self.linear.bias.dtype))
+            self.linear.weight = updated_weight
+            self.linear.bias = updated_bias
+            output = self.linear(inputs)
             return output
             # return F.linear(inputs, updated_weight, updated_bias)
         else:
-            linear.weight = self.weight
-            linear.bias = self.bias
-            output = linear(inputs)
+            # self.linear.weight.set_data(self.weight)
+            # self.linear.bias.set_data(self.bias)
+            # self.linear.weight.set_data(mindspore.common.initializer.initializer(self.weight, self.linear.weight.shape, self.linear.weight.dtype))
+            # self.linear.bias.set_data(mindspore.common.initializer.initializer(self.bias, self.linear.bias.shape, self.linear.bias.dtype))
+            self.linear.weight = self.weight
+            self.linear.bias = self.bias
+            output = self.linear(inputs)
             return output
             # return F.linear(inputs, self.weight, self.bias)
 
@@ -275,7 +286,8 @@ class MetaINNorm(nn.InstanceNorm2d):
 
             # self.moving_mean = None
             # if self.moving_mean is None:
-            net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, gamma_init=updated_gamma, beta_init=updated_beta, affine=self.affine)
+            # net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, affine=self.affine)
+            net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, affine=self.affine, gamma_init=updated_gamma, beta_init=updated_beta)
             return net(inputs)
             # if self.moving_mean is None:
                 # return F.instance_norm(inputs, None, None,

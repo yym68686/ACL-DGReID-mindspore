@@ -31,9 +31,9 @@ class Non_local(nn.Cell):
         # )
 
         # nn.init.constant_(self.W[1].weight, 0.0)
-        self.W[1].weight.set_data(mindspore.common.initializer.initializer("zeros", self.W[1].weight.shape, self.W[1].weight.dtype))
+        self.W[1].gamma.set_data(mindspore.common.initializer.initializer("zeros", self.W[1].gamma.shape, self.W[1].gamma.dtype))
         # nn.init.constant_(self.W[1].bias, 0.0)
-        self.W[1].bias.set_data(mindspore.common.initializer.initializer("zeros", self.W[1].bias.shape, self.W[1].bias.dtype))
+        self.W[1].beta.set_data(mindspore.common.initializer.initializer("zeros", self.W[1].beta.shape, self.W[1].beta.dtype))
 
         self.theta = nn.Conv2d(in_channels=self.in_channels, out_channels=self.inter_channels,
                                kernel_size=1, stride=1, padding=0)
