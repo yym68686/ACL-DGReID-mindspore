@@ -99,7 +99,7 @@ class TestBackbones(unittest.TestCase):
         length = width = height = 8
 
         input_tensor = ops.randn(batch_size, in_channels, length, length)
-        output_tensor = ms_model(input_tensor)
+        output_tensor = ms_model(input_tensor, epoch)
         input_tensor = torch.Tensor(input_tensor.numpy().astype(np.float32))
         expected_tensor = pt_model(input_tensor, epoch)
         # print(output_tensor[0].numpy().astype(np.float32).reshape((-1,))[:10])
