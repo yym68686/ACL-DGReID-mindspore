@@ -12,7 +12,6 @@ from collections import OrderedDict
 # from torch import nn
 # import torch.nn.functional as F
 # from torch.autograd.variable import Variable
-# from fastreid.modeling.ops import MetaConv2d, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
 from fastreid.modeling.ops import MetaConv2d, MetaLinear, MetaBNNorm, MetaINNorm, MetaIBNNorm, MetaGate
 
 from fastreid.layers import (
@@ -310,6 +309,7 @@ class ResNet(nn.Cell):
     def __init__(self, last_stride, bn_norm, with_ibn, with_se, with_nl, block, layers, non_layers):
         self.inplanes = 64
         super().__init__()
+        # self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, pad_mode='pad', padding=3, dilation=1, group=1, has_bias=False)
         self.conv1 = MetaConv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = MetaBNNorm(64)
@@ -374,7 +374,9 @@ class ResNet(nn.Cell):
         # fmt: off
         # self._build_nonlocal(layers, non_layers, bn_norm)
         if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
-        else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter([-1], requires_grad=False)
+        else:       
+            self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter([-1], requires_grad=False)
+            self.NL_1 = self.NL_2 = self.NL_3 = self.NL_4 = nn.SequentialCell(nn.Sigmoid())
         # else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
         # fmt: on
 
@@ -395,6 +397,7 @@ class ResNet(nn.Cell):
 
         # return nn.Sequential(*layers)
         return nn.SequentialCell(*layers)
+        # return layers
 
     def _build_nonlocal(self, layers, non_layers, bn_norm):
         self.NL_1 = nn.SequentialCell(
@@ -450,11 +453,12 @@ class ResNet(nn.Cell):
         if len(self.NL_1_idx) == 0:
             self.NL_1_idx = mindspore.Parameter([-1])
             # self.NL_1_idx = [-1]
+        x = self.layer1(x)
         for i in range(len(self.layer1)):
-            x = self.layer1[i](x, opt)
+            # x = self.layer1[i](x, opt)
             if i == self.NL_1_idx[NL1_counter]:
                 _, C, H, W = x.shape
-                x = self.NL_1[NL1_counter](x)
+                # x = self.NL_1[NL1_counter](x)
                 NL1_counter += 1
 
         x_invariant = self.adaptor1_base(x, opt)
@@ -480,11 +484,12 @@ class ResNet(nn.Cell):
         if len(self.NL_2_idx) == 0:
             self.NL_2_idx = mindspore.Parameter([-1])
             # self.NL_2_idx = [-1]
+        x = self.layer2(x)
         for i in range(len(self.layer2)):
-            x = self.layer2[i](x, opt)
+            # x = self.layer2[i](x, opt)
             if i == self.NL_2_idx[NL2_counter]:
                 _, C, H, W = x.shape
-                x = self.NL_2[NL2_counter](x)
+                # x = self.NL_2[NL2_counter](x)
                 NL2_counter += 1
 
         x_invariant = self.adaptor2_base(x, opt)
@@ -509,11 +514,12 @@ class ResNet(nn.Cell):
         if len(self.NL_3_idx) == 0:
             self.NL_3_idx = mindspore.Parameter([-1])
             # self.NL_3_idx = [-1]
+        x = self.layer3(x)
         for i in range(len(self.layer3)):
-            x = self.layer3[i](x, opt)
+            # x = self.layer3[i](x, opt)
             if i == self.NL_3_idx[NL3_counter]:
                 _, C, H, W = x.shape
-                x = self.NL_3[NL3_counter](x)
+                # x = self.NL_3[NL3_counter](x)
                 NL3_counter += 1
 
         x_invariant = self.adaptor3_base(x, opt)
@@ -537,11 +543,12 @@ class ResNet(nn.Cell):
         if len(self.NL_4_idx) == 0:
             self.NL_4_idx = mindspore.Parameter([-1])
             # self.NL_4_idx = [-1]
+        x = self.layer4(x)
         for i in range(len(self.layer4)):
-            x = self.layer4[i](x, opt)
+            # x = self.layer4[i](x, opt)
             if i == self.NL_4_idx[NL4_counter]:
                 _, C, H, W = x.shape
-                x = self.NL_4[NL4_counter](x)
+                # x = self.NL_4[NL4_counter](x)
                 NL4_counter += 1
 
         x_invariant = self.adaptor4_base(x, opt)

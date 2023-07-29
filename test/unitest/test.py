@@ -5,8 +5,8 @@ import torch
 from collections import OrderedDict
 import mindspore
 import mindspore.ops as ops
-# mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU")
-mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
+mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU", device_id=0)
+# mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
 import os
 os.system("clear")
 import sys
@@ -96,7 +96,7 @@ class TestBackbones(unittest.TestCase):
         in_channels = 3
         epoch = 5
         batch_size = 8
-        length = width = height = 8
+        length = width = height = 16
 
         input_tensor = ops.randn(batch_size, in_channels, length, length)
         output_tensor = ms_model(input_tensor, epoch)
@@ -119,7 +119,7 @@ class TestBackbones(unittest.TestCase):
 
     # def test_MetaConv2d(self):
     #     in_channels = 3
-    #     length = width = height = 2
+    #     length = width = height = 16
     #     input_tensor = ops.randn(1, in_channels, length, length)
     #     model = test_ops_mindspore.MetaConv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
     #     output_tensor = model(input_tensor)
