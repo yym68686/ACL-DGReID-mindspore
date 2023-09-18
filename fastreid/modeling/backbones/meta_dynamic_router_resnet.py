@@ -454,12 +454,12 @@ class ResNet(nn.Cell):
             self.NL_1_idx = mindspore.Parameter([-1])
             # self.NL_1_idx = [-1]
         x = self.layer1(x)
-        for i in range(len(self.layer1)):
-            # x = self.layer1[i](x, opt)
-            if i == self.NL_1_idx[NL1_counter]:
-                _, C, H, W = x.shape
-                # x = self.NL_1[NL1_counter](x)
-                NL1_counter += 1
+        # for i in range(len(self.layer1)):
+        #     # x = self.layer1[i](x, opt)
+        #     if i == self.NL_1_idx[NL1_counter]:
+        #         _, C, H, W = x.shape
+        #         # x = self.NL_1[NL1_counter](x)
+        #         NL1_counter += 1
 
         x_invariant = self.adaptor1_base(x, opt)
         # x_invariant = self.adaptor1_base(x.tile((1, K, 1, 1)), opt)
@@ -485,12 +485,12 @@ class ResNet(nn.Cell):
             self.NL_2_idx = mindspore.Parameter([-1])
             # self.NL_2_idx = [-1]
         x = self.layer2(x)
-        for i in range(len(self.layer2)):
-            # x = self.layer2[i](x, opt)
-            if i == self.NL_2_idx[NL2_counter]:
-                _, C, H, W = x.shape
-                # x = self.NL_2[NL2_counter](x)
-                NL2_counter += 1
+        # for i in range(len(self.layer2)):
+        #     # x = self.layer2[i](x, opt)
+        #     if i == self.NL_2_idx[NL2_counter]:
+        #         _, C, H, W = x.shape
+        #         # x = self.NL_2[NL2_counter](x)
+        #         NL2_counter += 1
 
         x_invariant = self.adaptor2_base(x, opt)
         N, C, H, W = x_invariant.shape
@@ -515,12 +515,12 @@ class ResNet(nn.Cell):
             self.NL_3_idx = mindspore.Parameter([-1])
             # self.NL_3_idx = [-1]
         x = self.layer3(x)
-        for i in range(len(self.layer3)):
-            # x = self.layer3[i](x, opt)
-            if i == self.NL_3_idx[NL3_counter]:
-                _, C, H, W = x.shape
-                # x = self.NL_3[NL3_counter](x)
-                NL3_counter += 1
+        # for i in range(len(self.layer3)):
+        #     # x = self.layer3[i](x, opt)
+        #     if i == self.NL_3_idx[NL3_counter]:
+        #         _, C, H, W = x.shape
+        #         # x = self.NL_3[NL3_counter](x)
+        #         NL3_counter += 1
 
         x_invariant = self.adaptor3_base(x, opt)
         N, C, H, W = x_invariant.shape
@@ -544,12 +544,12 @@ class ResNet(nn.Cell):
             self.NL_4_idx = mindspore.Parameter([-1])
             # self.NL_4_idx = [-1]
         x = self.layer4(x)
-        for i in range(len(self.layer4)):
-            # x = self.layer4[i](x, opt)
-            if i == self.NL_4_idx[NL4_counter]:
-                _, C, H, W = x.shape
-                # x = self.NL_4[NL4_counter](x)
-                NL4_counter += 1
+        # for i in range(len(self.layer4)):
+        #     # x = self.layer4[i](x, opt)
+        #     if i == self.NL_4_idx[NL4_counter]:
+        #         _, C, H, W = x.shape
+        #         # x = self.NL_4[NL4_counter](x)
+        #         NL4_counter += 1
 
         x_invariant = self.adaptor4_base(x, opt)
         N, C, H, W = x_invariant.shape

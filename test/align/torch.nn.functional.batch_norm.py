@@ -53,7 +53,7 @@ num_features = in_channels
 # moving_var_init='ones',
 # use_batch_statistics=None,
 # data_format='NCHW'
-bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=training, momentum=momentum, eps=eps)
+bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=True, momentum=momentum, eps=eps)
 output = bn(input)
 # output = ops.batch_norm(input, running_mean, running_var, updated_weight, updated_bias, training, momentum, eps)
 print(output)
