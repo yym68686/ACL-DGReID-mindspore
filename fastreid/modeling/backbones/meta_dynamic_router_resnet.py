@@ -79,7 +79,10 @@ class Sequential_ext(nn.Cell):
     # def forward(self, input, opt=None):
     def construct(self, input, opt=None):
         for i, module in enumerate(self._cells.values()):
-            input = module(input, opt)
+            if isinstance(module, MetaConv2d) or isinstance(module, MetaBNNorm):
+                input = module(input)
+            else:
+                input = module(input, opt)
         return input
 
 
@@ -184,16 +187,16 @@ class Bottleneck2(nn.Cell):
         
         residual = x
         
-        out = self.conv1(x, opt)
-        out = self.bn1(out, opt)
+        out = self.conv1(x)
+        out = self.bn1(out)
         out = self.relu(out)
 
-        out = self.conv2(out, opt)
-        out = self.bn2(out, opt)
+        out = self.conv2(out)
+        out = self.bn2(out)
         out = self.relu(out)
 
-        out = self.conv3(out, opt)
-        out = self.bn3(out, opt)
+        out = self.conv3(out)
+        out = self.bn3(out)
         out = self.se(out)
 
         if self.downsample is not None:
@@ -236,23 +239,40 @@ class Bottleneck(nn.Cell):
 
     # def forward(self, x, opt=None):
     def construct(self, x, opt=None):
-        residual = x
-        
-        out = self.conv1(x, opt)
-        out = self.bn1(out, opt)
-        out = self.relu(out)
-        
-        out = self.conv2(out, opt)
-        out = self.bn2(out, opt)
-        out = self.relu(out)
+        if opt == None:
+            residual = x
+            
+            out = self.conv1(x)
+            out = self.bn1(out)
+            out = self.relu(out)
+            
+            out = self.conv2(out)
+            out = self.bn2(out)
+            out = self.relu(out)
 
-        out = self.conv3(out, opt)
-        out = self.bn3(out, opt)
-        out = self.se(out)
+            out = self.conv3(out)
+            out = self.bn3(out)
+            out = self.se(out)
 
-        if self.downsample is not None:
-            residual = self.downsample(x, opt)
+            if self.downsample is not None:
+                residual = self.downsample(x, opt)
+        else:
+            residual = x
+            
+            out = self.conv1(x, opt)
+            out = self.bn1(out)
+            out = self.relu(out)
+            
+            out = self.conv2(out, opt)
+            out = self.bn2(out)
+            out = self.relu(out)
 
+            out = self.conv3(out, opt)
+            out = self.bn3(out)
+            out = self.se(out)
+
+            if self.downsample is not None:
+                residual = self.downsample(x, opt)
         out += residual
         out = self.relu(out)
 
@@ -440,8 +460,8 @@ class ResNet(nn.Cell):
 
         print(4)
         # opt=None
-        x = self.conv1(x, opt)
-        x = self.bn1(x, opt)
+        x = self.conv1(x)
+        x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
 
@@ -469,11 +489,11 @@ class ResNet(nn.Cell):
         weight, domain_cls_logit = self.router1(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm1(x_invariant, opt)
-        x_specific = self.specific_norm1(x_specific, opt)
+        x_invariant = self.invariant_norm1(x_invariant)
+        x_specific = self.specific_norm1(x_specific)
         x = self.meta_fuse1(x_invariant, x_specific, opt)
         x = self.meta_se1(x, opt)
-        temp = self.map1(self.avgpool(x), opt)
+        temp = self.map1(self.avgpool(x))
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])
@@ -499,11 +519,11 @@ class ResNet(nn.Cell):
         weight, domain_cls_logit = self.router2(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm2(x_invariant, opt)
-        x_specific = self.specific_norm2(x_specific, opt)
+        x_invariant = self.invariant_norm2(x_invariant)
+        x_specific = self.specific_norm2(x_specific)
         x = self.meta_fuse2(x_invariant, x_specific, opt)
         x = self.meta_se2(x, opt)
-        temp = self.map2(self.avgpool(x), opt)
+        temp = self.map2(self.avgpool(x))
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])
@@ -528,11 +548,11 @@ class ResNet(nn.Cell):
         weight, domain_cls_logit = self.router3(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm3(x_invariant, opt)
-        x_specific = self.specific_norm3(x_specific, opt)
+        x_invariant = self.invariant_norm3(x_invariant)
+        x_specific = self.specific_norm3(x_specific)
         x = self.meta_fuse3(x_invariant, x_specific, opt)
         x = self.meta_se3(x, opt)
-        temp = self.map3(self.avgpool(x), opt)
+        temp = self.map3(self.avgpool(x))
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])
@@ -557,11 +577,11 @@ class ResNet(nn.Cell):
         weight, domain_cls_logit = self.router4(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm4(x_invariant, opt)
-        x_specific = self.specific_norm4(x_specific, opt)
+        x_invariant = self.invariant_norm4(x_invariant)
+        x_specific = self.specific_norm4(x_specific)
         x = self.meta_fuse4(x_invariant, x_specific, opt)
         x = self.meta_se4(x, opt)
-        temp = self.map4(self.avgpool(x), opt)
+        temp = self.map4(self.avgpool(x))
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])

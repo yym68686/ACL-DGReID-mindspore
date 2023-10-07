@@ -13,16 +13,17 @@ def update_parameter(param, step_size, opt=None, reserve=False):
     updated_param = None
     if step_size is not None:
         if param is not None:
-            if opt['grad_params'][0] == None:
-                if not reserve:
-                    opt['grad_params'].pop(0)
-                    # del opt['grad_params'][0]
-                updated_param = param
-            else:
-                updated_param = param - step_size * opt['grad_params'][0]
-                if not reserve:
-                    opt['grad_params'].pop(0)
-                    # del opt['grad_params'][0]
+            if opt is not None:
+                if opt['grad_params'][0] == None:
+                    if not reserve:
+                        opt['grad_params'].pop(0)
+                        # del opt['grad_params'][0]
+                    updated_param = param
+                else:
+                    updated_param = param - step_size * opt['grad_params'][0]
+                    if not reserve:
+                        opt['grad_params'].pop(0)
+                        # del opt['grad_params'][0]
             flag_update = True
     if not flag_update:
         return param
@@ -108,31 +109,39 @@ class MetaConv2d(nn.Conv2d):
         # super(MetaConv2d, self).__init__()
         self.pad_mode = 'pad'
         # self.kernel_size = kernel_size
-        # self.w_step_size = 1
-        # self.b_step_size = 1
+        self.w_step_size = 1
+        self.b_step_size = 1
         self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
-        # self.conv.weight.set_data(self.weight)
         self.conv.weight = self.weight
+        # self.conv.weight.set_data(self.weight)
         # self.weight = ops.randn((out_channels, in_channels, kernel_size, kernel_size))
     
     # def forward(self, inputs, opt=None):
-    def construct(self, inputs, opt=None):
-        if opt != None and opt['meta']:
-            updated_weight = update_parameter(self.weight, self.w_step_size, opt)
-            updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-            # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
-            # self.conv.weight = updated_weight
-            # self.conv.bias = updated_bias
-            output = self.conv(inputs)
-            # output = ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-            return output
-        else:
-            # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-            # self.conv.weight = self.weight
-            # self.conv.bias = self.bias
-            output = self.conv(inputs)
-            # output = ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-            return output
+    def construct(self, inputs):
+        # if opt:
+        output = self.conv(inputs)
+        return output
+        # else:
+        #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+        #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+        #     output = self.conv(inputs)
+        # return output
+        # if opt != 1 and opt['meta']:
+        #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+        #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+        #     # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
+        #     # self.conv.weight = updated_weight
+        #     # self.conv.bias = updated_bias
+        #     output = self.conv(inputs)
+        #     # output = ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+        #     return output
+        # else:
+        #     # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+        #     # self.conv.weight = self.weight
+        #     # self.conv.bias = self.bias
+        #     output = self.conv(inputs)
+        #     # output = ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+        #     return output
 
 
 class MetaLinear(nn.Dense):
@@ -188,7 +197,7 @@ class MetaIBNNorm(nn.Cell):
         # split = torch.split(inputs, self.half, 1)
         split = ops.split(inputs, self.half, 1)
         out1 = self.IN(split[0], opt)
-        out2 = self.BN(split[1], opt)
+        out2 = self.BN(split[1])
         # out1 = self.IN(split[0].contiguous(), opt)
         # out2 = self.BN(split[1].contiguous(), opt)
         # out = torch.cat((out1, out2), 1)
@@ -321,33 +330,36 @@ class MetaBNNorm(nn.Cell):
         self.beta_freeze = beta_freeze
         self.use_batch_statistics = use_batch_statistics
 
-    def construct(self, inputs, opt = None, reserve = False):
+    def construct(self, inputs):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
-        if opt != None and opt['meta']:
-            use_meta_learning = True
-        else:
-            use_meta_learning = False
+        use_meta_learning = False
+        # if opt != None and opt['meta']:
+        #     use_meta_learning = True
+        # else:
+        #     use_meta_learning = False
 
         if self.training:
-            if opt != None:
-                norm_type = opt['type_running_stats']
-            else:
-                norm_type = "hold"
+            norm_type = "hold"
+            # if opt != None:
+            #     norm_type = opt['type_running_stats']
+            # else:
+            #     norm_type = "hold"
         else:
             norm_type = "eval"
 
-        if use_meta_learning and self.affine:
-            updated_gamma = update_parameter(self.gamma, self.w_step_size, opt, reserve)
-            if not self.beta_freeze:
-                updated_beta = update_parameter(self.beta, self.b_step_size, opt, reserve)
-            else:
-                updated_beta = self.beta
-        else:
-            updated_gamma = self.gamma
-            updated_beta = self.beta
+        updated_gamma = self.gamma
+        updated_beta = self.beta
+        # if use_meta_learning and self.affine:
+        #     updated_gamma = update_parameter(self.gamma, self.w_step_size, opt, reserve)
+        #     if not self.beta_freeze:
+        #         updated_beta = update_parameter(self.beta, self.b_step_size, opt, reserve)
+        #     else:
+        #         updated_beta = self.beta
+        # else:
+        #     updated_gamma = self.gamma
+        #     updated_beta = self.beta
 
-        result = None
         if norm_type == "general": # update, but not apply running_mean/var
             if self.use_batch_statistics is None:
                 if self.training:
