@@ -1,6 +1,7 @@
 import os
 # import time
 # import shutil
+os.system("clear")
 
 f = open('launch.sh', 'r')
 words = f.readlines()[-1].split(' ')

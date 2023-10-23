@@ -5,7 +5,9 @@
 """
 
 from fastreid.solver.optim import lamb
-from torch.utils.data import Dataset
+# from torch.utils.data import Dataset
+
+from mindspore.dataset import Dataset
 
 from .data_utils import read_image
 
@@ -15,6 +17,7 @@ class CommDataset(Dataset):
     #CHANGE Add domain id
 
     def __init__(self, img_items, transform=None, relabel=True, mapping=None, offset=0):
+        super().__init__()
         self.img_items = img_items
         self.transform = transform
         self.relabel = relabel
@@ -84,3 +87,6 @@ class CommDataset(Dataset):
     @property
     def num_cameras(self):
         return len(self.cams)
+    
+    def __call__(self):
+        print("111")

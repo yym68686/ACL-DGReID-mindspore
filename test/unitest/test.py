@@ -27,9 +27,11 @@ class TestBackbones(unittest.TestCase):
 
     def test_ResNet(self):
 
+        cfg = 1
+
         # 初始化模型
-        ms_model = test_meta_dynamic_router_resnet_mindspore.build_meta_dynamic_router_resnet_backbone().set_train(False)
-        pt_model = test_meta_dynamic_router_resnet_pytorch.build_meta_dynamic_router_resnet_backbone(1).eval()
+        ms_model = test_meta_dynamic_router_resnet_mindspore.build_meta_dynamic_router_resnet_backbone(cfg).set_train(False)
+        pt_model = test_meta_dynamic_router_resnet_pytorch.build_meta_dynamic_router_resnet_backbone(cfg).eval()
 
         # 得到所有网络层和值的有序字典
         mindspore_model_dict = OrderedDict()

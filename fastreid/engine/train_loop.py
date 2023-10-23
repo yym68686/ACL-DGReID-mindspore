@@ -224,7 +224,8 @@ class SimpleTrainer(TrainerBase):
         If you want your model (or a submodule of it) to behave
         like evaluation during training, you can overwrite its train() method.
         """
-        model.train()
+        # model.train()
+        model.set_train(True)
 
         self.model = model
         self.data_loader = data_loader
@@ -237,7 +238,11 @@ class SimpleTrainer(TrainerBase):
         self.param_wrapper_meta = param_wrapper_meta
 
         self.all_layers = dict() # find all parameters
-        for name, param in self.model.named_parameters():
+        # model_dict[item.name] = item.value()
+        # for name, param in self.model.named_parameters():
+        for item in self.model.get_parameters():
+            name = item.name
+            param = item.value()
             name = '.'.join(name.split('.')[:-1])
             raw_name = copy.copy(name)
             for i in range(20):
@@ -256,7 +261,10 @@ class SimpleTrainer(TrainerBase):
                 self.all_layers[name]['raw_name'] = raw_name
 
         self.grad_name = list()
-        for name, _ in self.model.named_parameters():
+        # for name, _ in self.model.named_parameters():
+        for item in self.model.get_parameters():
+            name = item.name
+            _ = item.value()
             for i in range(5):
                 name = name.replace('.{}.'.format(i), '[{}].'.format(i))
             for i in range(2):

@@ -28,15 +28,15 @@ def setup(args):
 def main(args):
     cfg = setup(args)
 
-    if args.eval_only:
-        cfg.defrost()
-        cfg.MODEL.BACKBONE.PRETRAIN = False
-        model = DefaultTrainer.build_model(cfg)
+    # if args.eval_only:
+    #     cfg.defrost()
+    #     cfg.MODEL.BACKBONE.PRETRAIN = False
+    #     model = DefaultTrainer.build_model(cfg)
 
-        Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
+    #     Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
 
-        res = DefaultTrainer.test(cfg, model, 0)
-        return res
+    #     res = DefaultTrainer.test(cfg, model, 0)
+    #     return res
 
     trainer = DefaultTrainer(cfg)
 
@@ -47,11 +47,12 @@ def main(args):
 if __name__ == "__main__":
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
-    launch(
-        main,
-        args.num_gpus,
-        num_machines=args.num_machines,
-        machine_rank=args.machine_rank,
-        dist_url=args.dist_url,
-        args=(args,),
-    )
+    main(args)
+    # launch(
+    #     main,
+    #     args.num_gpus,
+    #     num_machines=args.num_machines,
+    #     machine_rank=args.machine_rank,
+    #     dist_url=args.dist_url,
+    #     args=(args,),
+    # )

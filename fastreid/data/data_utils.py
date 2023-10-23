@@ -3,7 +3,8 @@
 @author:  liaoxingyu
 @contact: sherlockliao01@gmail.com
 """
-import torch
+# import torch
+import mindspore
 import numpy as np
 import os
 from PIL import Image, ImageOps
@@ -14,6 +15,7 @@ import numpy as np
 import os.path as osp
 
 import queue
+import mindspore
 from torch.utils.data import DataLoader
 
 from fastreid.utils.file_io import PathManager
@@ -127,7 +129,7 @@ class BackgroundGenerator(threading.Thread):
         self.start()
 
     def run(self):
-        torch.cuda.set_device(self.local_rank)
+        # torch.cuda.set_device(self.local_rank)
         for item in self.generator:
             self.queue.put(item)
         self.queue.put(None)
@@ -146,11 +148,16 @@ class BackgroundGenerator(threading.Thread):
         return self
 
 
-class DataLoaderX(DataLoader):
+# class DataLoaderX(DataLoader):
+class DataLoaderX(mindspore.dataset.GeneratorDataset):
     def __init__(self, local_rank, **kwargs):
         super().__init__(**kwargs)
-        self.stream = torch.cuda.Stream(local_rank)  # create a new cuda stream in each process
+        # self.stream = torch.cuda.Stream(local_rank)  # create a new cuda stream in each process
         self.local_rank = local_rank
+        self.dataset = self.source
+        # self.num_classes1 = self.source.num_classes1
+        # self.num_classes2 = self.source.num_classes2
+        # self.num_classes3 = self.source.num_classes3
 
     def __iter__(self):
         self.iter = super().__iter__()
@@ -162,13 +169,17 @@ class DataLoaderX(DataLoader):
         self.batch = next(self.iter, None)
         if self.batch is None:
             return None
-        with torch.cuda.stream(self.stream):
-            for k in self.batch:
-                if isinstance(self.batch[k], torch.Tensor):
-                    self.batch[k] = self.batch[k].to(device=self.local_rank, non_blocking=True)
+
+        for k in self.batch:
+            if isinstance(self.batch[k], mindspore.Tensor):
+                self.batch[k] = self.batch[k].to(device=self.local_rank, non_blocking=True)
+        # with torch.cuda.stream(self.stream):
+        #     for k in self.batch:
+        #         if isinstance(self.batch[k], torch.Tensor):
+        #             self.batch[k] = self.batch[k].to(device=self.local_rank, non_blocking=True)
 
     def __next__(self):
-        torch.cuda.current_stream().wait_stream(self.stream)  # wait tensor to put on GPU
+        # torch.cuda.current_stream().wait_stream(self.stream)  # wait tensor to put on GPU
         batch = self.batch
         if batch is None:
             raise StopIteration

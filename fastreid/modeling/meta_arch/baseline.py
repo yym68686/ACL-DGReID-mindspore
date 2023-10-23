@@ -5,14 +5,17 @@
 """
 import copy
 from os import path
+import numpy as np
 from fastreid.modeling.losses.cluster_loss import intraCluster, interCluster
 from fastreid.modeling.losses.center_loss import centerLoss
 from fastreid.modeling.losses.triplet_loss import triplet_loss
 from fastreid.modeling.losses.triplet_loss_MetaIBN import triplet_loss_Meta
 from fastreid.modeling.losses.domain_SCT_loss import domain_SCT_loss
-import torch
-from torch import nn
-import torch.nn.functional as F
+# import torch
+# from torch import nn
+from mindspore import nn
+import mindspore
+# import torch.nn.functional as F
 
 from fastreid.config import configurable
 from fastreid.modeling.backbones import build_backbone
@@ -31,7 +34,8 @@ def process_state_dict(state_dict):
 
 
 @META_ARCH_REGISTRY.register()
-class Baseline(nn.Module):
+# class Baseline(nn.Module):
+class Baseline(nn.Cell):
     """
     Baseline architecture. Any models that contains the following two components:
     1. Per-image feature extraction (aka backbone)
@@ -66,8 +70,10 @@ class Baseline(nn.Module):
 
         self.loss_kwargs = loss_kwargs
 
-        self.register_buffer('pixel_mean', torch.Tensor(pixel_mean).view(1, -1, 1, 1), False)
-        self.register_buffer('pixel_std', torch.Tensor(pixel_std).view(1, -1, 1, 1), False)
+        self.pixel_mean = mindspore.Tensor(pixel_mean).view(1, -1, 1, 1)
+        self.pixel_std = mindspore.Tensor(pixel_std).view(1, -1, 1, 1)
+        # self.register_buffer('pixel_mean', torch.Tensor(pixel_mean).view(1, -1, 1, 1), False)
+        # self.register_buffer('pixel_std', torch.Tensor(pixel_std).view(1, -1, 1, 1), False)
 
     @classmethod
     def from_config(cls, cfg):
@@ -113,7 +119,8 @@ class Baseline(nn.Module):
     def device(self):
         return self.pixel_mean.device
 
-    def forward(self, batched_inputs, epoch, opt=None):
+    # def forward(self, batched_inputs, epoch, opt=None):
+    def construct(self, batched_inputs, epoch, opt=None):
         images = self.preprocess_image(batched_inputs)
         
         features, paths, _ = self.backbone(images, epoch, opt)
@@ -156,14 +163,27 @@ class Baseline(nn.Module):
         """
         Normalize and batch the input images.
         """
+        images = 0
         if isinstance(batched_inputs, dict):
             images = batched_inputs['images']
-        elif isinstance(batched_inputs, torch.Tensor):
+        # elif isinstance(batched_inputs, torch.Tensor):
+        elif isinstance(batched_inputs, mindspore.Tensor):
             images = batched_inputs
         else:
-            raise TypeError("batched_inputs must be dict or torch.Tensor, but get {}".format(type(batched_inputs)))
+            # images = mindspore.Tensor(batched_inputs)
+            if isinstance(batched_inputs, list):
+                tmp_images = batched_inputs[0]["images"]
+                tmp_images = mindspore.Tensor(tmp_images.numpy().astype(np.float32), mindspore.float32)
+                print(type(tmp_images))
+                if isinstance(tmp_images, mindspore.Tensor):
+                    images = tmp_images
+                print(111)
+            # raise TypeError("batched_inputs must be dict or mindspore.Tensor, but get {}".format(type(batched_inputs)))
+            # raise TypeError("batched_inputs must be dict or torch.Tensor, but get {}".format(type(batched_inputs)))
 
-        images.sub_(self.pixel_mean).div_(self.pixel_std)
+
+        images.sub(self.pixel_mean).div(self.pixel_std)
+        # images.sub_(self.pixel_mean).div_(self.pixel_std)
         return images
 
     def losses(self, outputs, gt_labels, domain_labels=None, paths=None, opt=None):

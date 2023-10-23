@@ -346,7 +346,7 @@ class ResNet(nn.Cell):
         self.specific_norm1 = MetaBNNorm(256)
         self.meta_fuse1 = MetaGate(256)
         self.meta_se1 = MetaSELayer(256)
-        self.map1 = MetaBNNorm(256, beta_freeze=True)
+        self.map1 = MetaBNNorm(256, bias_freeze=True)
 
         self.layer2 = self._make_layer(block, 128, layers[1]-1, 2, bn_norm, with_ibn, with_se)
 
@@ -357,7 +357,7 @@ class ResNet(nn.Cell):
         self.specific_norm2 = MetaBNNorm(512)
         self.meta_fuse2 = MetaGate(512)
         self.meta_se2 = MetaSELayer(512)
-        self.map2 = MetaBNNorm(512, beta_freeze=True)
+        self.map2 = MetaBNNorm(512, bias_freeze=True)
 
         self.layer3 = self._make_layer(block, 256, layers[2]-1, 2, bn_norm, with_ibn, with_se)
 
@@ -368,7 +368,7 @@ class ResNet(nn.Cell):
         self.specific_norm3 = MetaBNNorm(1024)
         self.meta_fuse3 = MetaGate(1024)
         self.meta_se3 = MetaSELayer(1024)
-        self.map3 = MetaBNNorm(1024, beta_freeze=True)
+        self.map3 = MetaBNNorm(1024, bias_freeze=True)
 
         self.layer4 = self._make_layer(block, 512, layers[3]-1, last_stride, bn_norm, with_se=with_se)
 
@@ -379,7 +379,7 @@ class ResNet(nn.Cell):
         self.specific_norm4 = MetaBNNorm(2048)
         self.meta_fuse4 = MetaGate(2048)
         self.meta_se4 = MetaSELayer(2048)
-        self.map4 = MetaBNNorm(2048, beta_freeze=True)
+        self.map4 = MetaBNNorm(2048, bias_freeze=True)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
@@ -460,7 +460,9 @@ class ResNet(nn.Cell):
 
         print(4)
         # opt=None
+        print("ndim", x.ndim)
         x = self.conv1(x)
+        print("x.dim", x.ndim)
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
@@ -663,7 +665,7 @@ def init_pretrained_weights(key):
 
 
 @BACKBONE_REGISTRY.register()
-def build_meta_dynamic_router_resnet_backbone():
+def build_meta_dynamic_router_resnet_backbone(cfg):
     """
     Create a ResNet instance from config.
     Returns:

@@ -4,9 +4,12 @@
 @contact: sherlockliao01@gmail.com
 """
 
-import torch
+# import torch
 import torch.nn.functional as F
-from torch import nn
+# from torch import nn
+from mindspore import nn
+import mindspore
+
 from collections import OrderedDict
 
 from fastreid.config import configurable
@@ -18,7 +21,39 @@ from fastreid.modeling.ops import MetaLinear, MetaConv2d, MetaBNNorm, MetaParam
 from .build import REID_HEADS_REGISTRY
 
 
-class Sequential_ext(nn.Module):
+# class Sequential_ext(nn.Module):
+#     """A Sequential container extended to also propagate the gating information
+#     that is needed in the target rate loss.
+#     """
+
+#     def __init__(self, *args):
+#         super(Sequential_ext, self).__init__()
+#         if len(args) == 1 and isinstance(args[0], OrderedDict):
+#             for key, module in args[0].items():
+#                 self.add_module(key, module)
+#         else:
+#             for idx, module in enumerate(args):
+#                 self.add_module(str(idx), module)
+
+#     def __getitem__(self, idx):
+#         if not (-len(self) <= idx < len(self)):
+#             raise IndexError('index {} is out of range'.format(idx))
+#         if idx < 0:
+#             idx += len(self)
+#         it = iter(self._modules.values())
+#         for i in range(idx):
+#             next(it)
+#         return next(it)
+
+#     def __len__(self):
+#         return len(self._modules)
+
+#     def forward(self, input, opt):
+#         for i, module in enumerate(self._modules.values()):
+#             input = module(input, opt)
+#         return input
+    
+class Sequential_ext(nn.Cell):
     """A Sequential container extended to also propagate the gating information
     that is needed in the target rate loss.
     """
@@ -27,32 +62,37 @@ class Sequential_ext(nn.Module):
         super(Sequential_ext, self).__init__()
         if len(args) == 1 and isinstance(args[0], OrderedDict):
             for key, module in args[0].items():
-                self.add_module(key, module)
+                self.insert_child_to_cell(key, module)
         else:
             for idx, module in enumerate(args):
-                self.add_module(str(idx), module)
+                self.insert_child_to_cell(str(idx), module)
 
     def __getitem__(self, idx):
         if not (-len(self) <= idx < len(self)):
             raise IndexError('index {} is out of range'.format(idx))
         if idx < 0:
             idx += len(self)
-        it = iter(self._modules.values())
+        it = iter(self._cells.values())
         for i in range(idx):
             next(it)
         return next(it)
 
     def __len__(self):
-        return len(self._modules)
+        return len(self._cells)
 
-    def forward(self, input, opt):
-        for i, module in enumerate(self._modules.values()):
-            input = module(input, opt)
+    # def forward(self, input, opt=None):
+    def construct(self, input, opt=None):
+        for i, module in enumerate(self._cells.values()):
+            if isinstance(module, MetaConv2d) or isinstance(module, MetaBNNorm):
+                input = module(input)
+            else:
+                input = module(input, opt)
         return input
 
 
 @REID_HEADS_REGISTRY.register()
-class MetaEmbeddingHead(nn.Module):
+# class MetaEmbeddingHead(nn.Module):
+class MetaEmbeddingHead(nn.Cell):
     """
     EmbeddingHead perform all feature aggregation in an embedding task, such as reid, image retrieval
     and face recognition
@@ -132,10 +172,14 @@ class MetaEmbeddingHead(nn.Module):
 
     def reset_parameters(self) -> None:
         self.bottleneck.apply(weights_init_kaiming)
-        nn.init.normal_(self.weight1.weight.data, std=0.01)
-        nn.init.normal_(self.weight2.weight.data, std=0.01)
-        nn.init.normal_(self.weight3.weight.data, std=0.01)
-        nn.init.normal_(self.center.centers.data, std=0.01)
+        self.weight1.weight.data.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=0.01, mean=0.0), self.weight1.weight.data.shape, self.weight1.weight.data.dtype))
+        self.weight2.weight.data.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=0.01, mean=0.0), self.weight2.weight.data.shape, self.weight2.weight.data.dtype))
+        self.weight3.weight.data.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=0.01, mean=0.0), self.weight3.weight.data.shape, self.weight3.weight.data.dtype))
+        self.center.centers.data.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=0.01, mean=0.0), self.center.centers.data.shape, self.center.centers.data.dtype))
+        # nn.init.normal_(self.weight1.weight.data, std=0.01)
+        # nn.init.normal_(self.weight2.weight.data, std=0.01)
+        # nn.init.normal_(self.weight3.weight.data, std=0.01)
+        # nn.init.normal_(self.center.centers.data, std=0.01)
 
     @classmethod
     def from_config(cls, cfg):

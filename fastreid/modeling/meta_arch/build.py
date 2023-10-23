@@ -3,7 +3,7 @@
 @author:  liaoxingyu
 @contact: sherlockliao01@gmail.com
 """
-import torch
+# import torch
 
 from fastreid.utils.registry import Registry
 
@@ -22,5 +22,5 @@ def build_model(cfg):
     """
     meta_arch = cfg.MODEL.META_ARCHITECTURE
     model = META_ARCH_REGISTRY.get(meta_arch)(cfg)
-    model.to(torch.device(cfg.MODEL.DEVICE))
+    # model.to(torch.device(cfg.MODEL.DEVICE))
     return model

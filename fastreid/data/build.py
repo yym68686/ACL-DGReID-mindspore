@@ -7,7 +7,8 @@
 import logging
 import os
 
-import torch
+# import torch
+import mindspore
 from torch._six import string_classes
 import collections.abc as container_abcs
 
@@ -110,27 +111,62 @@ def build_reid_train_loader(
 
     single_batch_sampler = []
     single_train_loader = []
-    batch_sampler = torch.utils.data.sampler.BatchSampler(sampler, mini_batch_size, True)
-    for i in range(len(single_set)):
-        single_batch_sampler.append(torch.utils.data.sampler.BatchSampler(single_sampler[i], mini_batch_size // 2, True))
 
-    train_loader = DataLoaderX(
-        comm.get_local_rank(),
-        dataset=train_set,
-        num_workers=num_workers,
-        batch_sampler=batch_sampler,
-        collate_fn=fast_batch_collator,
-        pin_memory=True,
-    )
+
+
+    # dataset = mindspore.dataset.GeneratorDataset(sampler=sampler)
+    # batch_sampler = dataset.batch(mini_batch_size, True)
+    
+    # batch_sampler = torch.utils.data.sampler.BatchSampler(sampler, mini_batch_size, True)
     for i in range(len(single_set)):
-        single_train_loader.append(DataLoaderX(
-            comm.get_local_rank(),
-            dataset=single_set[i],
-            num_workers=num_workers,
-            batch_sampler=single_batch_sampler[i],
-            collate_fn=fast_batch_collator,
-            pin_memory=True,
+        # tmp_batch_sampler = mindspore.dataset.GeneratorDataset(single_sampler[i])
+        # tmp_dataset = tmp_batch_sampler.batch(mini_batch_size // 2, True)
+        single_batch_sampler.append(single_sampler[i])
+        # single_batch_sampler.append(torch.utils.data.sampler.BatchSampler(single_sampler[i], mini_batch_size // 2, True))
+
+    train_loader = mindspore.dataset.GeneratorDataset(
+        source=train_set,
+        column_names=["data"],
+        num_parallel_workers=num_workers,
+    )
+
+    # 我写的
+    # train_loader = DataLoaderX(
+    #     comm.get_local_rank(),
+    #     source=train_set,
+    #     column_names=["data"],
+    #     num_parallel_workers=num_workers,
+    # )
+
+    # 原来的
+    # train_loader = DataLoaderX(
+    #     comm.get_local_rank(),
+    #     dataset=train_set,
+    #     num_workers=num_workers,
+    #     batch_sampler=batch_sampler,
+    #     collate_fn=fast_batch_collator,
+    #     pin_memory=True,
+    # )
+    for i in range(len(single_set)):
+        single_train_loader.append(mindspore.dataset.GeneratorDataset(
+            source=single_set[i],
+            column_names=["data"],
+            num_parallel_workers=num_workers,
         ))
+        # single_train_loader.append(DataLoaderX(
+        #     comm.get_local_rank(),
+        #     source=single_set[i],
+        #     column_names=["data"],
+        #     num_parallel_workers=num_workers,
+        # ))
+        # single_train_loader.append(DataLoaderX(
+        #     comm.get_local_rank(),
+        #     dataset=single_set[i],
+        #     num_workers=num_workers,
+        #     batch_sampler=single_batch_sampler[i],
+        #     collate_fn=fast_batch_collator,
+        #     pin_memory=True,
+        # ))
 
     return train_loader, single_train_loader
 

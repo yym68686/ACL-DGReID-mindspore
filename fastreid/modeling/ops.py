@@ -207,7 +207,7 @@ class MetaIBNNorm(nn.Cell):
 
 # class MetaBNNorm(nn.BatchNorm2d):
 #     # def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
-#     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, beta_freeze=False, gamma_init='ones', beta_init='zeros'):
+#     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, gamma_init='ones', beta_init='zeros'):
 
 #         # track_running_stats = True
 #         # super().__init__(num_features, eps, momentum, affine, track_running_stats)
@@ -217,8 +217,8 @@ class MetaIBNNorm(nn.Cell):
 #         # if weight_init is not None: self.weight.data.fill_(weight_init)
 #         # if bias_init is not None: self.bias.data.fill_(bias_init)
 #         if gamma_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=affine)
-#         if beta_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(beta_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not beta_freeze)
-#         self.beta_freeze = beta_freeze
+#         if beta_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(beta_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not bias_freeze)
+#         self.bias_freeze = bias_freeze
 #         self.affine = affine
 #         # self.weight.requires_grad_(True)
 #         # self.bias.requires_grad_(not bias_freeze)
@@ -244,7 +244,7 @@ class MetaIBNNorm(nn.Cell):
 
 #         if use_meta_learning and self.affine:
 #             updated_gamma = update_parameter(self.gamma, self.w_step_size, opt, reserve)
-#             if not self.beta_freeze:
+#             if not self.bias_freeze:
 #                 updated_beta = update_parameter(self.beta, self.b_step_size, opt, reserve)
 #             else:
 #                 updated_beta = self.beta
@@ -306,7 +306,7 @@ class MetaBNNorm(nn.Cell):
                  beta_init='zeros',
                  moving_mean_init='zeros',
                  moving_var_init='ones',
-                 beta_freeze=False,
+                 bias_freeze=False,
                  use_batch_statistics=None,
                  data_format='NCHW'):
 
@@ -327,12 +327,13 @@ class MetaBNNorm(nn.Cell):
         self.moving_variance = Parameter(initializer(self.moving_var_init, num_features), name="variance", requires_grad=False)
         self.gamma = Parameter(initializer(gamma_init, num_features), name="gamma", requires_grad=affine)
         self.beta = Parameter(initializer(beta_init, num_features), name="beta", requires_grad=affine)
-        self.beta_freeze = beta_freeze
+        self.bias_freeze = bias_freeze
         self.use_batch_statistics = use_batch_statistics
 
     def construct(self, inputs):
-        if inputs.dim() != 4:
-            raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
+        if inputs.dim != 4:
+        # if inputs.dim() != 4:
+            raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim))
         use_meta_learning = False
         # if opt != None and opt['meta']:
         #     use_meta_learning = True
@@ -352,7 +353,7 @@ class MetaBNNorm(nn.Cell):
         updated_beta = self.beta
         # if use_meta_learning and self.affine:
         #     updated_gamma = update_parameter(self.gamma, self.w_step_size, opt, reserve)
-        #     if not self.beta_freeze:
+        #     if not self.bias_freeze:
         #         updated_beta = update_parameter(self.beta, self.b_step_size, opt, reserve)
         #     else:
         #         updated_beta = self.beta
@@ -472,7 +473,7 @@ class MetaINNorm(nn.Cell):
 
 # class MetaINNorm(nn.InstanceNorm2d):
 #     # def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
-#     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, beta_freeze=False, gamma_init="ones", beta_init="zeros"):
+#     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, gamma_init="ones", beta_init="zeros"):
 
 #         # track_running_stats = False
 #         # use_batch_statistics = False
@@ -483,7 +484,7 @@ class MetaINNorm(nn.Cell):
 #         if self.gamma is not None:
 #             if gamma_init is not None: self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, self.gamma.shape, self.gamma.dtype), name="gamma", requires_grad=True)
 #         if self.beta is not None:
-#             if beta_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(beta_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not beta_freeze)
+#             if beta_init is not None: self.beta = mindspore.Parameter(mindspore.common.initializer.initializer(beta_init, self.beta.shape, self.beta.dtype), name="beta", requires_grad=not bias_freeze)
 #         # if self.weight is not None:
 #         #     if weight_init is not None: self.weight.data.fill_(weight_init)
 #         #     self.weight.requires_grad_(True)

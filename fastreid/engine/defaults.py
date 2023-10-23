@@ -15,7 +15,7 @@ import sys
 from collections import OrderedDict
 
 import torch
-from torch.nn.parallel import DistributedDataParallel
+# from torch.nn.parallel import DistributedDataParallel
 
 from fastreid.data import build_reid_test_loader, build_reid_train_loader
 from fastreid.evaluation import (ReidEvaluator,
@@ -31,6 +31,7 @@ from fastreid.utils.file_io import PathManager
 from fastreid.utils.logger import setup_logger
 from . import hooks
 from .train_loop import TrainerBase, AMPTrainer, SimpleTrainer
+import mindspore as ms
 
 __all__ = ["default_argument_parser", "default_setup", "DefaultPredictor", "DefaultTrainer"]
 
@@ -199,7 +200,8 @@ class DefaultTrainer(TrainerBase):
 
         # Assume these objects must be constructed in this order.
         data_loader, single_data_loader = self.build_train_loader(cfg)
-        cfg = self.auto_scale_hyperparams(cfg, data_loader.dataset.num_classes1, data_loader.dataset.num_classes2, data_loader.dataset.num_classes3)
+        cfg = self.auto_scale_hyperparams(cfg, data_loader.source.num_classes1, data_loader.source.num_classes2, data_loader.source.num_classes3)
+        # cfg = self.auto_scale_hyperparams(cfg, data_loader.dataset.num_classes1, data_loader.dataset.num_classes2, data_loader.dataset.num_classes3)
         model = self.build_model(cfg)
         optimizer, param_wrapper = self.build_optimizer(cfg, model)
         optimizer_meta, param_wrapper_meta = self.build_optimizer(cfg, model, flag='meta') 
@@ -212,10 +214,12 @@ class DefaultTrainer(TrainerBase):
         #     model = DistributedDataParallel(
         #         model, device_ids=[comm.get_local_rank()], broadcast_buffers=False, find_unused_parameters=True
         #     )
-        model = torch.nn.DataParallel(model)
+        ms.set_context(mode=ms.PYNATIVE_MODE, device_target="GPU", device_id=0)
+        # model = torch.nn.DataParallel(model)
 
 
-        self.iters_per_epoch = len(data_loader.dataset) // cfg.SOLVER.IMS_PER_BATCH
+        self.iters_per_epoch = len(data_loader.source) // cfg.SOLVER.IMS_PER_BATCH
+        # self.iters_per_epoch = len(data_loader.dataset) // cfg.SOLVER.IMS_PER_BATCH
         #CHANGE Change here for iter-level warmup
         cfg.SOLVER.WARMUP_ITERS *= self.iters_per_epoch
         cfg.freeze()

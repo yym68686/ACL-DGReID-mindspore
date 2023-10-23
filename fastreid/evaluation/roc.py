@@ -15,10 +15,10 @@ try:
     IS_CYTHON_AVAI = True
 except ImportError:
     IS_CYTHON_AVAI = False
-    warnings.warn(
-        'Cython roc evaluation (very fast so highly recommended) is '
-        'unavailable, now use python evaluation.'
-    )
+    # warnings.warn(
+    #     'Cython roc evaluation (very fast so highly recommended) is '
+    #     'unavailable, now use python evaluation.'
+    # )
 
 
 def evaluate_roc_py(distmat, q_pids, g_pids, q_camids, g_camids):
