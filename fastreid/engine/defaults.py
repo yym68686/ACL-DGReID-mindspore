@@ -8,13 +8,15 @@ The behavior of functions/classes in this file is subject to change,
 since they are meant to represent the "common default behavior" people need in their projects.
 """
 
+import numpy as np
 import argparse
 import logging
 import os
 import sys
 from collections import OrderedDict
 
-import torch
+# import torch
+import mindspore
 # from torch.nn.parallel import DistributedDataParallel
 
 from fastreid.data import build_reid_test_loader, build_reid_train_loader
@@ -113,8 +115,8 @@ def default_setup(cfg, args):
 
     # cudnn benchmark has large overhead. It shouldn't be used considering the small size of
     # typical validation set.
-    if not (hasattr(args, "eval_only") and args.eval_only):
-        torch.backends.cudnn.benchmark = cfg.CUDNN_BENCHMARK
+    # if not (hasattr(args, "eval_only") and args.eval_only):
+        # torch.backends.cudnn.benchmark = cfg.CUDNN_BENCHMARK
 
 
 class DefaultPredictor:
@@ -150,8 +152,8 @@ class DefaultPredictor:
             predictions (torch.tensor): the output features of the model
         """
         inputs = {"images": image.to(self.model.device)}
-        with torch.no_grad():  # https://github.com/sphinx-doc/sphinx/issues/4258
-            predictions = self.model(inputs)
+        # with torch.no_grad():  # https://github.com/sphinx-doc/sphinx/issues/4258
+        predictions = self.model(inputs)
         return predictions.cpu()
 
 
@@ -219,6 +221,9 @@ class DefaultTrainer(TrainerBase):
 
 
         self.iters_per_epoch = len(data_loader.source) // cfg.SOLVER.IMS_PER_BATCH
+        # print("cfg.SOLVER.IMS_PER_BATCH", cfg.SOLVER.IMS_PER_BATCH)
+        # data_loader = data_loader.batch(cfg.SOLVER.IMS_PER_BATCH, True, output_columns=[f"img_item{index}" for index in range(cfg.SOLVER.IMS_PER_BATCH)], per_batch_map=self.custom_per_batch_map)
+        # data_loader = data_loader.batch(cfg.SOLVER.IMS_PER_BATCH, True, output_columns=["images0", "images", "targets"], per_batch_map=self.custom_per_batch_map)
         # self.iters_per_epoch = len(data_loader.dataset) // cfg.SOLVER.IMS_PER_BATCH
         #CHANGE Change here for iter-level warmup
         cfg.SOLVER.WARMUP_ITERS *= self.iters_per_epoch
@@ -248,6 +253,30 @@ class DefaultTrainer(TrainerBase):
         self.cfg = cfg
 
         self.register_hooks(self.build_hooks())
+
+    def custom_per_batch_map(self, data, BatchInfo):
+        # 自定义处理逻辑，将字典对象转换为适当的NumPy数组
+        # print(type(data['images0']))
+        data_list = []
+        for item in data:
+            data_list.append({
+            "images0": item["images0"],
+            "images": item["images"],
+            "targets": item["targets"],
+            "camids": item["camids"],
+            "domainids": item["domainids"],
+            "img_paths": item["img_paths"],
+        })
+        return data_list  # 返回转换后的数组
+        # images0_list = []
+        # images_list = []
+        # targets_list = []
+        # for item in data:
+        #     images0_list.append(np.array(item['images0']))  # 将'images0'键名的字典对象转换为NumPy数组
+        #     images_list.append(np.array(item['images']))  # 假设还有一个'labels'键名的字典对象，也进行转换
+        #     targets_list.append(np.array(item['targets']))  # 假设还有一个'labels'键名的字典对象，也进行转换
+        # return (images0_list, images_list, targets_list)  # 返回转换后的数组
+
 
     def resume_or_load(self, resume=True):
         """

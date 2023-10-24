@@ -259,15 +259,18 @@ class Bottleneck(nn.Cell):
         else:
             residual = x
             
-            out = self.conv1(x, opt)
+            out = self.conv1(x)
+            # out = self.conv1(x, opt)
             out = self.bn1(out)
             out = self.relu(out)
             
-            out = self.conv2(out, opt)
+            out = self.conv2(out)
+            # out = self.conv2(out, opt)
             out = self.bn2(out)
             out = self.relu(out)
 
-            out = self.conv3(out, opt)
+            out = self.conv3(out)
+            # out = self.conv3(out, opt)
             out = self.bn3(out)
             out = self.se(out)
 
@@ -460,9 +463,10 @@ class ResNet(nn.Cell):
 
         print(4)
         # opt=None
-        print("ndim", x.ndim)
+        print(f"ndim {x.shape}")
+        print("x type", type(x))
         x = self.conv1(x)
-        print("x.dim", x.ndim)
+        print("x type", type(x))
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)

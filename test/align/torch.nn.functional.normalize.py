@@ -18,6 +18,6 @@ import numpy as np
 
 x = mindspore.Tensor(x.numpy().astype(np.float32))
 
-l2_normalize = mindspore.ops.L2Normalize(axis=0)
+l2_normalize = mindspore.ops.L2Normalize(axis=1)
 x_normalized = l2_normalize(x)
 print(x_normalized)

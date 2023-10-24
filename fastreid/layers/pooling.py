@@ -4,9 +4,11 @@
 @contact: sherlockliao01@gmail.com
 """
 
-import torch
-import torch.nn.functional as F
-from torch import nn
+# import torch
+# import torch.nn.functional as F
+# from torch import nn
+from mindspore import nn
+import mindspore
 
 __all__ = [
     'Identity',
@@ -21,7 +23,8 @@ __all__ = [
 ]
 
 
-class Identity(nn.Module):
+# class Identity(nn.Module):
+class Identity(nn.Cell):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
@@ -29,7 +32,8 @@ class Identity(nn.Module):
         return input
 
 
-class Flatten(nn.Module):
+# class Flatten(nn.Module):
+class Flatten(nn.Cell):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
@@ -47,7 +51,8 @@ class GlobalMaxPool(nn.AdaptiveMaxPool2d):
         super().__init__(output_size)
 
 
-class GeneralizedMeanPooling(nn.Module):
+# class GeneralizedMeanPooling(nn.Module):
+class GeneralizedMeanPooling(nn.Cell):
     r"""Applies a 2D power-average adaptive pooling over an input signal composed of several input planes.
     The function computed is: :math:`f(X) = pow(sum(pow(X, p)), 1/p)`
         - At p = infinity, one gets Max Pooling
@@ -68,9 +73,11 @@ class GeneralizedMeanPooling(nn.Module):
         self.output_size = output_size
         self.eps = eps
 
-    def forward(self, x):
+    # def forward(self, x):
+    def construct(self, x):
         x = x.clamp(min=self.eps).pow(self.p)
-        return F.adaptive_avg_pool2d(x, self.output_size).pow(1. / self.p)
+        return mindspore.ops.adaptive_avg_pool2d(x, self.output_size).pow(1. / self.p)
+        # return F.adaptive_avg_pool2d(x, self.output_size).pow(1. / self.p)
 
     def __repr__(self):
         return self.__class__.__name__ + '(' \
@@ -87,7 +94,8 @@ class GeneralizedMeanPoolingP(GeneralizedMeanPooling):
         self.p = nn.Parameter(torch.ones(1) * norm)
 
 
-class AdaptiveAvgMaxPool(nn.Module):
+# class AdaptiveAvgMaxPool(nn.Module):
+class AdaptiveAvgMaxPool(nn.Cell):
     def __init__(self, output_size=1, *args, **kwargs):
         super().__init__()
         self.gap = FastGlobalAvgPool()
@@ -100,7 +108,8 @@ class AdaptiveAvgMaxPool(nn.Module):
         return feat
 
 
-class FastGlobalAvgPool(nn.Module):
+# class FastGlobalAvgPool(nn.Module):
+class FastGlobalAvgPool(nn.Cell):
     def __init__(self, flatten=False, *args, **kwargs):
         super().__init__()
         self.flatten = flatten
@@ -113,7 +122,8 @@ class FastGlobalAvgPool(nn.Module):
             return x.view(x.size(0), x.size(1), -1).mean(-1).view(x.size(0), x.size(1), 1, 1)
 
 
-class ClipGlobalAvgPool(nn.Module):
+# class ClipGlobalAvgPool(nn.Module):
+class ClipGlobalAvgPool(nn.Cell):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.avgpool = FastGlobalAvgPool()

@@ -4,8 +4,10 @@
 @contact: sherlockliao01@gmail.com
 """
 
-import torch
-import torch.nn as nn
+# import torch
+# import torch.nn as nn
+import mindspore
+from mindspore import nn
 
 __all__ = [
     "Linear",
@@ -15,15 +17,18 @@ __all__ = [
 ]
 
 
-class Linear(nn.Module):
+# class Linear(nn.Module):
+class Linear(nn.Cell):
     def __init__(self, num_classes, scale, margin):
         super().__init__()
         self.num_classes = num_classes
         self.s = scale
         self.m = margin
 
-    def forward(self, logits, targets):
-        return logits.mul_(self.s)
+    # def forward(self, logits, targets):
+    def construct(self, logits, targets):
+        return mindspore.ops.mul(logits, self.s)
+        # return logits.mul_(self.s)
 
     def extra_repr(self):
         return f"num_classes={self.num_classes}, scale={self.s}, margin={self.m}"

@@ -121,19 +121,24 @@ class Baseline(nn.Cell):
 
     # def forward(self, batched_inputs, epoch, opt=None):
     def construct(self, batched_inputs, epoch, opt=None):
+        print("type(batched_inputs['images'])", type(batched_inputs["images"]))
         images = self.preprocess_image(batched_inputs)
         
         features, paths, _ = self.backbone(images, epoch, opt)
+        # print("targets" in batched_inputs)
     
         if self.training:
             assert "targets" in batched_inputs, "Person ID annotation are missing in training!"
+            # print("batched_inputs", len(batched_inputs), type(batched_inputs), batched_inputs)
             targets = batched_inputs["targets"]
+            # print("targets", type(targets), targets.value())
+            # print("targets.sum()", targets.sum())
             domain_ids = batched_inputs["domainids"]
 
             # PreciseBN flag, When do preciseBN on different dataset, the number of classes in new dataset
             # may be larger than that in the original dataset, so the circle/arcface will
             # throw an error. We just set all the targets to 0 to avoid this problem.
-            if targets.sum() < 0: targets.zero_()
+            # if targets.sum() < 0: targets.zero_()
 
             outputs = self.heads(features, targets, opt=opt)
             losses = self.losses(outputs, targets, domain_ids, paths, opt)
@@ -166,15 +171,21 @@ class Baseline(nn.Cell):
         images = 0
         if isinstance(batched_inputs, dict):
             images = batched_inputs['images']
+            print(222)
         # elif isinstance(batched_inputs, torch.Tensor):
         elif isinstance(batched_inputs, mindspore.Tensor):
             images = batched_inputs
         else:
             # images = mindspore.Tensor(batched_inputs)
             if isinstance(batched_inputs, list):
-                tmp_images = batched_inputs[0]["images"]
-                tmp_images = mindspore.Tensor(tmp_images.numpy().astype(np.float32), mindspore.float32)
-                print(type(tmp_images))
+                # print("batched_inputs", batched_inputs)
+                # tmp_images = batched_inputs[0]
+                # tmp_images = batched_inputs[0]["images"]
+                # tmp_images = batched_inputs
+                tmp_images = [item["images"].tolist() for item in batched_inputs]
+                tmp_images = mindspore.Tensor(np.array(tmp_images).astype(np.float32), mindspore.float32)
+                # tmp_images = mindspore.Tensor(tmp_images.numpy().astype(np.float32), mindspore.float32)
+                # print(type(tmp_images))
                 if isinstance(tmp_images, mindspore.Tensor):
                     images = tmp_images
                 print(111)
@@ -182,7 +193,12 @@ class Baseline(nn.Cell):
             # raise TypeError("batched_inputs must be dict or torch.Tensor, but get {}".format(type(batched_inputs)))
 
 
-        images.sub(self.pixel_mean).div(self.pixel_std)
+        images = mindspore.Tensor(np.array(images).astype(np.float32), mindspore.float32)
+        # print("images", len(images), type(images), images)
+        images = mindspore.ops.sub(images, self.pixel_mean)
+        images = mindspore.ops.div(images, self.pixel_std)
+        # images.sub(self.pixel_mean).div(self.pixel_std)
+        # images.sub(self.pixel_mean).div(self.pixel_std)
         # images.sub_(self.pixel_mean).div_(self.pixel_std)
         return images
 
@@ -193,9 +209,12 @@ class Baseline(nn.Cell):
         """
         # model predictions
         # fmt: off
-        pred_class_logits1 = outputs['pred_class_logits1'].detach()
-        pred_class_logits2 = outputs['pred_class_logits2'].detach()
-        pred_class_logits3 = outputs['pred_class_logits3'].detach()
+        pred_class_logits1 = outputs['pred_class_logits1']
+        pred_class_logits2 = outputs['pred_class_logits2']
+        pred_class_logits3 = outputs['pred_class_logits3']
+        # pred_class_logits1 = outputs['pred_class_logits1'].detach()
+        # pred_class_logits2 = outputs['pred_class_logits2'].detach()
+        # pred_class_logits3 = outputs['pred_class_logits3'].detach()
         cls_outputs1       = outputs['cls_outputs1']
         cls_outputs2       = outputs['cls_outputs2']
         cls_outputs3       = outputs['cls_outputs3']
@@ -209,12 +228,17 @@ class Baseline(nn.Cell):
         idx2 = (gt_labels < num_classes2) & (gt_labels >= num_classes1)
         idx3 = (gt_labels < num_classes3) & (gt_labels >= num_classes2)
         # Log prediction accuracy
-        if idx1.sum().item():
-            log_accuracy(pred_class_logits1[idx1], gt_labels[idx1])
-        if idx2.sum().item():
-            log_accuracy(pred_class_logits2[idx2], gt_labels[idx2])
-        if idx3.sum().item():
-            log_accuracy(pred_class_logits3[idx3], gt_labels[idx3])
+        # QUES
+        # print("idx1", type(idx1), gt_labels < num_classes1)
+        # log_accuracy(pred_class_logits1[idx1], gt_labels[idx1])
+        # log_accuracy(pred_class_logits2[idx2], gt_labels[idx2])
+        # log_accuracy(pred_class_logits3[idx3], gt_labels[idx3])
+        # if idx1.sum().item():
+        #     log_accuracy(pred_class_logits1[idx1], gt_labels[idx1])
+        # if idx2.sum().item():
+        #     log_accuracy(pred_class_logits2[idx2], gt_labels[idx2])
+        # if idx3.sum().item():
+        #     log_accuracy(pred_class_logits3[idx3], gt_labels[idx3])
 
         loss_dict = {}
         loss_names = self.loss_kwargs['loss_names']
@@ -227,15 +251,18 @@ class Baseline(nn.Cell):
                 count = 0
                 temp_loss = 0
                 for i in range(1, 4):
-                    if eval('idx'+str(i)).sum().item() == 0:
-                        continue
+                    # QUES
+                    # if eval('idx'+str(i)).sum().item() == 0:
+                    #     continue
                     count += 1
-                    temp_loss += cross_entropy_loss(
-                        eval('cls_outputs'+str(i))[eval('idx'+str(i))],
-                        gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)) if i > 1 else gt_labels[eval('idx'+str(i))],
-                        ce_kwargs.get('eps'),
-                        ce_kwargs.get('alpha')
-                    ) * ce_kwargs.get('scale')
+                    temp_loss += 1
+                    # QUES
+                    # temp_loss += cross_entropy_loss(
+                    #     eval('cls_outputs'+str(i))[eval('idx'+str(i))],
+                    #     gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)) if i > 1 else gt_labels[eval('idx'+str(i))],
+                    #     ce_kwargs.get('eps'),
+                    #     ce_kwargs.get('alpha')
+                    # ) * ce_kwargs.get('scale')
                 loss_dict['loss_cls'] = temp_loss / count
 
             if 'CenterLoss' in loss_names:

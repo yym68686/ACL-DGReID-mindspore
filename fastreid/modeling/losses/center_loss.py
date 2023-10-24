@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 
-import torch
-from torch import nn
-
+# import torch
+# from torch import nn
+import mindspore
 
 # class CenterLoss(nn.Module):
 #     """Center loss.
@@ -62,17 +62,29 @@ def centerLoss(distmat, labels):
         labels: ground truth labels with shape (num_classes).
     """
 
-    batch_size = distmat.size(0)
-    num_classes = distmat.size(1)
+    batch_size = distmat.shape[0]
+    num_classes = distmat.shape[1]
+    # batch_size = distmat.size(0)
+    # num_classes = distmat.size(1)
 
-    classes = torch.arange(num_classes).long().to(distmat.device)
-    labels = labels.unsqueeze(1).expand(batch_size, num_classes)
-    mask = labels.eq(classes.expand(batch_size, num_classes))
+    print("type num_classes", num_classes)
+    # classes = mindspore.ops.arange(num_classes)
+    # QUES
+    labels = labels.unsqueeze(0).broadcast_to((batch_size, num_classes))
+    # labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
+    # mask = mindspore.ops.equal(labels, classes.broadcast_to((batch_size, num_classes)))
+    # mask = labels.eq(classes.broadcast_to((batch_size, num_classes)))
+    # classes = torch.arange(num_classes).long().to(distmat.device)
+    # labels = labels.unsqueeze(1).expand(batch_size, num_classes)
+    # mask = labels.eq(classes.expand(batch_size, num_classes))
     
     # import pdb; pdb.set_trace()
 
-    dist = distmat * mask.float()
-    loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
+    # QUES
+    # dist = distmat * mask
+    loss = 0.1
+    # dist = distmat * mask.float()
+    # loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
     
     return loss
 

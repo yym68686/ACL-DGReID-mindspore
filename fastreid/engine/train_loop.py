@@ -283,6 +283,7 @@ class SimpleTrainer(TrainerBase):
 
         opt = self.opt_setting('basic')
         data = next(self._data_loader_iter)
+        # print("data.shape", len(data), data[0]['images0'].shape)
         data_time = time.perf_counter() - start
         losses, loss_dict = self.basic_forward(data, self.model, epoch, opt) # forward
 
@@ -355,6 +356,12 @@ class SimpleTrainer(TrainerBase):
 
     def basic_forward(self, data, model, epoch, opt=None):
         # print('train_loop.py   basic_forward')
+        # print("targets" in data)
+        # print("data", len(data), type(data), data)
+        data = data[0]
+        print("type(data['images'])", type(data["images"]))
+        # print("data", data)
+
         loss_dict = model(data, epoch, opt)
         losses = sum(loss_dict.values()).mean()
 

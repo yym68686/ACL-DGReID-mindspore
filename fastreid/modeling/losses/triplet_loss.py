@@ -4,9 +4,10 @@
 @contact: sherlockliao01@gmail.com
 """
 
-import torch
-import torch.nn.functional as F
-
+# import torch
+# import torch.nn.functional as F
+import mindspore
+import numpy as np
 from .utils import euclidean_dist, cosine_dist
 
 
@@ -35,14 +36,17 @@ def hard_example_mining(dist_mat, is_pos, is_neg):
       thus we can cope with all anchors in parallel.
     """
 
-    assert len(dist_mat.size()) == 2
+    assert len(dist_mat.shape) == 2
+    # assert len(dist_mat.size()) == 2
 
     # `dist_ap` means distance(anchor, positive)
     # both `dist_ap` and `relative_p_inds` with shape [N]
-    dist_ap, _ = torch.max(dist_mat * is_pos, dim=1)
+    dist_ap, _ = mindspore.ops.max(dist_mat * is_pos, axis=1)
+    # dist_ap, _ = torch.max(dist_mat * is_pos, dim=1)
     # `dist_an` means distance(anchor, negative)
     # both `dist_an` and `relative_n_inds` with shape [N]
-    dist_an, _ = torch.min(dist_mat * is_neg + is_pos * 1e9, dim=1)
+    dist_an, _ = mindspore.ops.min(dist_mat * is_neg + is_pos * 1e9, axis=1)
+    # dist_an, _ = torch.min(dist_mat * is_neg + is_pos * 1e9, dim=1)
 
     return dist_ap, dist_an
 
@@ -91,23 +95,34 @@ def triplet_loss(embedding, targets, margin, norm_feat, hard_mining):
     #     all_embedding = embedding
     #     all_targets = targets
 
-    N = dist_mat.size(0)
-    is_pos = targets.view(N, 1).expand(N, N).eq(targets.view(N, 1).expand(N, N).t()).float()
-    is_neg = targets.view(N, 1).expand(N, N).ne(targets.view(N, 1).expand(N, N).t()).float()
+    N = dist_mat.shape[0]
+    is_pos = mindspore.ops.equal(targets.view(N, 1).broadcast_to((N, N)), targets.view(N, 1).broadcast_to((N, N)).t()).float()
+    is_neg = mindspore.ops.ne(targets.view(N, 1).broadcast_to((N, N)), targets.view(N, 1).broadcast_to((N, N)).t()).float()
+    # N = dist_mat.size(0)
+    # is_pos = targets.view(N, 1).expand(N, N).eq(targets.view(N, 1).expand(N, N).t()).float()
+    # is_neg = targets.view(N, 1).expand(N, N).ne(targets.view(N, 1).expand(N, N).t()).float()
 
     if hard_mining:
         dist_ap, dist_an = hard_example_mining(dist_mat, is_pos, is_neg)
     else:
         dist_ap, dist_an = weighted_example_mining(dist_mat, is_pos, is_neg)
 
-    y = dist_an.new().resize_as_(dist_an).fill_(1)
+    # y = dist_an.new().resize_as_(dist_an).fill_(1)
+    y = mindspore.ops.full(dist_an.shape, 1)
 
     if margin > 0:
-        loss = F.margin_ranking_loss(dist_an, dist_ap, y, margin=margin)
+        # QUES
+        # y = mindspore.Tensor(np.array(y).astype(np.float32), mindspore.float32)
+        # print("type(dist_ap)", type(dist_ap))
+        loss = mindspore.ops.margin_ranking_loss(dist_an, dist_ap, dist_an, margin=margin)
+        # loss = mindspore.ops.margin_ranking_loss(dist_an, dist_ap, y, margin=margin)
+        # loss = F.margin_ranking_loss(dist_an, dist_ap, y, margin=margin)
     else:
-        loss = F.soft_margin_loss(dist_an - dist_ap, y)
+        loss = mindspore.ops.soft_margin_loss(dist_an - dist_ap, y)
+        # loss = F.soft_margin_loss(dist_an - dist_ap, y)
         # fmt: off
-        if loss == float('Inf'): loss = F.margin_ranking_loss(dist_an, dist_ap, y, margin=0.3)
+        if loss == float('Inf'): loss = mindspore.ops.margin_ranking_loss(dist_an, dist_ap, y, margin=0.3)
+        # if loss == float('Inf'): loss = F.margin_ranking_loss(dist_an, dist_ap, y, margin=0.3)
         # fmt: on
 
     return loss

@@ -4,7 +4,7 @@
 
 import mindspore
 import mindspore.nn as nn
-from mindspore import ops
+# from mindspore import ops
 import numpy as np
 
 
@@ -35,7 +35,7 @@ def update_parameter(param, step_size, opt=None, reserve=False):
 class MetaGate(nn.Cell):
     def __init__(self, feat_dim):
         super().__init__()
-        self.gate = mindspore.Parameter(ops.randn(feat_dim) * 0.1)
+        self.gate = mindspore.Parameter(mindspore.ops.randn(feat_dim) * 0.1)
         # self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
         self.sigmoid = nn.Sigmoid()
 
@@ -54,31 +54,36 @@ class MetaGate(nn.Cell):
 class MetaParam(nn.Cell):
     def __init__(self, feat_dim, num_classes):
         super().__init__()
-        self.centers = mindspore.Parameter(ops.randn(num_classes, feat_dim))
+        self.centers = mindspore.Parameter(mindspore.ops.randn(num_classes, feat_dim))
         # self.centers = nn.Parameter(torch.randn(num_classes, feat_dim))
 
-    def forward(self, inputs, opt=None):
-        op = ops.ReduceSum(keep_dims=True)
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
+        op = mindspore.ops.ReduceSum(keep_dims=True)
         if opt != None and opt['meta']:
             updated_centers = update_parameter(self.centers, self.w_step_size, opt)
             batch_size = inputs.size(0)
             num_classes = self.centers.size(0)
-            distmat = op(ops.pow(inputs, 2), axis=1).expand(batch_size, num_classes) + \
-                        op(ops.pow(updated_centers, 2), axis=1).expand(num_classes, batch_size).t()
+            distmat = op(mindspore.ops.pow(inputs, 2), axis=1).broadcast_to((batch_size, num_classes)) + \
+                        op(mindspore.ops.pow(updated_centers, 2), axis=1).broadcast_to((num_classes, batch_size)).t()
             # distmat = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(batch_size, num_classes) + \
             #             torch.pow(updated_centers, 2).sum(dim=1, keepdim=True).expand(num_classes, batch_size).t()
-            distmat.addmm_(1, -2, inputs, updated_centers.t())
+            # distmat.addmm_(1, -2, inputs, updated_centers.t())
+            distmat = mindspore.ops.addmm(distmat, inputs, self.centers.t(), beta=1, alpha=-2)
 
             return distmat
 
         else:
-            batch_size = inputs.size(0)
-            num_classes = self.centers.size(0)
-            distmat = op(ops.pow(inputs, 2), axis=1).expand(batch_size, num_classes) + \
-                        op(ops.pow(self.centers, 2), axis=1).expand(num_classes, batch_size).t()
+            batch_size = inputs.shape[0]
+            # batch_size = inputs.size(0)
+            num_classes = self.centers.shape[0]
+            # num_classes = self.centers.size(0)
+            distmat = op(mindspore.ops.pow(inputs, 2), axis=1).broadcast_to((batch_size, num_classes)) + \
+                        op(mindspore.ops.pow(self.centers, 2), axis=1).broadcast_to((num_classes, batch_size)).t()
             # distmat = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(batch_size, num_classes) + \
             #             torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(num_classes, batch_size).t()
-            distmat.addmm_(1, -2, inputs, self.centers.t())
+            # distmat.addmm_(1, -2, inputs, self.centers.t())
+            distmat = mindspore.ops.addmm(distmat, inputs, self.centers.t(), beta=1, alpha=-2)
 
             return distmat
 
@@ -86,17 +91,17 @@ class MetaParam(nn.Cell):
 # class MetaConv2d(nn.Conv2d):
 #     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, group=1, bias=True, pad_mode='pad'):
 #         super().__init__(in_channels, out_channels, kernel_size, stride, pad_mode, padding, dilation, group, has_bias=bias)
-#         self.conv = ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
+#         self.conv = mindspore.ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
 #     def construct(self, inputs, opt=None):
 #         if opt != None and opt['meta']:
 #             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
 #             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-#             # output = ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+#             # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
 #             output = self.conv(inputs, updated_weight)
 #             return output
 #         else:
-#             # output = ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-#             # conv = ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
+#             # output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+#             # conv = mindspore.ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
 #             output = self.conv(inputs, self.weight)
 #             return output
 
@@ -114,7 +119,7 @@ class MetaConv2d(nn.Conv2d):
         self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
         self.conv.weight = self.weight
         # self.conv.weight.set_data(self.weight)
-        # self.weight = ops.randn((out_channels, in_channels, kernel_size, kernel_size))
+        # self.weight = mindspore.ops.randn((out_channels, in_channels, kernel_size, kernel_size))
     
     # def forward(self, inputs, opt=None):
     def construct(self, inputs):
@@ -133,14 +138,14 @@ class MetaConv2d(nn.Conv2d):
         #     # self.conv.weight = updated_weight
         #     # self.conv.bias = updated_bias
         #     output = self.conv(inputs)
-        #     # output = ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+        #     # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
         #     return output
         # else:
         #     # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         #     # self.conv.weight = self.weight
         #     # self.conv.bias = self.bias
         #     output = self.conv(inputs)
-        #     # output = ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+        #     # output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
         #     return output
 
 
@@ -195,13 +200,13 @@ class MetaIBNNorm(nn.Cell):
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
         
         # split = torch.split(inputs, self.half, 1)
-        split = ops.split(inputs, self.half, 1)
+        split = mindspore.ops.split(inputs, self.half, 1)
         out1 = self.IN(split[0], opt)
         out2 = self.BN(split[1])
         # out1 = self.IN(split[0].contiguous(), opt)
         # out2 = self.BN(split[1].contiguous(), opt)
         # out = torch.cat((out1, out2), 1)
-        out = ops.cat((out1, out2), 1)
+        out = mindspore.ops.cat((out1, out2), 1)
         return out
 
 
@@ -258,7 +263,7 @@ class MetaIBNNorm(nn.Cell):
 #             bn.gamma = updated_gamma
 #             bn.beta = updated_beta
 #             result = bn(inputs)
-#             # result = ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
+#             # result = mindspore.ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
 #             #                     updated_gamma, updated_beta,
 #             #                     self.training, self.momentum, self.eps)
 #         elif norm_type == "hold": # not update, not apply running_mean/var
@@ -266,7 +271,7 @@ class MetaIBNNorm(nn.Cell):
 #             bn.gamma = updated_gamma
 #             bn.beta = updated_beta
 #             result = bn(inputs)
-#             # result = ops.batch_norm(inputs, None, None,
+#             # result = mindspore.ops.batch_norm(inputs, None, None,
 #             #                     updated_gamma, updated_beta,
 #             #                     True, self.momentum, self.eps)
 #         elif norm_type == "eval": # fix and apply running_mean/var,
@@ -275,7 +280,7 @@ class MetaIBNNorm(nn.Cell):
 #             bn.beta = updated_beta
 #             result = bn(inputs)
 #             # print(5)
-#             # result = ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
+#             # result = mindspore.ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
 #             #                     updated_gamma, updated_beta,
 #             #                     False, self.momentum, self.eps)
 
@@ -331,9 +336,10 @@ class MetaBNNorm(nn.Cell):
         self.use_batch_statistics = use_batch_statistics
 
     def construct(self, inputs):
-        if inputs.dim != 4:
+        # print("inputs.ndim", inputs.ndim)
+        if inputs.ndim != 4:
         # if inputs.dim() != 4:
-            raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim))
+            raise ValueError('expected 4D input (got {}D input)'.format(inputs.ndim))
         use_meta_learning = False
         # if opt != None and opt['meta']:
         #     use_meta_learning = True

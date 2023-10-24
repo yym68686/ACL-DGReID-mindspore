@@ -4,8 +4,9 @@
 @contact: sherlockliao01@gmail.com
 """
 
-import torch
-import torch.nn.functional as F
+# import torch
+import mindspore
+# import torch.nn.functional as F
 
 
 def concat_all_gather(tensor):
@@ -33,10 +34,19 @@ def normalize(x, axis=-1):
 
 
 def euclidean_dist(x, y):
-    m, n = x.size(0), y.size(0)
-    xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
-    yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()
-    dist = xx + yy - 2 * torch.matmul(x, y.t())
+    # m, n = x.shape[0], y.shape[0]
+    # # m, n = x.size(0), y.size(0)
+    # xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
+    # yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()
+    # dist = xx + yy - 2 * torch.matmul(x, y.t())
+    # dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
+    # return dist
+
+    m, n = x.shape[0], y.shape[0]
+    # m, n = x.size(0), y.size(0)
+    xx = mindspore.ops.sum(mindspore.ops.pow(x, 2), 1, keepdim=True).broadcast_to((m, n))
+    yy = mindspore.ops.sum(mindspore.ops.pow(y, 2), 1, keepdim=True).broadcast_to((n, m)).t()
+    dist = xx + yy - 2 * mindspore.ops.matmul(x, y.t())
     dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
     return dist
 

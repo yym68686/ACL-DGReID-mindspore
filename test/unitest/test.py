@@ -5,8 +5,8 @@ import torch
 from collections import OrderedDict
 import mindspore
 import mindspore.ops as ops
-mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU", device_id=0)
-# mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
+# mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU", device_id=0)
+mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
 import os
 os.system("clear")
 import sys

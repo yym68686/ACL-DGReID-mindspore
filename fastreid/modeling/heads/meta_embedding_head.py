@@ -5,7 +5,7 @@
 """
 
 # import torch
-import torch.nn.functional as F
+# import torch.nn.functional as F
 # from torch import nn
 from mindspore import nn
 import mindspore
@@ -213,7 +213,8 @@ class MetaEmbeddingHead(nn.Cell):
         }
 
     #CHANGE Add reduction version
-    def forward(self, features, targets=None, opt=None):
+    def construct(self, features, targets=None, opt=None):
+    # def forward(self, features, targets=None, opt=None):
     # def forward(self, features, targets=None, opt=None):
         """
         See :class:`ReIDHeads.forward`.
@@ -241,18 +242,30 @@ class MetaEmbeddingHead(nn.Cell):
             center_distmat = self.center(neck_feat, opt)
             
         else:
-            logits1 = F.linear(F.normalize(neck_feat), F.normalize(self.weight1))
-            logits2 = F.linear(F.normalize(neck_feat), F.normalize(self.weight2))
-            logits3 = F.linear(F.normalize(neck_feat), F.normalize(self.weight3))
+            l2_normalize = mindspore.ops.L2Normalize(axis=0)
+            neck_feat_normalized = l2_normalize(neck_feat)
+            weight1_normalized = l2_normalize(self.weight1)
+            weight2_normalized = l2_normalize(self.weight2)
+            weight3_normalized = l2_normalize(self.weight3)
+            logits1 = mindspore.ops.dense(neck_feat_normalized, weight1_normalized)
+            logits2 = mindspore.ops.dense(neck_feat_normalized, weight2_normalized)
+            logits3 = mindspore.ops.dense(neck_feat_normalized, weight3_normalized)
+            # logits1 = F.linear(F.normalize(neck_feat), F.normalize(self.weight1))
+            # logits2 = F.linear(F.normalize(neck_feat), F.normalize(self.weight2))
+            # logits3 = F.linear(F.normalize(neck_feat), F.normalize(self.weight3))
 
         # Pass logits.clone() into cls_layer, because there is in-place operations
-        cls_outputs1 = self.cls_layer1(logits1.clone(), targets)
-        cls_outputs2 = self.cls_layer2(logits2.clone(), targets)
-        cls_outputs3 = self.cls_layer3(logits3.clone(), targets)
+        cls_outputs1 = self.cls_layer1(logits1, targets)
+        cls_outputs2 = self.cls_layer2(logits2, targets)
+        cls_outputs3 = self.cls_layer3(logits3, targets)
+        # cls_outputs1 = self.cls_layer1(logits1.clone(), targets)
+        # cls_outputs2 = self.cls_layer2(logits2.clone(), targets)
+        # cls_outputs3 = self.cls_layer3(logits3.clone(), targets)
 
         # fmt: off
         if self.neck_feat == 'before':  feat = pool_feat[..., 0, 0]
-        elif self.neck_feat == 'after': feat = F.normalize(neck_feat, 2, 1)
+        elif self.neck_feat == 'after': feat = mindspore.ops.L2Normalize(axis=1)(neck_feat)
+        # elif self.neck_feat == 'after': feat = F.normalize(neck_feat, 2, 1)
         else:                           raise KeyError(f"{self.neck_feat} is invalid for MODEL.HEADS.NECK_FEAT")
         # fmt: on
 
