@@ -70,8 +70,12 @@ class Baseline(nn.Cell):
 
         self.loss_kwargs = loss_kwargs
 
+        print("pixel_mean", type(pixel_mean), pixel_mean)
         self.pixel_mean = mindspore.Tensor(pixel_mean).view(1, -1, 1, 1)
+        self.pixel_mean = mindspore.Tensor(self.pixel_mean)
+        print("self.pixel_mean", type(self.pixel_mean), self.pixel_mean)
         self.pixel_std = mindspore.Tensor(pixel_std).view(1, -1, 1, 1)
+        self.pixel_std = mindspore.Tensor(self.pixel_std)
         # self.register_buffer('pixel_mean', torch.Tensor(pixel_mean).view(1, -1, 1, 1), False)
         # self.register_buffer('pixel_std', torch.Tensor(pixel_std).view(1, -1, 1, 1), False)
 
@@ -121,17 +125,20 @@ class Baseline(nn.Cell):
 
     # def forward(self, batched_inputs, epoch, opt=None):
     def construct(self, batched_inputs, epoch, opt=None):
-        print("type(batched_inputs['images'])", type(batched_inputs["images"]))
+        # print("type(batched_inputs['images'])", type(batched_inputs["images"]))
         images = self.preprocess_image(batched_inputs)
+        print("images", type(images), images)
         
         features, paths, _ = self.backbone(images, epoch, opt)
+        features = mindspore.Tensor(features)
+        print("features", type(features), features)
         # print("targets" in batched_inputs)
     
         if self.training:
             assert "targets" in batched_inputs, "Person ID annotation are missing in training!"
             # print("batched_inputs", len(batched_inputs), type(batched_inputs), batched_inputs)
             targets = batched_inputs["targets"]
-            # print("targets", type(targets), targets.value())
+
             # print("targets.sum()", targets.sum())
             domain_ids = batched_inputs["domainids"]
 
@@ -141,7 +148,9 @@ class Baseline(nn.Cell):
             # if targets.sum() < 0: targets.zero_()
 
             outputs = self.heads(features, targets, opt=opt)
+            print("outputs", type(outputs), outputs)
             losses = self.losses(outputs, targets, domain_ids, paths, opt)
+            print("targets", type(targets), targets)
 
             losses['loss_domain_intra'] = intraCluster(paths, domain_ids)
             losses['loss_domain_inter'] = interCluster(paths, domain_ids)
@@ -194,9 +203,12 @@ class Baseline(nn.Cell):
 
 
         images = mindspore.Tensor(np.array(images).astype(np.float32), mindspore.float32)
-        # print("images", len(images), type(images), images)
-        images = mindspore.ops.sub(images, self.pixel_mean)
-        images = mindspore.ops.div(images, self.pixel_std)
+        print("self.pixel_mean", len(self.pixel_mean), type(self.pixel_mean), self.pixel_mean)
+        images = images.sub(self.pixel_mean).div(self.pixel_std)
+        images = mindspore.Tensor(images)
+        print("images", len(images), type(images), images)
+        # images = mindspore.ops.sub(images, self.pixel_mean)
+        # images = mindspore.ops.div(images, self.pixel_std)
         # images.sub(self.pixel_mean).div(self.pixel_std)
         # images.sub(self.pixel_mean).div(self.pixel_std)
         # images.sub_(self.pixel_mean).div_(self.pixel_std)
@@ -209,6 +221,7 @@ class Baseline(nn.Cell):
         """
         # model predictions
         # fmt: off
+        print("outputs", type(outputs), outputs)
         pred_class_logits1 = outputs['pred_class_logits1']
         pred_class_logits2 = outputs['pred_class_logits2']
         pred_class_logits3 = outputs['pred_class_logits3']
@@ -224,15 +237,27 @@ class Baseline(nn.Cell):
         num_classes1 = cls_outputs1.shape[-1]
         num_classes2 = cls_outputs1.shape[-1] + cls_outputs2.shape[-1]
         num_classes3 = cls_outputs1.shape[-1] + cls_outputs2.shape[-1] + cls_outputs3.shape[-1]
-        idx1 = gt_labels < num_classes1
-        idx2 = (gt_labels < num_classes2) & (gt_labels >= num_classes1)
-        idx3 = (gt_labels < num_classes3) & (gt_labels >= num_classes2)
+        print("num_classes1", type(num_classes1), num_classes1)
+        idx1 = int(gt_labels) < num_classes1
+        idx2 = (int(gt_labels) < num_classes2) & (int(gt_labels) >= num_classes1)
+        idx3 = (int(gt_labels) < num_classes3) & (int(gt_labels) >= num_classes2)
+        # idx1 = gt_labels < num_classes1
+        # idx2 = (gt_labels < num_classes2) & (gt_labels >= num_classes1)
+        # idx3 = (gt_labels < num_classes3) & (gt_labels >= num_classes2)
+    
         # Log prediction accuracy
-        # QUES
-        # print("idx1", type(idx1), gt_labels < num_classes1)
-        # log_accuracy(pred_class_logits1[idx1], gt_labels[idx1])
-        # log_accuracy(pred_class_logits2[idx2], gt_labels[idx2])
-        # log_accuracy(pred_class_logits3[idx3], gt_labels[idx3])
+        print("pred_class_logits1", type(pred_class_logits1), pred_class_logits1)
+        if len(gt_labels.shape) > 1:
+            print("len(gt_labels) > 1!!!!!!!!!!!!!!!!!!")
+            exit(0)
+        if idx1:
+            # print("gt_labels[idx1]", type(gt_labels[idx1]), gt_labels)
+            log_accuracy(pred_class_logits1[idx1], gt_labels)
+        if idx2:
+            log_accuracy(pred_class_logits2[idx2], gt_labels)
+        if idx3:
+            # print("gt_labels[idx3]", type(gt_labels[idx3]), gt_labels)
+            log_accuracy(pred_class_logits3[idx3], gt_labels)
         # if idx1.sum().item():
         #     log_accuracy(pred_class_logits1[idx1], gt_labels[idx1])
         # if idx2.sum().item():
@@ -251,18 +276,18 @@ class Baseline(nn.Cell):
                 count = 0
                 temp_loss = 0
                 for i in range(1, 4):
-                    # QUES
                     # if eval('idx'+str(i)).sum().item() == 0:
-                    #     continue
+                    if eval('idx'+str(i)) == 0:
+                        continue
                     count += 1
-                    temp_loss += 1
+                    # temp_loss += 1
                     # QUES
-                    # temp_loss += cross_entropy_loss(
-                    #     eval('cls_outputs'+str(i))[eval('idx'+str(i))],
-                    #     gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)) if i > 1 else gt_labels[eval('idx'+str(i))],
-                    #     ce_kwargs.get('eps'),
-                    #     ce_kwargs.get('alpha')
-                    # ) * ce_kwargs.get('scale')
+                    temp_loss += cross_entropy_loss(
+                        eval('cls_outputs'+str(i))[eval('idx'+str(i))],
+                        gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)) if i > 1 else gt_labels[eval('idx'+str(i))],
+                        ce_kwargs.get('eps'),
+                        ce_kwargs.get('alpha')
+                    ) * ce_kwargs.get('scale')
                 loss_dict['loss_cls'] = temp_loss / count
 
             if 'CenterLoss' in loss_names:

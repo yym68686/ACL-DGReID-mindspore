@@ -219,14 +219,18 @@ class MetaEmbeddingHead(nn.Cell):
         """
         See :class:`ReIDHeads.forward`.
         """
+        print("self.pool_layer", type(self.pool_layer), self.pool_layer)
         pool_feat = self.pool_layer(features)
 
         # if opt['meta']:
         #     import pdb; pdb.set_trace()
 
+        print("pool_feat", type(pool_feat), pool_feat)
         neck_feat = self.bottleneck(pool_feat, opt)
 
+        print("neck_feat", type(neck_feat), neck_feat)
         neck_feat = neck_feat[..., 0, 0]
+        print("neck_feat", type(neck_feat), neck_feat)
         
         # Evaluation
         # fmt: off
@@ -242,11 +246,11 @@ class MetaEmbeddingHead(nn.Cell):
             center_distmat = self.center(neck_feat, opt)
             
         else:
-            l2_normalize = mindspore.ops.L2Normalize(axis=0)
-            neck_feat_normalized = l2_normalize(neck_feat)
-            weight1_normalized = l2_normalize(self.weight1)
-            weight2_normalized = l2_normalize(self.weight2)
-            weight3_normalized = l2_normalize(self.weight3)
+            # l2_normalize = mindspore.ops.L2Normalize(axis=0)
+            neck_feat_normalized = mindspore.ops.L2Normalize(axis=0)(neck_feat)
+            weight1_normalized = mindspore.ops.L2Normalize(axis=0)(self.weight1)
+            weight2_normalized = mindspore.ops.L2Normalize(axis=0)(self.weight2)
+            weight3_normalized = mindspore.ops.L2Normalize(axis=0)(self.weight3)
             logits1 = mindspore.ops.dense(neck_feat_normalized, weight1_normalized)
             logits2 = mindspore.ops.dense(neck_feat_normalized, weight2_normalized)
             logits3 = mindspore.ops.dense(neck_feat_normalized, weight3_normalized)
@@ -268,7 +272,9 @@ class MetaEmbeddingHead(nn.Cell):
         # elif self.neck_feat == 'after': feat = F.normalize(neck_feat, 2, 1)
         else:                           raise KeyError(f"{self.neck_feat} is invalid for MODEL.HEADS.NECK_FEAT")
         # fmt: on
-
+        print("logits1", type(logits1), logits1)
+        print("self.cls_layer1.s", type(self.cls_layer1.s), self.cls_layer1.s)
+        # print("logits1.mul(self.cls_layer1.s)", type(logits1.mul(self.cls_layer1.s)), logits1.mul(self.cls_layer1.s))
         return {
             "cls_outputs1": cls_outputs1,
             "cls_outputs2": cls_outputs2,

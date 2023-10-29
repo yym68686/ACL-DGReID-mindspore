@@ -3,8 +3,9 @@
 @author:  l1aoxingyu
 @contact: sherlockliao01@gmail.com
 """
-import torch
-import torch.nn.functional as F
+# import torch
+# import torch.nn.functional as F
+import mindspore
 
 from fastreid.utils.events import get_event_storage
 
@@ -13,16 +14,29 @@ def log_accuracy(pred_class_logits, gt_classes, topk=(1,)):
     """
     Log the accuracy metrics to EventStorage.
     """
-    bsz = pred_class_logits.size(0)
+    bsz = pred_class_logits.shape[0]
+    # bsz = pred_class_logits.size(0)
     maxk = max(topk)
+    print("pred_class_logits", type(pred_class_logits), pred_class_logits)
     _, pred_class = pred_class_logits.topk(maxk, 1, True, True)
-    pred_class = pred_class.t()
-    correct = pred_class.eq(gt_classes.view(1, -1).expand_as(pred_class))
+    # _, pred_class = pred_class_logits.topk(maxk, 1, True, True)
+    # pred_class = pred_class.t()
+    # correct = pred_class.eq(gt_classes.view(1, -1).expand_as(pred_class))
+    print("gt_classes", type(gt_classes), gt_classes)
+    print("pred_class", type(pred_class), pred_class)
+    correct = pred_class.equal(gt_classes.expand_as(pred_class))
+    print("correct", type(correct), correct)
+    # correct = mindspore.ops.equal(pred_class, gt_classes.view(1, -1).expand_as(pred_class))
 
     ret = []
     for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(dim=0, keepdim=True)
-        ret.append(correct_k.mul_(1. / bsz))
+        correct_k = correct[:k].view(-1).float().sum(axis=0, keepdims=True)
+
+        # correct_k = correct[:k].view(-1).float().sum(dim=0, keepdim=True)
+        # ret.append(correct_k.mul_(1. / bsz))
+
+        # correct = mindspore.ops.mul(correct_k, 1. / bsz)
+        ret.append(correct_k.mul(1. / bsz))
 
     storage = get_event_storage()
     storage.put_scalar("cls_accuracy", ret[0])

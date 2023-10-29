@@ -334,12 +334,14 @@ class MetaBNNorm(nn.Cell):
         self.beta = Parameter(initializer(beta_init, num_features), name="beta", requires_grad=affine)
         self.bias_freeze = bias_freeze
         self.use_batch_statistics = use_batch_statistics
+        self.affine = affine
 
     def construct(self, inputs):
         # print("inputs.ndim", inputs.ndim)
         if inputs.ndim != 4:
         # if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.ndim))
+        # inputs = mindspore.Tensor(inputs)
         use_meta_learning = False
         # if opt != None and opt['meta']:
         #     use_meta_learning = True
@@ -387,7 +389,19 @@ class MetaBNNorm(nn.Cell):
         elif norm_type == "hold": # not update, not apply running_mean/var
             if self.use_batch_statistics is None:
                 if self.training:
-                    return self.bn_train(inputs, updated_gamma, updated_beta, None, None)[0]
+                    # print("inputs", type(inputs), inputs)
+                    # print("updated_gamma", type(updated_gamma), updated_gamma)
+                    # print("updated_beta", type(updated_beta), updated_beta)
+                    # print("num_features", self.num_features)
+                    # print("affine", self.affine)
+                    # mean = mindspore.Tensor(np.zeros([self.num_features]), mindspore.float32)
+                    # variance = mindspore.Tensor(np.zeros([self.num_features]), mindspore.float32)
+                    # result = self.bn_train(inputs, updated_gamma, updated_beta, mean, variance)[0]
+                    result = self.bn_train(inputs, updated_gamma, updated_beta, None, None)[0]
+                    # result = mindspore.Tensor(result)
+                    # print("self.bn_train(inputs, updated_gamma, updated_beta, None, None)[0]", type(result), result.shape, result)
+                    return result
+                    # return self.bn_train(inputs, updated_gamma, updated_beta, None, None)[0]
                 if not self.training:
                     return self.bn_infer(inputs,
                                      self.gamma,

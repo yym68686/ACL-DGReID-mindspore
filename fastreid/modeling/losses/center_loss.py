@@ -67,24 +67,28 @@ def centerLoss(distmat, labels):
     # batch_size = distmat.size(0)
     # num_classes = distmat.size(1)
 
-    print("type num_classes", num_classes)
-    # classes = mindspore.ops.arange(num_classes)
+    num_classes = mindspore.Tensor(num_classes, mindspore.float32)
+    print("type num_classes", type(num_classes), num_classes.dtype)
+    classes = mindspore.ops.arange(num_classes)
     # QUES
+    labels = mindspore.Tensor(labels, mindspore.float32)
+    print("labels.shape", type(labels), labels.dtype, len(labels))
     labels = labels.unsqueeze(0).broadcast_to((batch_size, num_classes))
     # labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
-    # mask = mindspore.ops.equal(labels, classes.broadcast_to((batch_size, num_classes)))
+    mask = mindspore.ops.equal(labels, classes.broadcast_to((batch_size, num_classes)))
     # mask = labels.eq(classes.broadcast_to((batch_size, num_classes)))
+
     # classes = torch.arange(num_classes).long().to(distmat.device)
     # labels = labels.unsqueeze(1).expand(batch_size, num_classes)
     # mask = labels.eq(classes.expand(batch_size, num_classes))
-    
+
     # import pdb; pdb.set_trace()
 
     # QUES
-    # dist = distmat * mask
-    loss = 0.1
+    # loss = 0.1
+    dist = distmat * mask
     # dist = distmat * mask.float()
-    # loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
+    loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
     
     return loss
 

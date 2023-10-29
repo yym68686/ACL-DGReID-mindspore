@@ -32,7 +32,7 @@ class CUHK03(ImageDataset):
     dataset_name = "CUHK03"
 
     def __init__(self, root='datasets', split_id=0, cuhk03_labeled=True, cuhk03_classic_split=False, **kwargs):
-        root='/data0/yuming/reid_data/'
+        root='/data/yuming/split_reid_data/'
         self.root = root
         self.dataset_dir = osp.join(self.root, self.dataset_dir)
 

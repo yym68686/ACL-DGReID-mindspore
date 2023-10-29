@@ -75,6 +75,8 @@ class GeneralizedMeanPooling(nn.Cell):
 
     # def forward(self, x):
     def construct(self, x):
+        # x = mindspore.Tensor(x)
+        print("x", type(x), x)
         x = x.clamp(min=self.eps).pow(self.p)
         return mindspore.ops.adaptive_avg_pool2d(x, self.output_size).pow(1. / self.p)
         # return F.adaptive_avg_pool2d(x, self.output_size).pow(1. / self.p)
@@ -91,7 +93,8 @@ class GeneralizedMeanPoolingP(GeneralizedMeanPooling):
 
     def __init__(self, norm=3, output_size=(1, 1), eps=1e-6, *args, **kwargs):
         super(GeneralizedMeanPoolingP, self).__init__(norm, output_size, eps)
-        self.p = nn.Parameter(torch.ones(1) * norm)
+        self.p = mindspore.Parameter(mindspore.ops.ones(1) * norm)
+        # self.p = nn.Parameter(torch.ones(1) * norm)
 
 
 # class AdaptiveAvgMaxPool(nn.Module):
