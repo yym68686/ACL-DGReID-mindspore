@@ -25,12 +25,17 @@ def interCluster(feature, domain_ids, margin=0.3):
     candidate_list = []
     loss = 0
     count = 0
+    print("domain_ids", type(domain_ids), domain_ids.shape, domain_ids, (int(domain_ids) == 1) == 0)
     for i in range(3):
         # QUES
+        bbb = int(domain_ids)
+        aaa = bbb == i
+        kkk = aaa == 0
+        if kkk:
         # if (domain_ids == i).sum().item() == 0:
-        #     continue
-        # candidate_list.append(feature[domain_ids==i].mean())
-        candidate_list.append(1)
+            continue
+        candidate_list.append(feature[domain_ids==i].mean())
+        # candidate_list.append(1)
     for i in range(len(candidate_list)):
         for j in range(i+1, len(candidate_list)):
             count += 1

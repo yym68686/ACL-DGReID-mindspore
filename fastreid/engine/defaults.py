@@ -217,6 +217,7 @@ class DefaultTrainer(TrainerBase):
         #         model, device_ids=[comm.get_local_rank()], broadcast_buffers=False, find_unused_parameters=True
         #     )
         ms.set_context(mode=ms.PYNATIVE_MODE, device_target="GPU", device_id=0)
+        # ms.set_context(mode=ms.PYNATIVE_MODE, device_target="GPU", device_id=0)
         # model = torch.nn.DataParallel(model)
 
 

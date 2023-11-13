@@ -394,10 +394,10 @@ class MetaBNNorm(nn.Cell):
                     # print("updated_beta", type(updated_beta), updated_beta)
                     # print("num_features", self.num_features)
                     # print("affine", self.affine)
-                    # mean = mindspore.Tensor(np.zeros([self.num_features]), mindspore.float32)
-                    # variance = mindspore.Tensor(np.zeros([self.num_features]), mindspore.float32)
-                    # result = self.bn_train(inputs, updated_gamma, updated_beta, mean, variance)[0]
-                    result = self.bn_train(inputs, updated_gamma, updated_beta, None, None)[0]
+                    mean = mindspore.Tensor(np.zeros([self.num_features]), mindspore.float32)
+                    variance = mindspore.Tensor(np.zeros([self.num_features]), mindspore.float32)
+                    result = self.bn_train(inputs, updated_gamma, updated_beta, mean, variance)[0]
+                    # result = self.bn_train(inputs, updated_gamma, updated_beta, None, None)[0]
                     # result = mindspore.Tensor(result)
                     # print("self.bn_train(inputs, updated_gamma, updated_beta, None, None)[0]", type(result), result.shape, result)
                     return result

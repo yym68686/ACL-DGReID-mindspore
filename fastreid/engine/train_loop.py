@@ -11,9 +11,10 @@ from typing import Dict
 
 import copy
 import numpy as np
-import torch
-from torch.autograd import Variable
-from torch.nn.parallel import DataParallel, DistributedDataParallel
+# import torch
+# from torch.autograd import Variable
+# from torch.nn.parallel import DataParallel, DistributedDataParallel
+import mindspore
 
 import fastreid.utils.comm as comm
 from fastreid.utils.events import EventStorage, get_event_storage
@@ -194,6 +195,14 @@ class TrainerBase:
     def run_step_meta_learning2(self, epoch):
         raise NotImplementedError
 
+# def cycle(dl):
+#     while True:
+#         for data in dl:
+#             yield data
+
+# def dataLoader(ds, bs):
+#     ds.batch(batch_size=bs)
+#     return ds
 
 class SimpleTrainer(TrainerBase):
     """
@@ -229,7 +238,10 @@ class SimpleTrainer(TrainerBase):
 
         self.model = model
         self.data_loader = data_loader
+        # self.data_loader = self.data_loader.batch(64, drop_remainder=True)
         self.single_data_loader = single_data_loader
+        # self._data_loader_iter = dataLoader(data_loader, 32)
+        # self._data_loader_iter = cycle(self._data_loader_iter)
         self._data_loader_iter = iter(data_loader)
         self._single_data_loader_iter = [iter(single_loader) for single_loader in single_data_loader]
         self.optimizer = optimizer
@@ -282,15 +294,44 @@ class SimpleTrainer(TrainerBase):
         # print('train_loop.py   run_step_meta_learning1')
 
         opt = self.opt_setting('basic')
+        # data = self._data_loader_iter
         data = next(self._data_loader_iter)
+        # data = self.data_loader.batch(32)
         # print("data.shape", len(data), data[0]['images0'].shape)
         data_time = time.perf_counter() - start
-        losses, loss_dict = self.basic_forward(data, self.model, epoch, opt) # forward
+        # losses, loss_dict = self.basic_forward(data, self.model, epoch, opt) # forward
 
-        self.basic_backward(losses, self.optimizer)
+        data = data[0]
+        # print("type(data['images'])", type(data["images"]))
+        print("data", data)
+        images0 = data["images0"]
+        
+        # images0 = mindspore.Tensor(data["images0"].numpy().astype(np.int32), mindspore.int32)
+        images = data["images"]
+        # images = mindspore.Tensor(data["images"].numpy().astype(np.int32), mindspore.int32)
+        targets = data["targets"]
+        # print("targets", type(targets))
+        camids = data["camids"]
+        # print("targets", type(targets))
+        domainids = data["domainids"]
+        img_paths = data["img_paths"]
+
+        # loss_dict = model(data, epoch, opt)
+        weights = self.optimizer.parameters
+        grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=False)
+        opt = None
+
+        loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
+
+        # losses = sum(loss_dict.values()).mean()
+
+        self.optimizer(inputs_gradient)
+
+        # self.basic_backward(losses, self.optimizer)
         
         # Open this if and only if the 'run_step_meta_learnig2()' function is not exeucted
-        self._write_metrics(loss_dict, data_time)
+        # QUES 似乎没啥用
+        # self._write_metrics(loss_dict, data_time)
 
         # if isinstance(self.param_wrapper, ContiguousParams):
         #     self.param_wrapper.assert_buffer_is_valid()
@@ -363,6 +404,7 @@ class SimpleTrainer(TrainerBase):
         # print("data", data)
 
         loss_dict = model(data, epoch, opt)
+        loss_dict, inputs_gradient = mindspore.value_and_grad(model)
         losses = sum(loss_dict.values()).mean()
 
         return losses, loss_dict
@@ -470,47 +512,47 @@ class SimpleTrainer(TrainerBase):
         if isinstance(self.param_wrapper, ContiguousParams):
             self.param_wrapper.assert_buffer_is_valid()
 
-    def _write_metrics(self, loss_dict: Dict[str, torch.Tensor], data_time: float):
-        """
-        Args:
-            loss_dict (dict): dict of scalar losses
-            data_time (float): time taken by the dataloader iteration
-        """
-        device = next(iter(loss_dict.values())).device
+    # def _write_metrics(self, loss_dict: Dict[str, torch.Tensor], data_time: float):
+    #     """
+    #     Args:
+    #         loss_dict (dict): dict of scalar losses
+    #         data_time (float): time taken by the dataloader iteration
+    #     """
+    #     device = next(iter(loss_dict.values())).device
 
-        # Use a new stream so these ops don't wait for DDP or backward
-        with torch.cuda.stream(torch.cuda.Stream() if device.type == "cuda" else None):
-            # metrics_dict = {k: v.mean().detach().cpu().item() for k, v in loss_dict.items()}
-            metrics_dict = {k: v.mean().detach().cpu().item() for k, v in loss_dict.items()}
-            metrics_dict["data_time"] = data_time
+    #     # Use a new stream so these ops don't wait for DDP or backward
+    #     with torch.cuda.stream(torch.cuda.Stream() if device.type == "cuda" else None):
+    #         # metrics_dict = {k: v.mean().detach().cpu().item() for k, v in loss_dict.items()}
+    #         metrics_dict = {k: v.mean().detach().cpu().item() for k, v in loss_dict.items()}
+    #         metrics_dict["data_time"] = data_time
 
-            # Gather metrics among all workers for logging
-            # This assumes we do DDP-style training, which is currently the only
-            # supported method in detectron2.
-            all_metrics_dict = comm.gather(metrics_dict)
+    #         # Gather metrics among all workers for logging
+    #         # This assumes we do DDP-style training, which is currently the only
+    #         # supported method in detectron2.
+    #         all_metrics_dict = comm.gather(metrics_dict)
 
-        if comm.is_main_process():
-            storage = get_event_storage()
+    #     if comm.is_main_process():
+    #         storage = get_event_storage()
 
-            # data_time among workers can have high variance. The actual latency
-            # caused by data_time is the maximum among workers.
-            data_time = np.max([x.pop("data_time") for x in all_metrics_dict])
-            storage.put_scalar("data_time", data_time)
+    #         # data_time among workers can have high variance. The actual latency
+    #         # caused by data_time is the maximum among workers.
+    #         data_time = np.max([x.pop("data_time") for x in all_metrics_dict])
+    #         storage.put_scalar("data_time", data_time)
 
-            # average the rest metrics
-            metrics_dict = {
-                k: np.mean([x[k] for x in all_metrics_dict]) for k in all_metrics_dict[0].keys()
-            }
-            total_losses_reduced = sum(metrics_dict.values())
-            if not np.isfinite(total_losses_reduced):
-                raise FloatingPointError(
-                    f"Loss became infinite or NaN at iteration={self.iter}!\n"
-                    f"loss_dict = {metrics_dict}"
-                )
+    #         # average the rest metrics
+    #         metrics_dict = {
+    #             k: np.mean([x[k] for x in all_metrics_dict]) for k in all_metrics_dict[0].keys()
+    #         }
+    #         total_losses_reduced = sum(metrics_dict.values())
+    #         if not np.isfinite(total_losses_reduced):
+    #             raise FloatingPointError(
+    #                 f"Loss became infinite or NaN at iteration={self.iter}!\n"
+    #                 f"loss_dict = {metrics_dict}"
+    #             )
 
-            storage.put_scalar("total_loss", total_losses_reduced)
-            if len(metrics_dict) > 1:
-                storage.put_scalars(**metrics_dict)
+    #         storage.put_scalar("total_loss", total_losses_reduced)
+    #         if len(metrics_dict) > 1:
+    #             storage.put_scalars(**metrics_dict)
 
 
 class AMPTrainer(SimpleTrainer):

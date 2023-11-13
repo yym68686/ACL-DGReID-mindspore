@@ -464,16 +464,16 @@ class ResNet(nn.Cell):
         print(4)
         # opt=None
         print(f"ndim {x.shape}")
-        print("x type", type(x), x)
+        print("x type 1", type(x), x)
         x = self.conv1(x)
-        print("x type", type(x), x)
+        print("x type 2", type(x), x)
         x = self.bn1(x)
-        print("x type", type(x), x)
+        print("x type 3", type(x), x)
         x = self.relu(x)
-        print("x type", type(x))
+        print("x type 4", type(x))
         x = self.maxpool(x)
         x = mindspore.Tensor(x)
-        print("x type", type(x))
+        print("x type 5", type(x))
 
         weights = []
         out_features = []

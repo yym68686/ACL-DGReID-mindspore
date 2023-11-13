@@ -165,7 +165,8 @@ _C.INPUT.FLIP.PROB = 0.5
 
 # Value of padding size
 _C.INPUT.PADDING = CN({"ENABLED": False})
-_C.INPUT.PADDING.MODE = 'constant'
+_C.INPUT.PADDING.MODE = 'Border.CONSTANT'
+# _C.INPUT.PADDING.MODE = 'constant'
 _C.INPUT.PADDING.SIZE = 10
 
 # Random color jitter

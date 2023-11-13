@@ -71,6 +71,7 @@ class CommDataset(Dataset):
         if self.relabel:
             pid = self.pid_dict[pid]
             camid = self.cam_dict[camid]
+        # return img0, img, pid, camid, domain_id, img_path
         return {
             "images0": img0,
             "images": img,

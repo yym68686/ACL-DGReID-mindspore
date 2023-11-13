@@ -16,7 +16,7 @@ import os.path as osp
 
 import queue
 import mindspore
-from torch.utils.data import DataLoader
+# from torch.utils.data import DataLoader
 
 from fastreid.utils.file_io import PathManager
 

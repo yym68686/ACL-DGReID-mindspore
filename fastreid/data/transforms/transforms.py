@@ -11,7 +11,8 @@ import random
 from collections import deque
 
 import numpy as np
-import torch
+# import torch
+import mindspore
 
 from .functional import to_tensor, augmentations
 
@@ -81,7 +82,8 @@ class RandomPatch(object):
 
     def transform_patch(self, patch):
         if random.uniform(0, 1) > self.prob_flip_leftright:
-            patch = torch.flip(patch, dims=[2])
+            patch = mindspore.ops.flip(patch, dims=[2])
+            # patch = torch.flip(patch, dims=[2])
         return patch
 
     def __call__(self, img):

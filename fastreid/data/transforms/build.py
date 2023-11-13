@@ -5,7 +5,9 @@
 """
 
 import copy
-import torchvision.transforms as T
+# import torchvision.transforms as T
+import mindspore.dataset.transforms as T
+import mindspore.dataset.vision as TV
 
 from .transforms import *
 from .autoaugment import AutoAugment
@@ -38,7 +40,7 @@ def build_transforms(cfg, is_train=True):
         # padding
         do_pad = cfg.INPUT.PADDING.ENABLED
         padding_size = cfg.INPUT.PADDING.SIZE
-        padding_mode = cfg.INPUT.PADDING.MODE
+        padding_mode = eval("TV." + cfg.INPUT.PADDING.MODE)
 
         # color jitter
         do_cj = cfg.INPUT.CJ.ENABLED
@@ -61,35 +63,49 @@ def build_transforms(cfg, is_train=True):
         rpt_prob = cfg.INPUT.RPT.PROB
 
         if do_autoaug:
-            res.append(T.RandomApply([AutoAugment()], p=autoaug_prob))
+            res.append(T.RandomApply([AutoAugment()], prob=autoaug_prob))
+            # res.append(T.RandomApply([AutoAugment()], p=autoaug_prob))
 
         if size_train[0] > 0:
-            res.append(T.Resize(size_train[0] if len(size_train) == 1 else size_train, interpolation=3))
+            res.append(TV.Resize(size_train[0] if len(size_train) == 1 else size_train, interpolation=TV.Inter.BICUBIC))
+            # res.append(T.Resize(size_train[0] if len(size_train) == 1 else size_train, interpolation=3))
 
         if do_crop:
-            res.append(T.RandomResizedCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size,
+            res.append(TV.RandomResizedCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size,
                                            interpolation=3,
                                            scale=crop_scale, ratio=crop_ratio))
+            # res.append(T.RandomResizedCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size,
+            #                                interpolation=3,
+            #                                scale=crop_scale, ratio=crop_ratio))
         if do_pad:
-            res.extend([T.Pad(padding_size, padding_mode=padding_mode),
-                        T.RandomCrop(size_train[0] if len(size_train) == 1 else size_train)])
+            res.extend([TV.Pad(padding_size, padding_mode=padding_mode),
+                        TV.RandomCrop(size_train[0] if len(size_train) == 1 else size_train)])
+            # res.extend([T.Pad(padding_size, padding_mode=padding_mode),
+            #             T.RandomCrop(size_train[0] if len(size_train) == 1 else size_train)])
         if do_flip:
-            res.append(T.RandomHorizontalFlip(p=flip_prob))
+            res.append(TV.RandomHorizontalFlip(prob=flip_prob))
+            # res.append(T.RandomHorizontalFlip(p=flip_prob))
 
         res1 = copy.deepcopy(res)
-        res1.append(T.RandomApply([T.ColorJitter(cj_brightness, cj_contrast, cj_saturation, cj_hue)], p=cj_prob))
+        res1.append(T.RandomApply([TV.RandomColorAdjust(cj_brightness, cj_contrast, cj_saturation, cj_hue)], prob=cj_prob))
+        # res1.append(T.RandomApply([T.ColorJitter(cj_brightness, cj_contrast, cj_saturation, cj_hue)], p=cj_prob))
         if do_cj:
-            res.append(T.RandomApply([T.ColorJitter(cj_brightness, cj_contrast, cj_saturation, cj_hue)], p=cj_prob))
+            res.append(T.RandomApply([TV.RandomColorAdjust(cj_brightness, cj_contrast, cj_saturation, cj_hue)], prob=cj_prob))
+            # res.append(T.RandomApply([T.ColorJitter(cj_brightness, cj_contrast, cj_saturation, cj_hue)], p=cj_prob))
         if do_affine:
-            res.append(T.RandomAffine(degrees=10, translate=None, scale=[0.9, 1.1], shear=0.1, resample=False,
-                                      fillcolor=0))
+            res.append(TV.RandomAffine(degrees=10, translate=None, scale=[0.9, 1.1], shear=0.1, resample=False,
+                                      fill_value=0))
+            # res.append(T.RandomAffine(degrees=10, translate=None, scale=[0.9, 1.1], shear=0.1, resample=False,
+            #                           fillcolor=0))
         if do_augmix:
             res.append(AugMix(prob=augmix_prob))
         res1.append(ToTensor())
         res.append(ToTensor())
         if do_rea:
-            res1.append(T.RandomErasing(p=rea_prob, value=rea_value))
-            res.append(T.RandomErasing(p=rea_prob, value=rea_value))
+            res1.append(TV.RandomErasing(prob=rea_prob, value=rea_value))
+            res.append(TV.RandomErasing(prob=rea_prob, value=rea_value))
+            # res1.append(T.RandomErasing(p=rea_prob, value=rea_value))
+            # res.append(T.RandomErasing(p=rea_prob, value=rea_value))
         if do_rpt:
             res.append(RandomPatch(prob_happen=rpt_prob))
 
@@ -100,9 +116,11 @@ def build_transforms(cfg, is_train=True):
         crop_size = cfg.INPUT.CROP.SIZE
 
         if size_test[0] > 0:
-            res.append(T.Resize(size_test[0] if len(size_test) == 1 else size_test, interpolation=3))
+            res.append(TV.Resize(size_test[0] if len(size_test) == 1 else size_test, interpolation=TV.Inter.BICUBIC))
+            # res.append(T.Resize(size_test[0] if len(size_test) == 1 else size_test, interpolation=3))
         if do_crop:
-            res.append(T.CenterCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size))
+            res.append(TV.CenterCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size))
+            # res.append(T.CenterCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size))
         res.append(ToTensor())
         
         return [T.Compose(res), T.Compose(res)]

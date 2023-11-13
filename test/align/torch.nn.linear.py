@@ -18,8 +18,8 @@ import mindspore
 from mindspore import Tensor, nn, context
 import numpy as np
 
-context.set_context(mode=context.GRAPH_MODE)
-context.set_context(device_target="CPU")
+# context.set_context(mode=context.GRAPH_MODE)
+# context.set_context(device_target="CPU")
 
 np.random.seed(12345) # 与pytorch保持一致
 mindspore.set_seed(12345) # 与pytorch保持一致

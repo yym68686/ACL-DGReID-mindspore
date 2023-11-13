@@ -48,6 +48,7 @@ def _train_loader_from_config(cfg, *, train_set=None, transforms=None, sampler=N
             single_set.append(CommDataset(data.train, transforms, relabel=True, mapping=idx, offset=sum(num_pids)))
             num_pids.append(data.num_train_pids)
             train_items.extend(data.train)
+            # print("data.train", type(data.train), data.train)
             mapper[d] = idx
         print(mapper, num_pids)
 
@@ -127,8 +128,14 @@ def build_reid_train_loader(
     train_loader = mindspore.dataset.GeneratorDataset(
         source=train_set,
         column_names=["data"],
-        num_parallel_workers=num_workers,
+        # column_names=["images0", "images", "targets", "camids", "domainids", "img_paths"],
+        num_parallel_workers=1,
     )
+    # iterator = iter(train_loader)
+    # print(next(iterator))
+
+    # print(len(list(train_loader)))
+    # exit(0)
 
     # 我写的
     # train_loader = DataLoaderX(
@@ -238,23 +245,23 @@ def trivial_batch_collator(batch):
     return batch
 
 
-def fast_batch_collator(batched_inputs):
-    """
-    A simple batch collator for most common reid tasks
-    """
-    elem = batched_inputs[0]
-    if isinstance(elem, torch.Tensor):
-        out = torch.zeros((len(batched_inputs), *elem.size()), dtype=elem.dtype)
-        for i, tensor in enumerate(batched_inputs):
-            out[i] += tensor
-        return out
+# def fast_batch_collator(batched_inputs):
+#     """
+#     A simple batch collator for most common reid tasks
+#     """
+#     elem = batched_inputs[0]
+#     if isinstance(elem, torch.Tensor):
+#         out = torch.zeros((len(batched_inputs), *elem.size()), dtype=elem.dtype)
+#         for i, tensor in enumerate(batched_inputs):
+#             out[i] += tensor
+#         return out
 
-    elif isinstance(elem, container_abcs.Mapping):
-        return {key: fast_batch_collator([d[key] for d in batched_inputs]) for key in elem}
+#     elif isinstance(elem, container_abcs.Mapping):
+#         return {key: fast_batch_collator([d[key] for d in batched_inputs]) for key in elem}
 
-    elif isinstance(elem, float):
-        return torch.tensor(batched_inputs, dtype=torch.float64)
-    elif isinstance(elem, int):
-        return torch.tensor(batched_inputs)
-    elif isinstance(elem, string_classes):
-        return batched_inputs
+#     elif isinstance(elem, float):
+#         return torch.tensor(batched_inputs, dtype=torch.float64)
+#     elif isinstance(elem, int):
+#         return torch.tensor(batched_inputs)
+#     elif isinstance(elem, string_classes):
+#         return batched_inputs

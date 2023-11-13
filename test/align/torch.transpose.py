@@ -4,7 +4,7 @@ import torch
 from torch import Tensor
 import mindspore as ms
 from mindspore import ops
-ms.set_context(device_target="CPU")
+# ms.set_context(device_target="CPU")
 data = np.empty((1, 2, 3, 4)).astype(np.float32)
 
 

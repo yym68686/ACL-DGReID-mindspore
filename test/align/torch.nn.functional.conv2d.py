@@ -35,7 +35,7 @@ print(output)
 
 import mindspore
 import mindspore.ops as ops
-mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU")
+# mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU")
 import numpy as np
 
 # 创建输入张量、卷积核张量、偏置张量

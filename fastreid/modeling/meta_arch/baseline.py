@@ -124,9 +124,9 @@ class Baseline(nn.Cell):
         return self.pixel_mean.device
 
     # def forward(self, batched_inputs, epoch, opt=None):
-    def construct(self, batched_inputs, epoch, opt=None):
-        # print("type(batched_inputs['images'])", type(batched_inputs["images"]))
-        images = self.preprocess_image(batched_inputs)
+    def construct(self, images0, images, targets, camids, domainids, img_paths, epoch, opt=None):
+        print("type(batched_inputs['images'])", images)
+        images = self.preprocess_image(images)
         print("images", type(images), images)
         
         features, paths, _ = self.backbone(images, epoch, opt)
@@ -135,12 +135,14 @@ class Baseline(nn.Cell):
         # print("targets" in batched_inputs)
     
         if self.training:
-            assert "targets" in batched_inputs, "Person ID annotation are missing in training!"
+            assert targets is not None, "Person ID annotation are missing in training!"
+            # assert "targets" in batched_inputs, "Person ID annotation are missing in training!"
             # print("batched_inputs", len(batched_inputs), type(batched_inputs), batched_inputs)
-            targets = batched_inputs["targets"]
+            # targets = batched_inputs["targets"]
 
             # print("targets.sum()", targets.sum())
-            domain_ids = batched_inputs["domainids"]
+            domain_ids = domainids
+            # domain_ids = batched_inputs["domainids"]
 
             # PreciseBN flag, When do preciseBN on different dataset, the number of classes in new dataset
             # may be larger than that in the original dataset, so the circle/arcface will
@@ -153,11 +155,15 @@ class Baseline(nn.Cell):
             print("targets", type(targets), targets)
 
             losses['loss_domain_intra'] = intraCluster(paths, domain_ids)
-            losses['loss_domain_inter'] = interCluster(paths, domain_ids)
+            print("targets loss_Center 1", type(targets), targets)
+            # QUES
+            # losses['loss_domain_inter'] = interCluster(paths, domain_ids)
 
             
+            print("targets loss_Center 2", type(targets), targets)
             if opt is None or opt['type'] == 'basic':
                 # pass
+                print("targets loss_Center", type(targets), targets)
                 losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 5e-4
                 
             elif opt['type'] == 'mtrain':
@@ -186,23 +192,24 @@ class Baseline(nn.Cell):
             images = batched_inputs
         else:
             # images = mindspore.Tensor(batched_inputs)
-            if isinstance(batched_inputs, list):
+            if isinstance(batched_inputs, list) or isinstance(batched_inputs, tuple):
                 # print("batched_inputs", batched_inputs)
-                # tmp_images = batched_inputs[0]
+                images = batched_inputs[0]
                 # tmp_images = batched_inputs[0]["images"]
                 # tmp_images = batched_inputs
-                tmp_images = [item["images"].tolist() for item in batched_inputs]
-                tmp_images = mindspore.Tensor(np.array(tmp_images).astype(np.float32), mindspore.float32)
+                # tmp_images = [item["images"].tolist() for item in batched_inputs]
+                # tmp_images = mindspore.Tensor(np.array(tmp_images).astype(np.float32), mindspore.float32)
                 # tmp_images = mindspore.Tensor(tmp_images.numpy().astype(np.float32), mindspore.float32)
                 # print(type(tmp_images))
-                if isinstance(tmp_images, mindspore.Tensor):
-                    images = tmp_images
+                # if isinstance(tmp_images, mindspore.Tensor):
+                #     images = tmp_images
                 print(111)
             # raise TypeError("batched_inputs must be dict or mindspore.Tensor, but get {}".format(type(batched_inputs)))
             # raise TypeError("batched_inputs must be dict or torch.Tensor, but get {}".format(type(batched_inputs)))
 
 
-        images = mindspore.Tensor(np.array(images).astype(np.float32), mindspore.float32)
+        # images = mindspore.Tensor(np.array(images).astype(np.float32), mindspore.float32)
+        print("images", images)
         print("self.pixel_mean", len(self.pixel_mean), type(self.pixel_mean), self.pixel_mean)
         images = images.sub(self.pixel_mean).div(self.pixel_std)
         images = mindspore.Tensor(images)
@@ -234,6 +241,7 @@ class Baseline(nn.Cell):
         pred_features     = outputs['features']
         # fmt: on
 
+        print("cls_outputs1.shape", cls_outputs1.shape)
         num_classes1 = cls_outputs1.shape[-1]
         num_classes2 = cls_outputs1.shape[-1] + cls_outputs2.shape[-1]
         num_classes3 = cls_outputs1.shape[-1] + cls_outputs2.shape[-1] + cls_outputs3.shape[-1]
@@ -282,12 +290,27 @@ class Baseline(nn.Cell):
                     count += 1
                     # temp_loss += 1
                     # QUES
-                    temp_loss += cross_entropy_loss(
-                        eval('cls_outputs'+str(i))[eval('idx'+str(i))],
-                        gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)) if i > 1 else gt_labels[eval('idx'+str(i))],
-                        ce_kwargs.get('eps'),
-                        ce_kwargs.get('alpha')
-                    ) * ce_kwargs.get('scale')
+                    print("eval('cls_outputs'+str(i))[eval('idx'+str(i))]", eval('cls_outputs'+str(i)).shape, 'idx'+str(i), eval('idx'+str(i)), eval('cls_outputs'+str(i))[eval('idx'+str(i))].shape, eval('cls_outputs'+str(i))[eval('idx'+str(i))])
+                    # print("gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1))", gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)))
+                    print("gt_labels", type(gt_labels), gt_labels.shape, gt_labels)
+                    kkk = mindspore.Tensor(gt_labels-eval('num_classes'+str(i-1))) if i > 1 else gt_labels
+                    print("kkk", type(kkk), kkk, gt_labels, eval('num_classes'+str(i-1)) if i > 1 else 0, mindspore.Tensor(gt_labels-eval('num_classes'+str(i-1))) if i > 1 else 0)
+                    # kkk = gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)) if i > 1 else gt_labels[eval('idx'+str(i))]
+                    # print("kkk", type(kkk), kkk, gt_labels[eval('idx'+str(i))], (gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1))) if i > 1 else 0)
+                    if len(gt_labels.shape) == 0:
+                        temp_loss += cross_entropy_loss(
+                            eval('cls_outputs'+str(i))[eval('idx'+str(i))],
+                            mindspore.Tensor(gt_labels - eval('num_classes'+str(i-1))) if i > 1 else gt_labels,
+                            # mindspore.Tensor(gt_labels[eval('idx'+str(i))] - eval('num_classes'+str(i-1))) if i > 1 else mindspore.Tensor(gt_labels[eval('idx'+str(i))]),
+                            ce_kwargs.get('eps'),
+                            ce_kwargs.get('alpha')
+                        ) * ce_kwargs.get('scale')
+                    # temp_loss += cross_entropy_loss(
+                    #     eval('cls_outputs'+str(i))[eval('idx'+str(i))],
+                    #     gt_labels[eval('idx'+str(i))]-eval('num_classes'+str(i-1)) if i > 1 else gt_labels[eval('idx'+str(i))],
+                    #     ce_kwargs.get('eps'),
+                    #     ce_kwargs.get('alpha')
+                    # ) * ce_kwargs.get('scale')
                 loss_dict['loss_cls'] = temp_loss / count
 
             if 'CenterLoss' in loss_names:
