@@ -112,9 +112,10 @@ def triplet_loss(embedding, targets, margin, norm_feat, hard_mining):
 
     if margin > 0:
         # QUES
+        y = mindspore.Tensor(y, mindspore.float32)
         # y = mindspore.Tensor(np.array(y).astype(np.float32), mindspore.float32)
         # print("type(dist_ap)", type(dist_ap))
-        loss = mindspore.ops.margin_ranking_loss(dist_an, dist_ap, dist_an, margin=margin)
+        loss = mindspore.ops.margin_ranking_loss(dist_an, dist_ap, y, margin=margin)
         # loss = mindspore.ops.margin_ranking_loss(dist_an, dist_ap, y, margin=margin)
         # loss = F.margin_ranking_loss(dist_an, dist_ap, y, margin=margin)
     else:

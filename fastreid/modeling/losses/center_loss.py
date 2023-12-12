@@ -71,15 +71,17 @@ def centerLoss(distmat, labels):
     print("type num_classes", type(num_classes), num_classes)
     # print("type num_classes", type(num_classes), num_classes.dtype, num_classes.shape, num_classes)
     classes = mindspore.ops.arange(0, num_classes)
-    classes = mindspore.Tensor(classes, dtype=mindspore.int64)
+    # classes = mindspore.Tensor(classes, dtype=mindspore.int64)
     # QUES
-    print("classes", type(classes), classes)
-    print("labels.shape", type(labels), labels.dtype, labels)
-    labels = mindspore.Tensor(labels, mindspore.float32)
-    print("labels.shape", type(labels), labels.dtype, labels)
-    labels = labels.unsqueeze(0).broadcast_to((batch_size, num_classes))
+    print("classes", type(classes), classes.shape)
+    # print("labels.shape", type(labels), labels.dtype, labels)
+    # labels = mindspore.Tensor(labels, mindspore.float32)
+    print("labels", type(labels), labels)
+    labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
+    print("labels", type(labels), labels)
     # labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
     mask = mindspore.ops.equal(labels, classes.broadcast_to((batch_size, num_classes)))
+    print("mask", type(mask), mask.shape)
     # mask = labels.eq(classes.broadcast_to((batch_size, num_classes)))
 
     # classes = torch.arange(num_classes).long().to(distmat.device)
@@ -90,8 +92,12 @@ def centerLoss(distmat, labels):
 
     # QUES
     # loss = 0.1
-    dist = distmat * mask
-    # dist = distmat * mask.float()
+    # dist = distmat * mask
+    distmat = mindspore.Tensor(distmat, mindspore.float32)
+    # print("distmat", type(distmat), distmat.shape)
+    mask = mindspore.Tensor(mask, mindspore.float32)
+    print("mask", type(mask), mask.shape)
+    dist = distmat * mask.float()
     loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
     
     return loss
@@ -99,12 +105,13 @@ def centerLoss(distmat, labels):
 
 if __name__ == '__main__':
     use_gpu = False
-    center_loss = CenterLoss(use_gpu=use_gpu)
-    features = torch.rand(16, 2048)
-    targets = torch.Tensor([0, 1, 2, 3, 2, 3, 1, 4, 5, 3, 2, 1, 0, 0, 5, 4]).long()
-    if use_gpu:
-        features = torch.rand(16, 2048).cuda()
-        targets = torch.Tensor([0, 1, 2, 3, 2, 3, 1, 4, 5, 3, 2, 1, 0, 0, 5, 4]).cuda()
+    # center_loss = CenterLoss(use_gpu=use_gpu)
+    center_loss = centerLoss
+    features = mindspore.ops.rand(16, 2048)
+    targets = mindspore.Tensor([0, 1, 2, 3, 2, 3, 1, 4, 5, 3, 2, 1, 0, 0, 5, 4]).long()
+    # if use_gpu:
+    #     features = mindspore.ops.rand(16, 2048).cuda()
+    #     targets = torch.Tensor([0, 1, 2, 3, 2, 3, 1, 4, 5, 3, 2, 1, 0, 0, 5, 4]).cuda()
 
     loss = center_loss(features, targets)
     print(loss)

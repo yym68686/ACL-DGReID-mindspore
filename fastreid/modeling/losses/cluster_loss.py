@@ -12,8 +12,8 @@ def intraCluster(feature, domain_ids, margin=0.1):
         #     continue
         count += 1
         # QUES
-        loss += 0.1
-        # loss += (mindspore.ops.relu(mindspore.ops.norm(feature[domain_ids==i] - feature[domain_ids==i].mean(), 2, 1) - margin) ** 2).mean()
+        # loss += 0.1
+        loss += (mindspore.ops.relu(mindspore.ops.norm(feature[domain_ids==i] - feature[domain_ids==i].mean(), 2, 1) - margin) ** 2).mean()
         # loss += (F.relu(torch.norm(feature[domain_ids==i] - feature[domain_ids==i].mean(), 2, 1) - margin) ** 2).mean()
 
     return loss / count
@@ -25,14 +25,11 @@ def interCluster(feature, domain_ids, margin=0.3):
     candidate_list = []
     loss = 0
     count = 0
-    print("domain_ids", type(domain_ids), domain_ids.shape, domain_ids, (int(domain_ids) == 1) == 0)
+    # print("domain_ids", type(domain_ids), domain_ids.shape, domain_ids)
     for i in range(3):
         # QUES
-        bbb = int(domain_ids)
-        aaa = bbb == i
-        kkk = aaa == 0
-        if kkk:
-        # if (domain_ids == i).sum().item() == 0:
+        print("domain_ids", type(domain_ids), domain_ids)
+        if (domain_ids == i).sum().item() == 0:
             continue
         candidate_list.append(feature[domain_ids==i].mean())
         # candidate_list.append(1)

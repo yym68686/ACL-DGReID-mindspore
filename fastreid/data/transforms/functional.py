@@ -8,6 +8,7 @@ import numpy as np
 # import torch
 import mindspore
 from PIL import Image, ImageOps, ImageEnhance
+import traceback
 
 
 def to_tensor(pic):
@@ -28,6 +29,7 @@ def to_tensor(pic):
             pic = pic[:, :, None]
 
         img = mindspore.Tensor.from_numpy(pic.transpose((2, 0, 1)))
+        # print(type(img))
         # img = torch.from_numpy(pic.transpose((2, 0, 1)))
         # backward compatibility
         if isinstance(img, mindspore.byte):
@@ -61,19 +63,28 @@ def to_tensor(pic):
     else:
         nchannel = len(pic.mode)
     # print("type(img)", type(img))
-    # print("pic.size[1]", pic.size[1])
+    # print("pic.size", pic.size)
     img = img.view(pic.size[1], pic.size[0], nchannel)
+    # print("1", img.shape)
     # put it from HWC to CHW format
     # yikes, this transpose takes 80% of the loading time/CPU
     # print("type(img)", type(img))
-    img = img.swapaxes(0, 1).swapaxes(0, 2)
+    try:
+        img = img.swapaxes(0, 1)
+        img = img.swapaxes(0, 2)
+    except Exception:
+        traceback.print_exc()
+        exit(0)
+    # print("2", img.shape)
+    # print("3", img.shape)
     # img = img.transpose(0, 1).transpose(0, 2).contiguous()
     # print("type(img)", type(img))
-    if img.dtype == mindspore.uint8:
-    # if isinstance(img, torch.ByteTensor):
-        return img.float()
-    else:
-        return img
+    return img.float()
+    # if img.dtype == mindspore.uint8:
+    # # if isinstance(img, torch.ByteTensor):
+    #     return img.float()
+    # else:
+    #     return img
 
 
 def int_parameter(level, maxval):

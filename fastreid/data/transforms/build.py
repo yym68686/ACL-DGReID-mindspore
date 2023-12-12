@@ -99,8 +99,10 @@ def build_transforms(cfg, is_train=True):
             #                           fillcolor=0))
         if do_augmix:
             res.append(AugMix(prob=augmix_prob))
-        res1.append(ToTensor())
-        res.append(ToTensor())
+        res1.append(TV.ToTensor())
+        res.append(TV.ToTensor())
+        # res1.append(ToTensor())
+        # res.append(ToTensor())
         if do_rea:
             res1.append(TV.RandomErasing(prob=rea_prob, value=rea_value))
             res.append(TV.RandomErasing(prob=rea_prob, value=rea_value))

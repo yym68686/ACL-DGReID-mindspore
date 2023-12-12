@@ -219,18 +219,18 @@ class MetaEmbeddingHead(nn.Cell):
         """
         See :class:`ReIDHeads.forward`.
         """
-        print("self.pool_layer", type(self.pool_layer), self.pool_layer)
+        # print("self.pool_layer", type(self.pool_layer), self.pool_layer)
         pool_feat = self.pool_layer(features)
 
         # if opt['meta']:
         #     import pdb; pdb.set_trace()
 
-        print("pool_feat", type(pool_feat), pool_feat)
+        # print("pool_feat", type(pool_feat), pool_feat)
         neck_feat = self.bottleneck(pool_feat, opt)
 
-        print("neck_feat", type(neck_feat), neck_feat)
+        # print("neck_feat", type(neck_feat), neck_feat)
         neck_feat = neck_feat[..., 0, 0]
-        print("neck_feat", type(neck_feat), neck_feat)
+        # print("neck_feat", type(neck_feat), neck_feat)
         
         # Evaluation
         # fmt: off
@@ -272,8 +272,8 @@ class MetaEmbeddingHead(nn.Cell):
         # elif self.neck_feat == 'after': feat = F.normalize(neck_feat, 2, 1)
         else:                           raise KeyError(f"{self.neck_feat} is invalid for MODEL.HEADS.NECK_FEAT")
         # fmt: on
-        print("logits1", type(logits1), logits1)
-        print("self.cls_layer1.s", type(self.cls_layer1.s), self.cls_layer1.s)
+        # print("logits1", type(logits1), logits1)
+        # print("self.cls_layer1.s", type(self.cls_layer1.s), self.cls_layer1.s)
         # print("logits1.mul(self.cls_layer1.s)", type(logits1.mul(self.cls_layer1.s)), logits1.mul(self.cls_layer1.s))
         return {
             "cls_outputs1": cls_outputs1,

@@ -88,9 +88,9 @@ def _generate_optimizer_class_with_gradient_clipping(
 
 
 def maybe_add_gradient_clipping(
-        cfg: CfgNode, optimizer: Type[mindspore.nn.optim_ex.Optimizer]
+        cfg: CfgNode, optimizer: Type[mindspore.nn.Optimizer]
         # cfg: CfgNode, optimizer: Type[torch.optim.Optimizer]
-) -> Type[mindspore.nn.optim_ex.Optimizer]:
+) -> Type[mindspore.nn.Optimizer]:
     """
     If gradient clipping is enabled through config options, wraps the existing
     optimizer type to become a new dynamically created class OptimizerWithGradientClip
@@ -164,7 +164,7 @@ def _generate_optimizer_class_with_freeze_layer(
 def maybe_add_freeze_layer(
         cfg: CfgNode, optimizer: Type[mindspore.nn.Optimizer]
         # cfg: CfgNode, optimizer: Type[torch.optim.Optimizer]
-) -> Type[mindspore.nn.optim_ex.Optimizer]:
+) -> Type[mindspore.nn.Optimizer]:
     if len(cfg.MODEL.FREEZE_LAYERS) == 0 or cfg.SOLVER.FREEZE_ITERS <= 0:
         return optimizer
 
@@ -213,6 +213,7 @@ def build_optimizer(cfg, model, contiguous=False, flag=None):
             )(
                 # params.contiguous() if contiguous else params,
                 params,
+                # learning_rate=0.01,
                 lr=0.01,
                 momentum=0,
                 nesterov=False,
@@ -245,6 +246,7 @@ def build_optimizer(cfg, model, contiguous=False, flag=None):
             )(
                 params,
                 # params.contiguous() if contiguous else params,
+                # learning_rate=0.01,
                 lr=0.01,
                 momentum=cfg.SOLVER.MOMENTUM,
                 nesterov=cfg.SOLVER.NESTEROV,

@@ -35,6 +35,7 @@ class SELayer(nn.Cell):
     # def forward(self, x):
     def construct(self, x):
         b, c, _, _ = x.size()
+        print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:])
         y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
         # y = self.avg_pool(x).view(b, c)
         y = self.fc(y).view(b, c, 1, 1)

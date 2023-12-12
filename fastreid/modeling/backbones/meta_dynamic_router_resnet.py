@@ -461,28 +461,28 @@ class ResNet(nn.Cell):
     # def forward(self, x, epoch, opt=None):
 
 
-        print(4)
+        # print(4)
         # opt=None
-        print(f"ndim {x.shape}")
-        print("x type 1", type(x), x)
+        # print(f"ndim {x.shape}")
+        # print("x type 1", type(x), x)
         x = self.conv1(x)
-        print("x type 2", type(x), x)
+        # print("x type 2", type(x), x)
         x = self.bn1(x)
-        print("x type 3", type(x), x)
+        # print("x type 3", type(x), x)
         x = self.relu(x)
-        print("x type 4", type(x))
+        # print("x type 4", type(x))
         x = self.maxpool(x)
-        x = mindspore.Tensor(x)
-        print("x type 5", type(x))
+        # x = mindspore.Tensor(x)
+        # print("x type 5", type(x))
 
         weights = []
         out_features = []
 
         # layer 1
-        NL1_counter = 0
-        if len(self.NL_1_idx) == 0:
-            self.NL_1_idx = mindspore.Parameter([-1])
-            # self.NL_1_idx = [-1]
+        # NL1_counter = 0
+        # if len(self.NL_1_idx) == 0:
+        #     self.NL_1_idx = mindspore.Parameter([-1])
+        #     # self.NL_1_idx = [-1]
         x = self.layer1(x)
         # for i in range(len(self.layer1)):
         #     # x = self.layer1[i](x, opt)
@@ -503,17 +503,17 @@ class ResNet(nn.Cell):
         x_specific = self.specific_norm1(x_specific)
         x = self.meta_fuse1(x_invariant, x_specific, opt)
         x = self.meta_se1(x, opt)
-        temp = self.map1(self.avgpool(x))
-        l2_normalize = ops.L2Normalize(axis=1)
-        x_normalized = l2_normalize(temp)
-        out_features.append(x_normalized[..., 0, 0])
+        # temp = self.map1(self.avgpool(x))
+        # l2_normalize = ops.L2Normalize(axis=1)
+        # x_normalized = l2_normalize(temp)
+        # out_features.append(x_normalized[..., 0, 0])
         # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 2
-        NL2_counter = 0
-        if len(self.NL_2_idx) == 0:
-            self.NL_2_idx = mindspore.Parameter([-1])
-            # self.NL_2_idx = [-1]
+        # NL2_counter = 0
+        # if len(self.NL_2_idx) == 0:
+        #     self.NL_2_idx = mindspore.Parameter([-1])
+        #     # self.NL_2_idx = [-1]
         x = self.layer2(x)
         # for i in range(len(self.layer2)):
         #     # x = self.layer2[i](x, opt)
@@ -533,17 +533,17 @@ class ResNet(nn.Cell):
         x_specific = self.specific_norm2(x_specific)
         x = self.meta_fuse2(x_invariant, x_specific, opt)
         x = self.meta_se2(x, opt)
-        temp = self.map2(self.avgpool(x))
-        l2_normalize = ops.L2Normalize(axis=1)
-        x_normalized = l2_normalize(temp)
-        out_features.append(x_normalized[..., 0, 0])
+        # temp = self.map2(self.avgpool(x))
+        # l2_normalize = ops.L2Normalize(axis=1)
+        # x_normalized = l2_normalize(temp)
+        # out_features.append(x_normalized[..., 0, 0])
         # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 3
-        NL3_counter = 0
-        if len(self.NL_3_idx) == 0:
-            self.NL_3_idx = mindspore.Parameter([-1])
-            # self.NL_3_idx = [-1]
+        # NL3_counter = 0
+        # if len(self.NL_3_idx) == 0:
+        #     self.NL_3_idx = mindspore.Parameter([-1])
+        #     # self.NL_3_idx = [-1]
         x = self.layer3(x)
         # for i in range(len(self.layer3)):
         #     # x = self.layer3[i](x, opt)
@@ -562,17 +562,17 @@ class ResNet(nn.Cell):
         x_specific = self.specific_norm3(x_specific)
         x = self.meta_fuse3(x_invariant, x_specific, opt)
         x = self.meta_se3(x, opt)
-        temp = self.map3(self.avgpool(x))
-        l2_normalize = ops.L2Normalize(axis=1)
-        x_normalized = l2_normalize(temp)
-        out_features.append(x_normalized[..., 0, 0])
+        # temp = self.map3(self.avgpool(x))
+        # l2_normalize = ops.L2Normalize(axis=1)
+        # x_normalized = l2_normalize(temp)
+        # out_features.append(x_normalized[..., 0, 0])
         # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 4
-        NL4_counter = 0
-        if len(self.NL_4_idx) == 0:
-            self.NL_4_idx = mindspore.Parameter([-1])
-            # self.NL_4_idx = [-1]
+        # NL4_counter = 0
+        # if len(self.NL_4_idx) == 0:
+        #     self.NL_4_idx = mindspore.Parameter([-1])
+        #     # self.NL_4_idx = [-1]
         x = self.layer4(x)
         # for i in range(len(self.layer4)):
         #     # x = self.layer4[i](x, opt)
@@ -591,10 +591,10 @@ class ResNet(nn.Cell):
         x_specific = self.specific_norm4(x_specific)
         x = self.meta_fuse4(x_invariant, x_specific, opt)
         x = self.meta_se4(x, opt)
-        temp = self.map4(self.avgpool(x))
-        l2_normalize = ops.L2Normalize(axis=1)
-        x_normalized = l2_normalize(temp)
-        out_features.append(x_normalized[..., 0, 0])
+        # temp = self.map4(self.avgpool(x))
+        # l2_normalize = ops.L2Normalize(axis=1)
+        # x_normalized = l2_normalize(temp)
+        # out_features.append(x_normalized[..., 0, 0])
         # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # weights = torch.cat(weights, -1)
@@ -880,7 +880,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                     pass
 
         mindspore.save_checkpoint([{"name": key, "data": mindspore.Tensor(value.numpy())} for key, value in model_dict.items()], "/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt")
-        print(2)
+        # print(2)
         # print([{"name": key, "data": mindspore.Tensor(value.numpy())} for key, value in model_dict.items()][0])
         incompatible = mindspore.load_checkpoint("/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt", model)
         # incompatible = model.load_state_dict(model_dict, strict=False)

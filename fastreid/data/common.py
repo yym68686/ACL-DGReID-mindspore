@@ -90,4 +90,5 @@ class CommDataset(Dataset):
         return len(self.cams)
     
     def __call__(self):
-        print("111")
+        pass
+        # print("111")

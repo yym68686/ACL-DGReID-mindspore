@@ -498,6 +498,8 @@ class AutoAugment:
         self.policy = auto_augment_policy()
 
     def __call__(self, img):
+        # print("img", type(img), img)
+        # QUES
         sub_policy = random.choice(self.policy)
         for op in sub_policy:
             img = op(img)
