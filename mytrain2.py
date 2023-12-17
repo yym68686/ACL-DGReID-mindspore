@@ -743,10 +743,11 @@ with EventStorage(start_iter) as storage:
                 # images, targets, camids, domainids, img_paths = next(dataset_iter)
                 images0, images, targets, camids, domainids, img_paths = next(dataset_iter)
                 weights = optimizer.parameters
-                opt = None
+                opt = 1
+                print(2)
                 # loss_dict, inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images, targets, camids, domainids, img_paths, epoch, opt)
                 loss_dict, inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images0, images, targets, camids, domainids, img_paths, epoch, opt)
-                print(2)
+                print(3)
                 optimizer(inputs_gradient)
                 total_loss = loss_dict.sum()
                 print(f"epoch: {epoch}, iters: {_}, loss: {total_loss}")

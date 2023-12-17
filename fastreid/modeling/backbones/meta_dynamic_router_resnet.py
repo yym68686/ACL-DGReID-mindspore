@@ -149,6 +149,7 @@ class MetaSELayer(nn.Cell):
     def construct(self, x, opt=None):
         # b, c, _, _ = x.size()
         b, c, _, _ = x.shape
+        print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
         y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
         y = self.relu(self.fc1(y, opt))
         y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
@@ -310,6 +311,7 @@ class HyperRouter(nn.Cell):
     # def forward(self, x, opt=None):
     def construct(self, x, opt=None):
 
+        print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
         x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)
         # weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         l2_normalize = ops.L2Normalize(axis=-1)
@@ -581,6 +583,9 @@ class ResNet(nn.Cell):
         #         # x = self.NL_4[NL4_counter](x)
         #         NL4_counter += 1
 
+        # print("x.shape", x.shape)
+        # print("out_features.len", len(out_features))
+
         x_invariant = self.adaptor4_base(x, opt)
         N, C, H, W = x_invariant.shape
         x_specific = self.adaptor4_sub(x.tile((1, K, 1, 1)), opt).reshape(N, K, C, H, W)
@@ -600,6 +605,8 @@ class ResNet(nn.Cell):
         # weights = torch.cat(weights, -1)
         weights = ops.cat(weights, -1)
 
+        # print("x.shape", x.shape)
+        # print("out_features.len", len(out_features))
         return x, weights, out_features
 
     def random_init(self):
