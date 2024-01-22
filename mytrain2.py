@@ -729,6 +729,11 @@ optimizer = build_optimizer(cfg, model)[0]
 # dataset = data_loader.batch(cfg.SOLVER.IMS_PER_BATCH, True, output_columns=["images" ,"targets" ,"camids" ,"domainids" ,"img_paths"])
 dataset = data_loader.batch(cfg.SOLVER.IMS_PER_BATCH, True, output_columns=["images0" ,"images" ,"targets" ,"camids" ,"domainids" ,"img_paths"])
 
+# preprocess_image
+pixel_mean = mindspore.Tensor([0.485*255, 0.456*255, 0.406*255]).view(1, -1, 1, 1)
+pixel_std = mindspore.Tensor([0.229*255, 0.224*255, 0.225*255]).view(1, -1, 1, 1)
+
+
 
 max_epoch = cfg.SOLVER.MAX_EPOCH
 start_epoch = 0
@@ -742,14 +747,16 @@ with EventStorage(start_iter) as storage:
             for _ in range(iters_per_epoch):
                 # images, targets, camids, domainids, img_paths = next(dataset_iter)
                 images0, images, targets, camids, domainids, img_paths = next(dataset_iter)
+                images = images.sub(pixel_mean).div(pixel_std)
                 weights = optimizer.parameters
-                opt = 1
-                print(2)
+                opt = -1
                 # loss_dict, inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images, targets, camids, domainids, img_paths, epoch, opt)
-                loss_dict, inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images0, images, targets, camids, domainids, img_paths, epoch, opt)
-                print(3)
+                (loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center), inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images, targets, domainids, epoch, opt)
+                # loss_dict, inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images0, images, targets, camids, domainids, img_paths, epoch, opt)
+                # print(loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center)
                 optimizer(inputs_gradient)
-                total_loss = loss_dict.sum()
+                # total_loss = loss_dict.sum()
+                total_loss = loss_cls + loss_center + loss_triplet + loss_circle + loss_cosface + loss_triplet_add + loss_triplet_mtrain + loss_stc + loss_triplet_mtest + loss_domain_intra + loss_domain_inter + loss_Center
                 print(f"epoch: {epoch}, iters: {_}, loss: {total_loss}")
                 iter_ += 1
             mindspore.save_checkpoint(model, f"./result/epoch_{epoch}_loss_{total_loss}.ckpt")

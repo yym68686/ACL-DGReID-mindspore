@@ -72,12 +72,16 @@ class Baseline(nn.Cell):
 
         # print("pixel_mean", type(pixel_mean), pixel_mean)
         self.pixel_mean = mindspore.Tensor(pixel_mean).view(1, -1, 1, 1)
-        self.pixel_mean = mindspore.Tensor(self.pixel_mean)
+        # self.pixel_mean = mindspore.Tensor(self.pixel_mean)
         # print("self.pixel_mean", type(self.pixel_mean), self.pixel_mean)
         self.pixel_std = mindspore.Tensor(pixel_std).view(1, -1, 1, 1)
-        self.pixel_std = mindspore.Tensor(self.pixel_std)
+        # self.pixel_std = mindspore.Tensor(self.pixel_std)
         # self.register_buffer('pixel_mean', torch.Tensor(pixel_mean).view(1, -1, 1, 1), False)
         # self.register_buffer('pixel_std', torch.Tensor(pixel_std).view(1, -1, 1, 1), False)
+        # self.conv1 = nn.Conv2d(3, 512, kernel_size=3, stride=1, padding=1, pad_mode="pad")
+        # self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        # self.conv2 = nn.Conv2d(512, 2048, kernel_size=3, stride=1, padding=1, pad_mode="pad")
+        # self.pool2 = nn.MaxPool2d(kernel_size=8, stride=8)
 
     @classmethod
     def from_config(cls, cfg):
@@ -123,15 +127,25 @@ class Baseline(nn.Cell):
     def device(self):
         return self.pixel_mean.device
 
-    # def forward(self, batched_inputs, epoch, opt=None):
-    # def construct(self, images, targets, camids, domainids, img_paths, epoch, opt=None):
-    def construct(self, images0, images, targets, camids, domainids, img_paths, epoch, opt=None):
+    # def forward(self, batched_inputs, epoch, opt=-1):
+    # def construct(self, images, targets, camids, domainids, img_paths, epoch, opt=-1):
+    def construct(self, images, targets, domainids, epoch, opt=-1):
         # print("type(batched_inputs['images'])", images)
-        images = self.preprocess_image(images)
+        # images = self.preprocess_image(images)
         # print("images", type(images), images)
-        
+
+        # print("images.shape", images.shape)
+        # images (8, 3, 256, 128) -> features (8, 2048, 16, 8)
+        # features = self.conv1(images)
+        # features = self.pool1(features)
+        # features = self.conv2(features)
+        # features = self.pool2(features)
+        # # paths (8, 16)
+        # paths = mindspore.Tensor(np.random.randn(8, 16), mindspore.float32)
         features, paths, _ = self.backbone(images, epoch, opt)
-        features = mindspore.Tensor(features)
+        # print("features.shape", features.shape)
+        # print("paths.shape", paths.shape)
+        # features = mindspore.Tensor(features)
         # print("features", type(features), features)
         # print("targets" in batched_inputs)
     
@@ -150,33 +164,54 @@ class Baseline(nn.Cell):
             # throw an error. We just set all the targets to 0 to avoid this problem.
             # if targets.sum() < 0: targets.zero_()
 
-            outputs = self.heads(features, targets, opt=opt)
+            # print("targets", targets)
+            pred_class_logits1, pred_class_logits2, pred_class_logits3, center_distmat, cls_outputs1, cls_outputs2, cls_outputs3, pred_features = self.heads(features, targets, opt=opt)
+            # outputs = self.heads(features, targets, opt=opt)
+            # for key, value in outputs.items():
+            #     print(f"{key}", value.shape)
+            # pred_class_logits1 = outputs['pred_class_logits1']
+            # pred_class_logits2 = outputs['pred_class_logits2']
+            # pred_class_logits3 = outputs['pred_class_logits3']
+            # # pred_class_logits1 = outputs['pred_class_logits1'].detach()
+            # # pred_class_logits2 = outputs['pred_class_logits2'].detach()
+            # # pred_class_logits3 = outputs['pred_class_logits3'].detach()
+            # cls_outputs1       = outputs['cls_outputs1']
+            # cls_outputs2       = outputs['cls_outputs2']
+            # cls_outputs3       = outputs['cls_outputs3']
+            # pred_features     = outputs['features']
             # print("outputs", type(outputs), outputs)
-            losses = self.losses(outputs, targets, domain_ids, paths, opt)
+            loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest = self.losses(pred_class_logits1, pred_class_logits2, pred_class_logits3, cls_outputs1, cls_outputs2, cls_outputs3, pred_features, targets, domain_ids, paths, opt)
+            # losses = self.losses(pred_class_logits1, pred_class_logits2, pred_class_logits3, cls_outputs1, cls_outputs2, cls_outputs3, pred_features, targets, domain_ids, paths, opt)
             # print("targets", type(targets), targets)
 
-            losses['loss_domain_intra'] = intraCluster(paths, domain_ids)
+            loss_domain_intra = intraCluster(paths, domain_ids)
+            # losses['loss_domain_intra'] = intraCluster(paths, domain_ids)
             # print("targets loss_Center 1", type(targets), targets)
             # QUES
-            losses['loss_domain_inter'] = interCluster(paths, domain_ids)
+            loss_domain_inter = interCluster(paths, domain_ids)
+            # losses['loss_domain_inter'] = interCluster(paths, domain_ids)
 
             
             # print("targets loss_Center 2", type(targets), targets)
-            if opt is None or opt['type'] == 'basic':
+            if opt == -1 or opt['type'] == 'basic':
                 # pass
                 # print("targets loss_Center", type(targets), targets)
-                losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 5e-4
+                loss_Center_ = centerLoss(center_distmat, targets) * 5e-4
+                # losses['loss_Center'] = centerLoss(center_distmat, targets) * 5e-4
+                # losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 5e-4
                 
             elif opt['type'] == 'mtrain':
                 pass
             
             elif opt['type'] == 'mtest':
-                losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 1e-3
+                loss_Center_ = centerLoss(center_distmat, targets) * 1e-3
+                # losses['loss_Center'] = centerLoss(center_distmat, targets) * 1e-3
             else:
                 raise NotImplementedError
                 
-            print("domain_ids", type(domain_ids), domain_ids.shape, domain_ids)
-            return losses
+            # print("domain_ids", type(domain_ids), domain_ids.shape, domain_ids)
+            return loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center_
+            # return losses
         else:
             outputs = self.heads(features)
             return outputs
@@ -192,6 +227,7 @@ class Baseline(nn.Cell):
         # elif isinstance(batched_inputs, torch.Tensor):
         elif isinstance(batched_inputs, mindspore.Tensor):
             images = batched_inputs
+            # print("batched_inputs", batched_inputs)
         else:
             # images = mindspore.Tensor(batched_inputs)
             if isinstance(batched_inputs, list) or isinstance(batched_inputs, tuple):
@@ -214,7 +250,7 @@ class Baseline(nn.Cell):
         # print("images", images)
         # print("self.pixel_mean", len(self.pixel_mean), type(self.pixel_mean), self.pixel_mean)
         images = images.sub(self.pixel_mean).div(self.pixel_std)
-        images = mindspore.Tensor(images)
+        # images = mindspore.Tensor(images)
         # print("images", len(images), type(images), images)
         # images = mindspore.ops.sub(images, self.pixel_mean)
         # images = mindspore.ops.div(images, self.pixel_std)
@@ -223,7 +259,7 @@ class Baseline(nn.Cell):
         # images.sub_(self.pixel_mean).div_(self.pixel_std)
         return images
 
-    def losses(self, outputs, gt_labels, domain_labels=None, paths=None, opt=None):
+    def losses(self, pred_class_logits1, pred_class_logits2, pred_class_logits3, cls_outputs1, cls_outputs2, cls_outputs3, pred_features, gt_labels, domain_labels=None, paths=None, opt=-1):
         """
         Compute loss from modeling's outputs, the loss function input arguments
         must be the same as the outputs of the model forwarding.
@@ -231,16 +267,16 @@ class Baseline(nn.Cell):
         # model predictions
         # fmt: off
         # print("outputs", type(outputs), outputs)
-        pred_class_logits1 = outputs['pred_class_logits1']
-        pred_class_logits2 = outputs['pred_class_logits2']
-        pred_class_logits3 = outputs['pred_class_logits3']
-        # pred_class_logits1 = outputs['pred_class_logits1'].detach()
-        # pred_class_logits2 = outputs['pred_class_logits2'].detach()
-        # pred_class_logits3 = outputs['pred_class_logits3'].detach()
-        cls_outputs1       = outputs['cls_outputs1']
-        cls_outputs2       = outputs['cls_outputs2']
-        cls_outputs3       = outputs['cls_outputs3']
-        pred_features     = outputs['features']
+        # pred_class_logits1 = outputs['pred_class_logits1']
+        # pred_class_logits2 = outputs['pred_class_logits2']
+        # pred_class_logits3 = outputs['pred_class_logits3']
+        # # pred_class_logits1 = outputs['pred_class_logits1'].detach()
+        # # pred_class_logits2 = outputs['pred_class_logits2'].detach()
+        # # pred_class_logits3 = outputs['pred_class_logits3'].detach()
+        # cls_outputs1       = outputs['cls_outputs1']
+        # cls_outputs2       = outputs['cls_outputs2']
+        # cls_outputs3       = outputs['cls_outputs3']
+        # pred_features     = outputs['features']
         # fmt: on
 
         # print("cls_outputs1.shape", cls_outputs1.shape)
@@ -276,11 +312,14 @@ class Baseline(nn.Cell):
         if idx3.sum().item():
             log_accuracy(pred_class_logits3[idx3], gt_labels[idx3])
 
-        loss_dict = {}
+        # loss_dict = {}
         loss_names = self.loss_kwargs['loss_names']
 
-
-        if opt is None or opt['type'] == 'basic':
+        loss_triplet_add = 0
+        loss_triplet_mtrain = 0
+        loss_stc = 0
+        loss_triplet_mtest = 0
+        if opt == -1 or opt['type'] == 'basic':
             
             if 'CrossEntropyLoss' in loss_names:
                 ce_kwargs = self.loss_kwargs.get('ce')
@@ -314,45 +353,72 @@ class Baseline(nn.Cell):
                         ce_kwargs.get('eps'),
                         ce_kwargs.get('alpha')
                     ) * ce_kwargs.get('scale')
-                loss_dict['loss_cls'] = temp_loss / count
+                loss_cls = temp_loss / count
+                # loss_dict['loss_cls'] = temp_loss / count
 
+            loss_center = 0
             if 'CenterLoss' in loss_names:
-                loss_dict['loss_center'] = 5e-4 * self.center_loss(
+                loss_center = 5e-4 * self.center_loss(
                     pred_features,
                     gt_labels
                 )
-
+                # loss_dict['loss_center'] = 5e-4 * self.center_loss(
+                #     pred_features,
+                #     gt_labels
+                # )
+            loss_triplet = 0
             if 'TripletLoss' in loss_names:
                 tri_kwargs = self.loss_kwargs.get('tri')
-                loss_dict['loss_triplet'] = triplet_loss(
+                loss_triplet = triplet_loss(
                     pred_features,
                     gt_labels,
                     tri_kwargs.get('margin'),
                     tri_kwargs.get('norm_feat'),
                     tri_kwargs.get('hard_mining')
                 ) * tri_kwargs.get('scale')
+                # loss_dict['loss_triplet'] = triplet_loss(
+                #     pred_features,
+                #     gt_labels,
+                #     tri_kwargs.get('margin'),
+                #     tri_kwargs.get('norm_feat'),
+                #     tri_kwargs.get('hard_mining')
+                # ) * tri_kwargs.get('scale')
 
+            loss_circle = 0
             if 'CircleLoss' in loss_names:
                 circle_kwargs = self.loss_kwargs.get('circle')
-                loss_dict['loss_circle'] = pairwise_circleloss(
+                loss_circle = pairwise_circleloss(
                     pred_features,
                     gt_labels,
                     circle_kwargs.get('margin'),
                     circle_kwargs.get('gamma')
                 ) * circle_kwargs.get('scale')
+                # loss_dict['loss_circle'] = pairwise_circleloss(
+                #     pred_features,
+                #     gt_labels,
+                #     circle_kwargs.get('margin'),
+                #     circle_kwargs.get('gamma')
+                # ) * circle_kwargs.get('scale')
 
+            loss_cosface = 0
             if 'Cosface' in loss_names:
                 cosface_kwargs = self.loss_kwargs.get('cosface')
-                loss_dict['loss_cosface'] = pairwise_cosface(
+                loss_cosface = pairwise_cosface(
                     pred_features,
                     gt_labels,
                     cosface_kwargs.get('margin'),
                     cosface_kwargs.get('gamma'),
                 ) * cosface_kwargs.get('scale')
+                # loss_dict['loss_cosface'] = pairwise_cosface(
+                #     pred_features,
+                #     gt_labels,
+                #     cosface_kwargs.get('margin'),
+                #     cosface_kwargs.get('gamma'),
+                # ) * cosface_kwargs.get('scale')
                 
         elif opt['type'] == 'mtrain':
             
-            loss_dict['loss_triplet_add'] = triplet_loss_Meta(
+            loss_triplet_add = triplet_loss_Meta(
                 pred_features,
                 gt_labels,
                 0.0,
@@ -364,8 +430,20 @@ class Baseline(nn.Cell):
                 [0, 0, 1],
                 [0, 1, 0],
             )
+            # loss_dict['loss_triplet_add'] = triplet_loss_Meta(
+            #     pred_features,
+            #     gt_labels,
+            #     0.0,
+            #     False,
+            #     True,
+            #     'euclidean',
+            #     'logistic',
+            #     domain_labels,
+            #     [0, 0, 1],
+            #     [0, 1, 0],
+            # )
 
-            loss_dict['loss_triplet_mtrain'] = triplet_loss_Meta(
+            loss_triplet_mtrain = triplet_loss_Meta(
                 pred_features,
                 gt_labels,
                 0.3,
@@ -377,17 +455,35 @@ class Baseline(nn.Cell):
                 [1, 0, 0],
                 [0, 1, 1],
             )
+            # loss_dict['loss_triplet_mtrain'] = triplet_loss_Meta(
+            #     pred_features,
+            #     gt_labels,
+            #     0.3,
+            #     False,
+            #     True,
+            #     'euclidean',
+            #     'logistic',
+            #     domain_labels,
+            #     [1, 0, 0],
+            #     [0, 1, 1],
+            # )
 
-            loss_dict['loss_stc'] = domain_SCT_loss(
+            loss_stc = domain_SCT_loss(
                 pred_features,
                 domain_labels,
                 True,
                 'cosine_sim',
             )
+            # loss_dict['loss_stc'] = domain_SCT_loss(
+            #     pred_features,
+            #     domain_labels,
+            #     True,
+            #     'cosine_sim',
+            # )
             
         elif opt['type'] == 'mtest':
             
-            loss_dict['loss_triplet_mtest'] = triplet_loss_Meta(
+            loss_triplet_mtest = triplet_loss_Meta(
                 pred_features,
                 gt_labels,
                 0.3,
@@ -399,9 +495,22 @@ class Baseline(nn.Cell):
                 [1, 0, 0],
                 [0, 1, 1],
             )
+            # loss_dict['loss_triplet_mtest'] = triplet_loss_Meta(
+            #     pred_features,
+            #     gt_labels,
+            #     0.3,
+            #     False,
+            #     True,
+            #     'euclidean',
+            #     'logistic',
+            #     domain_labels,
+            #     [1, 0, 0],
+            #     [0, 1, 1],
+            # )
 
         else:
             raise NotImplementedError
 
 
-        return loss_dict
+        return loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest
+        # return loss_dict

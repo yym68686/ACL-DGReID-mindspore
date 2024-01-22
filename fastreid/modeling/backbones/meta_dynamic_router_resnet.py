@@ -76,8 +76,8 @@ class Sequential_ext(nn.Cell):
     def __len__(self):
         return len(self._cells)
 
-    # def forward(self, input, opt=None):
-    def construct(self, input, opt=None):
+    # def forward(self, input, opt=-1):
+    def construct(self, input, opt=-1):
         for i, module in enumerate(self._cells.values()):
             if isinstance(module, MetaConv2d) or isinstance(module, MetaBNNorm):
                 input = module(input)
@@ -145,11 +145,11 @@ class MetaSELayer(nn.Cell):
         self.fc2 = MetaLinear(int(channel / reduction), channel, has_bias=False)
         self.sigmoid = nn.Sigmoid()
 
-    # def forward(self, x, opt=None):
-    def construct(self, x, opt=None):
+    # def forward(self, x, opt=-1):
+    def construct(self, x, opt=-1):
         # b, c, _, _ = x.size()
         b, c, _, _ = x.shape
-        print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
+        # print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
         y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
         y = self.relu(self.fc1(y, opt))
         y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
@@ -183,8 +183,8 @@ class Bottleneck2(nn.Cell):
         self.downsample = downsample
         self.stride = stride
 
-    # def forward(self, x, opt=None):
-    def construct(self, x, opt=None):
+    # def forward(self, x, opt=-1):
+    def construct(self, x, opt=-1):
         
         residual = x
         
@@ -238,8 +238,8 @@ class Bottleneck(nn.Cell):
         self.downsample = downsample
         self.stride = stride
 
-    # def forward(self, x, opt=None):
-    def construct(self, x, opt=None):
+    # def forward(self, x, opt=-1):
+    def construct(self, x, opt=-1):
         if opt == None:
             residual = x
             
@@ -308,10 +308,10 @@ class HyperRouter(nn.Cell):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
     
-    # def forward(self, x, opt=None):
-    def construct(self, x, opt=None):
+    # def forward(self, x, opt=-1):
+    def construct(self, x, opt=-1):
 
-        print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
+        # print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
         x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)
         # weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         l2_normalize = ops.L2Normalize(axis=-1)
@@ -459,12 +459,12 @@ class ResNet(nn.Cell):
                         yield _m
 
     # def construct(self, x):
-    def construct(self, x, epoch, opt=None):
-    # def forward(self, x, epoch, opt=None):
+    def construct(self, x, epoch, opt=-1):
+    # def forward(self, x, epoch, opt=-1):
 
 
         # print(4)
-        # opt=None
+        # opt=-1
         # print(f"ndim {x.shape}")
         # print("x type 1", type(x), x)
         x = self.conv1(x)

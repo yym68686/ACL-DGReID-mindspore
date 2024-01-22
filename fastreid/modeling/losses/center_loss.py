@@ -68,20 +68,20 @@ def centerLoss(distmat, labels):
     # num_classes = distmat.size(1)
 
     # num_classes = mindspore.Tensor(num_classes, dtype=mindspore.float32)
-    print("type num_classes", type(num_classes), num_classes)
+    # print("type num_classes", type(num_classes), num_classes)
     # print("type num_classes", type(num_classes), num_classes.dtype, num_classes.shape, num_classes)
     classes = mindspore.ops.arange(0, num_classes)
     # classes = mindspore.Tensor(classes, dtype=mindspore.int64)
     # QUES
-    print("classes", type(classes), classes.shape)
+    # print("classes", type(classes), classes.shape)
     # print("labels.shape", type(labels), labels.dtype, labels)
     # labels = mindspore.Tensor(labels, mindspore.float32)
-    print("labels", type(labels), labels)
+    # print("labels", type(labels), labels)
     labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
-    print("labels", type(labels), labels)
+    # print("labels", type(labels), labels)
     # labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
     mask = mindspore.ops.equal(labels, classes.broadcast_to((batch_size, num_classes)))
-    print("mask", type(mask), mask.shape)
+    # print("mask", type(mask), mask.shape)
     # mask = labels.eq(classes.broadcast_to((batch_size, num_classes)))
 
     # classes = torch.arange(num_classes).long().to(distmat.device)
@@ -93,10 +93,10 @@ def centerLoss(distmat, labels):
     # QUES
     # loss = 0.1
     # dist = distmat * mask
-    distmat = mindspore.Tensor(distmat, mindspore.float32)
+    # distmat = mindspore.Tensor(distmat, mindspore.float32)
     # print("distmat", type(distmat), distmat.shape)
-    mask = mindspore.Tensor(mask, mindspore.float32)
-    print("mask", type(mask), mask.shape)
+    # mask = mindspore.Tensor(mask, mindspore.float32)
+    # print("mask", type(mask), mask.shape)
     dist = distmat * mask.float()
     loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
     

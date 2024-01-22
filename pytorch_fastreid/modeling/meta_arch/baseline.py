@@ -113,7 +113,7 @@ class Baseline(nn.Module):
     def device(self):
         return self.pixel_mean.device
 
-    def forward(self, batched_inputs, epoch, opt=None):
+    def forward(self, batched_inputs, epoch, opt=-1):
         images = self.preprocess_image(batched_inputs)
         
         features, paths, _ = self.backbone(images, epoch, opt)
@@ -135,7 +135,7 @@ class Baseline(nn.Module):
             losses['loss_domain_inter'] = interCluster(paths, domain_ids)
 
             
-            if opt is None or opt['type'] == 'basic':
+            if opt == -1 or opt['type'] == 'basic':
                 # pass
                 losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 5e-4
                 
@@ -166,7 +166,7 @@ class Baseline(nn.Module):
         images.sub_(self.pixel_mean).div_(self.pixel_std)
         return images
 
-    def losses(self, outputs, gt_labels, domain_labels=None, paths=None, opt=None):
+    def losses(self, outputs, gt_labels, domain_labels=None, paths=None, opt=-1):
         """
         Compute loss from modeling's outputs, the loss function input arguments
         must be the same as the outputs of the model forwarding.
@@ -200,7 +200,7 @@ class Baseline(nn.Module):
         loss_names = self.loss_kwargs['loss_names']
 
 
-        if opt is None or opt['type'] == 'basic':
+        if opt == -1 or opt['type'] == 'basic':
             
             if 'CrossEntropyLoss' in loss_names:
                 ce_kwargs = self.loss_kwargs.get('ce')

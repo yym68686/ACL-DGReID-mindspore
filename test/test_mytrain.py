@@ -1668,7 +1668,7 @@ class SimpleTrainer(TrainerBase):
         # loss_dict = model(data, epoch, opt)
         weights = self.optimizer.parameters
         grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=False)
-        opt = None
+        opt = -1
 
         loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
 
@@ -1744,7 +1744,7 @@ class SimpleTrainer(TrainerBase):
         # if isinstance(self.param_wrapper_meta, ContiguousParams):
         #     self.param_wrapper_meta.assert_buffer_is_valid()
 
-    def basic_forward(self, data, model, epoch, opt=None):
+    def basic_forward(self, data, model, epoch, opt=-1):
         # print('train_loop.py   basic_forward')
         # print("targets" in data)
         # print("data", len(data), type(data), data)

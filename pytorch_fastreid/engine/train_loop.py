@@ -345,7 +345,7 @@ class SimpleTrainer(TrainerBase):
         # if isinstance(self.param_wrapper_meta, ContiguousParams):
         #     self.param_wrapper_meta.assert_buffer_is_valid()
 
-    def basic_forward(self, data, model, epoch, opt=None):
+    def basic_forward(self, data, model, epoch, opt=-1):
         # print('train_loop.py   basic_forward')
         loss_dict = model(data, epoch, opt)
         losses = sum(loss_dict.values()).mean()

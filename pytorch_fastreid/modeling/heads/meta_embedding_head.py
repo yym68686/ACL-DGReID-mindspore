@@ -168,8 +168,8 @@ class MetaEmbeddingHead(nn.Module):
         }
 
     #CHANGE Add reduction version
-    def forward(self, features, targets=None, opt=None):
-    # def forward(self, features, targets=None, opt=None):
+    def forward(self, features, targets=None, opt=-1):
+    # def forward(self, features, targets=None, opt=-1):
         """
         See :class:`ReIDHeads.forward`.
         """

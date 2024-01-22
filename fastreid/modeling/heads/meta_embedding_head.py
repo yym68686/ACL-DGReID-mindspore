@@ -80,8 +80,8 @@ class Sequential_ext(nn.Cell):
     def __len__(self):
         return len(self._cells)
 
-    # def forward(self, input, opt=None):
-    def construct(self, input, opt=None):
+    # def forward(self, input, opt=-1):
+    def construct(self, input, opt=-1):
         for i, module in enumerate(self._cells.values()):
             if isinstance(module, MetaConv2d) or isinstance(module, MetaBNNorm):
                 input = module(input)
@@ -213,9 +213,9 @@ class MetaEmbeddingHead(nn.Cell):
         }
 
     #CHANGE Add reduction version
-    def construct(self, features, targets=None, opt=None):
-    # def forward(self, features, targets=None, opt=None):
-    # def forward(self, features, targets=None, opt=None):
+    def construct(self, features, targets=None, opt=-1):
+    # def forward(self, features, targets=None, opt=-1):
+    # def forward(self, features, targets=None, opt=-1):
         """
         See :class:`ReIDHeads.forward`.
         """
@@ -275,13 +275,14 @@ class MetaEmbeddingHead(nn.Cell):
         # print("logits1", type(logits1), logits1)
         # print("self.cls_layer1.s", type(self.cls_layer1.s), self.cls_layer1.s)
         # print("logits1.mul(self.cls_layer1.s)", type(logits1.mul(self.cls_layer1.s)), logits1.mul(self.cls_layer1.s))
-        return {
-            "cls_outputs1": cls_outputs1,
-            "cls_outputs2": cls_outputs2,
-            "cls_outputs3": cls_outputs3,
-            "center_distmat": center_distmat,
-            "pred_class_logits1": logits1.mul(self.cls_layer1.s),
-            "pred_class_logits2": logits2.mul(self.cls_layer2.s),
-            "pred_class_logits3": logits3.mul(self.cls_layer3.s),
-            "features": feat,
-        }
+        return cls_outputs1, cls_outputs2, cls_outputs3, center_distmat, logits1.mul(self.cls_layer1.s), logits2.mul(self.cls_layer2.s), logits3.mul(self.cls_layer3.s), feat
+        # return {
+        #     "cls_outputs1": cls_outputs1,
+        #     "cls_outputs2": cls_outputs2,
+        #     "cls_outputs3": cls_outputs3,
+        #     "center_distmat": center_distmat,
+        #     "pred_class_logits1": logits1.mul(self.cls_layer1.s),
+        #     "pred_class_logits2": logits2.mul(self.cls_layer2.s),
+        #     "pred_class_logits3": logits3.mul(self.cls_layer3.s),
+        #     "features": feat,
+        # }
