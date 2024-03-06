@@ -161,11 +161,11 @@ class Bottleneck2(nn.Module):
             self.se = nn.Identity()
         self.downsample = downsample
         self.stride = stride
-        
+
     def forward(self, x, opt=-1):
-        
+
         residual = x
-        
+
         out = self.conv1(x, opt)
         out = self.bn1(out, opt)
         out = self.relu(out)
@@ -185,7 +185,7 @@ class Bottleneck2(nn.Module):
         out = self.relu(out)
 
         return out
-        
+
 class Bottleneck(nn.Module):
     expansion = 4
 
@@ -216,17 +216,19 @@ class Bottleneck(nn.Module):
 
     def forward(self, x, opt=-1):
         residual = x
-        
+
         out = self.conv1(x, opt)
         out = self.bn1(out, opt)
         out = self.relu(out)
-        
+
         out = self.conv2(out, opt)
         out = self.bn2(out, opt)
         out = self.relu(out)
 
         out = self.conv3(out, opt)
         out = self.bn3(out, opt)
+        # print("pt", torch.flatten(out))
+
         out = self.se(out)
 
         if self.downsample is not None:
@@ -256,11 +258,11 @@ class HyperRouter(nn.Module):
         self.fc_classifier = MetaLinear(planes*K, 3)
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
-    
+
     def forward(self, x, opt=-1):
 
         x = self.avgpool(x).squeeze(-1).squeeze(-1)
-        
+
         weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         weight = self.fc2(weight, opt).reshape(-1, self.planes, K)
         domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)
@@ -549,7 +551,7 @@ def init_pretrained_weights(key):
     return state_dict
 
 
-# @BACKBONE_REGISTRY.register()
+@BACKBONE_REGISTRY.register()
 def build_meta_dynamic_router_resnet_backbone(cfg):
     """
     Create a ResNet instance from config.
@@ -557,23 +559,23 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
         ResNet: a :class:`ResNet` instance.
     """
 
-    pretrain      = True
-    pretrain_path = None
-    last_stride   = 1
-    bn_norm       = "BN"
-    with_ibn      = True
-    with_se       = False
-    with_nl       = False
-    depth         = "50x"
+    # pretrain      = True
+    # pretrain_path = None
+    # last_stride   = 1
+    # bn_norm       = "BN"
+    # with_ibn      = True
+    # with_se       = False
+    # with_nl       = False
+    # depth         = "50x"
     # fmt: off
-    # pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
-    # pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
-    # last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
-    # bn_norm       = cfg.MODEL.BACKBONE.NORM
-    # with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
-    # with_se       = cfg.MODEL.BACKBONE.WITH_SE
-    # with_nl       = cfg.MODEL.BACKBONE.WITH_NL
-    # depth         = cfg.MODEL.BACKBONE.DEPTH
+    pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
+    pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
+    last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
+    bn_norm       = cfg.MODEL.BACKBONE.NORM
+    with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
+    with_se       = cfg.MODEL.BACKBONE.WITH_SE
+    with_nl       = cfg.MODEL.BACKBONE.WITH_NL
+    depth         = cfg.MODEL.BACKBONE.DEPTH
     # fmt: on
 
     num_blocks_per_stage = {
@@ -617,10 +619,10 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
             # if with_se:  key = 'se_' + key
 
             state_dict = init_pretrained_weights(key)
-        
+
         model_dict = model.state_dict()
         # print(str(model_dict.keys()))
-        
+
         for k in model_dict.keys():
             if k in state_dict:
                 v = state_dict[k]
@@ -683,7 +685,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             Cout, Cin, H, W = v.shape
                             model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         # print('Done, adaptor', k)
-                        
+
                     elif 'adaptor3_base' in k:
                         if model_dict[k].shape == state_dict['layer3.5'+k[13:]].shape:
                             model_dict[k] = state_dict['layer3.5'+k[13:]]
@@ -705,7 +707,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             Cout, Cin, H, W = v.shape
                             model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         # print('Done, adaptor', k)
-                    
+
                     elif 'adaptor4_base' in k:
                         if model_dict[k].shape == state_dict['layer4.2'+k[13:]].shape:
                             model_dict[k] = state_dict['layer4.2'+k[13:]]
@@ -732,7 +734,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             Cout, Cin, H, W = v.shape
                             model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         # print('Done, adaptor', k)
-                            
+
                 except Exception:
                     pass
         incompatible = model.load_state_dict(model_dict, strict=False)

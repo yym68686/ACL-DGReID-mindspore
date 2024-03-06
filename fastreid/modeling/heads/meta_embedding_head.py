@@ -52,7 +52,7 @@ from .build import REID_HEADS_REGISTRY
 #         for i, module in enumerate(self._modules.values()):
 #             input = module(input, opt)
 #         return input
-    
+
 class Sequential_ext(nn.Cell):
     """A Sequential container extended to also propagate the gating information
     that is needed in the target rate loss.
@@ -162,7 +162,7 @@ class MetaEmbeddingHead(nn.Cell):
         self.weight2 = MetaLinear(feat_dim, num_classes2)
         self.weight3 = MetaLinear(feat_dim, num_classes3)
         self.center = MetaParam(feat_dim, num_classes1+num_classes2+num_classes3)
-        
+
 
         self.cls_layer1 = getattr(any_softmax, cls_type)(num_classes1, scale, margin)
         self.cls_layer2 = getattr(any_softmax, cls_type)(num_classes2, scale, margin)
@@ -172,6 +172,8 @@ class MetaEmbeddingHead(nn.Cell):
 
     def reset_parameters(self) -> None:
         self.bottleneck.apply(weights_init_kaiming)
+        # print("self.bottleneck.gamma", self.bottleneck[0].gamma.value())
+        # print("self.bottleneck.beta", self.bottleneck[0].beta.value())
         self.weight1.weight.data.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=0.01, mean=0.0), self.weight1.weight.data.shape, self.weight1.weight.data.dtype))
         self.weight2.weight.data.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=0.01, mean=0.0), self.weight2.weight.data.shape, self.weight2.weight.data.dtype))
         self.weight3.weight.data.set_data(mindspore.common.initializer.initializer(mindspore.common.initializer.Normal(sigma=0.01, mean=0.0), self.weight3.weight.data.shape, self.weight3.weight.data.dtype))
@@ -225,13 +227,13 @@ class MetaEmbeddingHead(nn.Cell):
         # if opt['meta']:
         #     import pdb; pdb.set_trace()
 
-        # print("pool_feat", type(pool_feat), pool_feat)
+        # print("ms pool_feat", type(pool_feat), pool_feat)
         neck_feat = self.bottleneck(pool_feat, opt)
 
-        # print("neck_feat", type(neck_feat), neck_feat)
+        # print("ms neck_feat", type(neck_feat), neck_feat)
         neck_feat = neck_feat[..., 0, 0]
         # print("neck_feat", type(neck_feat), neck_feat)
-        
+
         # Evaluation
         # fmt: off
         if not self.training: return neck_feat
@@ -244,7 +246,7 @@ class MetaEmbeddingHead(nn.Cell):
             logits3 = self.weight3(neck_feat, opt)
 
             center_distmat = self.center(neck_feat, opt)
-            
+
         else:
             # l2_normalize = mindspore.ops.L2Normalize(axis=0)
             neck_feat_normalized = mindspore.ops.L2Normalize(axis=0)(neck_feat)

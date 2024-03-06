@@ -9,11 +9,11 @@ import torch.nn.functional as F
 from torch import nn
 from collections import OrderedDict
 
-from fastreid.config import configurable
-from fastreid.layers import *
-from fastreid.layers import pooling, any_softmax
-from fastreid.layers.weight_init import weights_init_kaiming
-from fastreid.modeling.ops import MetaLinear, MetaConv2d, MetaBNNorm, MetaParam
+from pytorch_fastreid.config import configurable
+from pytorch_fastreid.layers import *
+from pytorch_fastreid.layers import pooling, any_softmax
+from pytorch_fastreid.layers.weight_init import weights_init_kaiming
+from pytorch_fastreid.modeling.ops import MetaLinear, MetaConv2d, MetaBNNorm, MetaParam
 from .build import REID_HEADS_REGISTRY
 
 
@@ -121,7 +121,7 @@ class MetaEmbeddingHead(nn.Module):
         self.weight2 = MetaLinear(feat_dim, num_classes2)
         self.weight3 = MetaLinear(feat_dim, num_classes3)
         self.center = MetaParam(feat_dim, num_classes1+num_classes2+num_classes3)
-        
+
 
         self.cls_layer1 = getattr(any_softmax, cls_type)(num_classes1, scale, margin)
         self.cls_layer2 = getattr(any_softmax, cls_type)(num_classes2, scale, margin)
@@ -131,6 +131,8 @@ class MetaEmbeddingHead(nn.Module):
 
     def reset_parameters(self) -> None:
         self.bottleneck.apply(weights_init_kaiming)
+        # print("self.bottleneck.weight", self.bottleneck[0].weight)
+        # print("self.bottleneck.bias", self.bottleneck[0].bias)
         nn.init.normal_(self.weight1.weight.data, std=0.01)
         nn.init.normal_(self.weight2.weight.data, std=0.01)
         nn.init.normal_(self.weight3.weight.data, std=0.01)
@@ -173,15 +175,20 @@ class MetaEmbeddingHead(nn.Module):
         """
         See :class:`ReIDHeads.forward`.
         """
+        # print("pt self.bottleneck.weight before", self.bottleneck[0].weight)
         pool_feat = self.pool_layer(features)
 
         # if opt['meta']:
         #     import pdb; pdb.set_trace()
 
+        # print("pt pool_feat", type(pool_feat), pool_feat)
+        # print("pt self.bottleneck.weight", self.bottleneck[0].weight)
+        # print("pt self.bottleneck.bias", self.bottleneck[0].bias)
         neck_feat = self.bottleneck(pool_feat, opt)
+        # print("pt neck_feat", type(neck_feat), neck_feat)
 
         neck_feat = neck_feat[..., 0, 0]
-        
+
         # Evaluation
         # fmt: off
         if not self.training: return neck_feat
@@ -194,7 +201,7 @@ class MetaEmbeddingHead(nn.Module):
             logits3 = self.weight3(neck_feat, opt)
 
             center_distmat = self.center(neck_feat, opt)
-            
+
         else:
             logits1 = F.linear(F.normalize(neck_feat), F.normalize(self.weight1))
             logits2 = F.linear(F.normalize(neck_feat), F.normalize(self.weight2))

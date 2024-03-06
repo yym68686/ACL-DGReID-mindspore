@@ -129,9 +129,10 @@ class Baseline(nn.Cell):
 
     # def forward(self, batched_inputs, epoch, opt=-1):
     # def construct(self, images, targets, camids, domainids, img_paths, epoch, opt=-1):
-    def construct(self, images, targets, domainids, epoch, opt=-1):
+    # def construct(self, images, targets, domainids, epoch, opt=-1):
+    def construct(self, images, epoch, opt=-1):
         # print("type(batched_inputs['images'])", images)
-        # images = self.preprocess_image(images)
+        images = self.preprocess_image(images)
         # print("images", type(images), images)
 
         # print("images.shape", images.shape)
@@ -148,7 +149,7 @@ class Baseline(nn.Cell):
         # features = mindspore.Tensor(features)
         # print("features", type(features), features)
         # print("targets" in batched_inputs)
-    
+
         if self.training:
             assert targets is not None, "Person ID annotation are missing in training!"
             # assert "targets" in batched_inputs, "Person ID annotation are missing in training!"
@@ -191,7 +192,7 @@ class Baseline(nn.Cell):
             loss_domain_inter = interCluster(paths, domain_ids)
             # losses['loss_domain_inter'] = interCluster(paths, domain_ids)
 
-            
+
             # print("targets loss_Center 2", type(targets), targets)
             if opt == -1 or opt['type'] == 'basic':
                 # pass
@@ -199,16 +200,16 @@ class Baseline(nn.Cell):
                 loss_Center_ = centerLoss(center_distmat, targets) * 5e-4
                 # losses['loss_Center'] = centerLoss(center_distmat, targets) * 5e-4
                 # losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 5e-4
-                
+
             elif opt['type'] == 'mtrain':
                 pass
-            
+
             elif opt['type'] == 'mtest':
                 loss_Center_ = centerLoss(center_distmat, targets) * 1e-3
                 # losses['loss_Center'] = centerLoss(center_distmat, targets) * 1e-3
             else:
                 raise NotImplementedError
-                
+
             # print("domain_ids", type(domain_ids), domain_ids.shape, domain_ids)
             return loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center_
             # return losses
@@ -291,7 +292,7 @@ class Baseline(nn.Cell):
         idx1 = gt_labels < num_classes1
         idx2 = (gt_labels < num_classes2) & (gt_labels >= num_classes1)
         idx3 = (gt_labels < num_classes3) & (gt_labels >= num_classes2)
-    
+
         # Log prediction accuracy
         # print("pred_class_logits1", type(pred_class_logits1), pred_class_logits1)
         # if len(gt_labels.shape) > 1:
@@ -320,7 +321,7 @@ class Baseline(nn.Cell):
         loss_stc = 0
         loss_triplet_mtest = 0
         if opt == -1 or opt['type'] == 'basic':
-            
+
             if 'CrossEntropyLoss' in loss_names:
                 ce_kwargs = self.loss_kwargs.get('ce')
                 count = 0
@@ -415,9 +416,9 @@ class Baseline(nn.Cell):
                 #     cosface_kwargs.get('margin'),
                 #     cosface_kwargs.get('gamma'),
                 # ) * cosface_kwargs.get('scale')
-                
+
         elif opt['type'] == 'mtrain':
-            
+
             loss_triplet_add = triplet_loss_Meta(
                 pred_features,
                 gt_labels,
@@ -480,9 +481,9 @@ class Baseline(nn.Cell):
             #     True,
             #     'cosine_sim',
             # )
-            
+
         elif opt['type'] == 'mtest':
-            
+
             loss_triplet_mtest = triplet_loss_Meta(
                 pred_features,
                 gt_labels,

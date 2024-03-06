@@ -22,11 +22,12 @@ batch_size = 1
 input = torch.randn(batch_size, in_channels, 3, 3)
 running_mean = torch.zeros(in_channels)
 running_var = torch.ones(in_channels)
-updated_weight = torch.randn(in_channels)
-updated_bias = torch.randn(in_channels)
+updated_weight = torch.ones(in_channels)
+updated_bias = torch.zeros(in_channels)
+# updated_weight = torch.randn(in_channels)
+# updated_bias = torch.randn(in_channels)
 
-
-training = True
+training = False
 momentum = 0.1
 eps = 1e-5
 result = F.batch_norm(input, running_mean, running_var, updated_weight, updated_bias, training, momentum, eps)
@@ -39,8 +40,9 @@ print(result)
 input = mindspore.Tensor(input.numpy().astype(np.float32))
 # running_mean =  mindspore.Tensor(running_mean.numpy().astype(np.float32))
 # running_var =  mindspore.Tensor(running_var.numpy().astype(np.float32))
-updated_weight = mindspore.Tensor(updated_weight.numpy().astype(np.float32))
-updated_bias = mindspore.Tensor(updated_bias.numpy().astype(np.float32))
+bias_freeze = False
+updated_weight = mindspore.Parameter(mindspore.common.initializer.initializer("ones", updated_weight.shape), name="gamma", requires_grad=True)
+updated_bias = mindspore.Parameter(mindspore.common.initializer.initializer("zeros", updated_bias.shape), name="beta", requires_grad=not bias_freeze)
 
 num_features = in_channels
 # num_features,
@@ -53,7 +55,8 @@ num_features = in_channels
 # moving_var_init='ones',
 # use_batch_statistics=None,
 # data_format='NCHW'
-bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=True, momentum=momentum, eps=eps)
+bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=False, momentum=momentum, eps=eps, affine=training)
+# bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=True, momentum=momentum, eps=eps, affine=training)
 output = bn(input)
 # output = ops.batch_norm(input, running_mean, running_var, updated_weight, updated_bias, training, momentum, eps)
 print(output)

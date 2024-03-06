@@ -16,9 +16,9 @@ import mindspore.nn as nn
 class SELayer(nn.Cell):
     def __init__(self, channel, reduction=16):
         super(SELayer, self).__init__()
-        # self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
         # output = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]) 才一样，见 torch.nn.AdaptiveAvgPool2d.py
-        self.avg_pool = ops.ReduceMean(keep_dims=True)
+        # self.avg_pool = ops.ReduceMean(keep_dims=True)
         self.fc = nn.SequentialCell(
             nn.Dense(channel, int(channel / reduction), has_bias=False),
             nn.ReLU(),
@@ -36,7 +36,7 @@ class SELayer(nn.Cell):
     def construct(self, x):
         b, c, _, _ = x.size()
         # print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:])
-        y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
-        # y = self.avg_pool(x).view(b, c)
+        # y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
+        y = self.avg_pool(x).view(b, c)
         y = self.fc(y).view(b, c, 1, 1)
         return x * y.expand_as(x)

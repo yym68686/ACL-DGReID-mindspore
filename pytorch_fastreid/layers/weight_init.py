@@ -13,6 +13,7 @@ from torch import nn, Tensor
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
+    # print("pt classname", classname)
     if classname.find('Linear') != -1:
         nn.init.normal_(m.weight, 0, 0.01)
         if m.bias is not None:
@@ -22,6 +23,7 @@ def weights_init_kaiming(m):
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.0)
     elif classname.find('BatchNorm') != -1:
+        # print("pt m.affine", m, m.affine)
         if m.affine:
             nn.init.constant_(m.weight, 1.0)
             nn.init.constant_(m.bias, 0.0)

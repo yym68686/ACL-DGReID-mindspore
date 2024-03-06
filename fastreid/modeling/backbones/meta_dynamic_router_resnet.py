@@ -136,8 +136,8 @@ class BasicBlock(nn.Cell):
 class MetaSELayer(nn.Cell):
     def __init__(self, channel, reduction=16):
         super(MetaSELayer, self).__init__()
-        self.avg_pool = ops.ReduceMean(keep_dims=True)
-        # self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        # self.avg_pool = ops.ReduceMean(keep_dims=True)
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
         # self.fc1 = nn.Dense(channel, int(channel / reduction), has_bias=False)
         self.fc1 = MetaLinear(channel, int(channel / reduction), has_bias=False)
         self.relu = nn.ReLU()
@@ -150,7 +150,8 @@ class MetaSELayer(nn.Cell):
         # b, c, _, _ = x.size()
         b, c, _, _ = x.shape
         # print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
-        y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
+        # y = self.avg_pool(x, tuple(range(len(x.shape)))[-2:]).view(b, c)
+        y = self.avg_pool(x).view(b, c)
         y = self.relu(self.fc1(y, opt))
         y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
 
@@ -185,9 +186,9 @@ class Bottleneck2(nn.Cell):
 
     # def forward(self, x, opt=-1):
     def construct(self, x, opt=-1):
-        
+
         residual = x
-        
+
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
@@ -207,7 +208,7 @@ class Bottleneck2(nn.Cell):
         out = self.relu(out)
 
         return out
-        
+
 # class Bottleneck(nn.Module):
 class Bottleneck(nn.Cell):
     expansion = 4
@@ -240,43 +241,23 @@ class Bottleneck(nn.Cell):
 
     # def forward(self, x, opt=-1):
     def construct(self, x, opt=-1):
-        if opt == None:
-            residual = x
-            
-            out = self.conv1(x)
-            out = self.bn1(out)
-            out = self.relu(out)
-            
-            out = self.conv2(out)
-            out = self.bn2(out)
-            out = self.relu(out)
+        residual = x
 
-            out = self.conv3(out)
-            out = self.bn3(out)
-            out = self.se(out)
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
 
-            if self.downsample is not None:
-                residual = self.downsample(x, opt)
-        else:
-            residual = x
-            
-            out = self.conv1(x)
-            # out = self.conv1(x, opt)
-            out = self.bn1(out)
-            out = self.relu(out)
-            
-            out = self.conv2(out)
-            # out = self.conv2(out, opt)
-            out = self.bn2(out)
-            out = self.relu(out)
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
 
-            out = self.conv3(out)
-            # out = self.conv3(out, opt)
-            out = self.bn3(out)
-            out = self.se(out)
+        out = self.conv3(out)
+        out = self.bn3(out)
+        # print("ms", mindspore.ops.flatten(out, order='C', start_dim=0, end_dim=-1))
+        out = self.se(out)
 
-            if self.downsample is not None:
-                residual = self.downsample(x, opt)
+        if self.downsample is not None:
+            residual = self.downsample(x, opt)
         out += residual
         out = self.relu(out)
 
@@ -296,8 +277,8 @@ class Identity(nn.Cell):
 class HyperRouter(nn.Cell):
     def __init__(self, planes):
         super().__init__()
-        # self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.avgpool = ops.ReduceMean(keep_dims=True)
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        # self.avgpool = ops.ReduceMean(keep_dims=True)
         self.planes = planes
         # self.fc1 = nn.Dense(planes, planes//16)
         # self.fc2 = nn.Dense(planes//16, planes*K)
@@ -307,12 +288,13 @@ class HyperRouter(nn.Cell):
         self.fc_classifier = MetaLinear(planes*K, 3)
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
-    
+
     # def forward(self, x, opt=-1):
     def construct(self, x, opt=-1):
 
         # print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
-        x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)
+        # x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)
+        x = self.avgpool(x).squeeze(-1).squeeze(-1)
         # weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         l2_normalize = ops.L2Normalize(axis=-1)
         x_normalized = l2_normalize(self.fc1(x, opt))
@@ -399,7 +381,7 @@ class ResNet(nn.Cell):
         # fmt: off
         # self._build_nonlocal(layers, non_layers, bn_norm)
         if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
-        else:       
+        else:
             self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter([-1], requires_grad=False)
             self.NL_1 = self.NL_2 = self.NL_3 = self.NL_4 = nn.SequentialCell(nn.Sigmoid())
         # else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
@@ -420,9 +402,7 @@ class ResNet(nn.Cell):
         for i in range(1, blocks):
             layers.append(block(self.inplanes, planes, bn_norm, with_ibn, with_se))
 
-        # return nn.Sequential(*layers)
         return nn.SequentialCell(*layers)
-        # return layers
 
     def _build_nonlocal(self, layers, non_layers, bn_norm):
         self.NL_1 = nn.SequentialCell(
@@ -687,23 +667,23 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
         ResNet: a :class:`ResNet` instance.
     """
 
-    pretrain      = True
-    pretrain_path = None
-    last_stride   = 1
-    bn_norm       = "BN"
-    with_ibn      = True
-    with_se       = False
-    with_nl       = False
-    depth         = "50x"
+    # pretrain      = True
+    # pretrain_path = None
+    # last_stride   = 1
+    # bn_norm       = "BN"
+    # with_ibn      = True
+    # with_se       = False
+    # with_nl       = False
+    # depth         = "50x"
     # fmt: off
-    # pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
-    # pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
-    # last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
-    # bn_norm       = cfg.MODEL.BACKBONE.NORM
-    # with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
-    # with_se       = cfg.MODEL.BACKBONE.WITH_SE
-    # with_nl       = cfg.MODEL.BACKBONE.WITH_NL
-    # depth         = cfg.MODEL.BACKBONE.DEPTH
+    pretrain      = cfg.MODEL.BACKBONE.PRETRAIN
+    pretrain_path = cfg.MODEL.BACKBONE.PRETRAIN_PATH
+    last_stride   = cfg.MODEL.BACKBONE.LAST_STRIDE
+    bn_norm       = cfg.MODEL.BACKBONE.NORM
+    with_ibn      = cfg.MODEL.BACKBONE.WITH_IBN
+    with_se       = cfg.MODEL.BACKBONE.WITH_SE
+    with_nl       = cfg.MODEL.BACKBONE.WITH_NL
+    depth         = cfg.MODEL.BACKBONE.DEPTH
     # fmt: on
 
     num_blocks_per_stage = {
@@ -748,12 +728,12 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
             # if with_se:  key = 'se_' + key
 
             state_dict = init_pretrained_weights(key)
-        
+
         # model_dict = model.state_dict()
         model_dict = OrderedDict()
         for item in model.get_parameters():
             model_dict[item.name] = item.value()
-        
+
         for item in model.get_parameters():
             k = item.name
             if k in state_dict:
@@ -825,7 +805,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
                             # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         # print('Done, adaptor', k)
-                        
+
                     elif 'adaptor3_base' in k:
                         if model_dict[k].shape == state_dict['layer3.5'+k[13:]].shape:
                             model_dict[k] = state_dict['layer3.5'+k[13:]]
@@ -851,7 +831,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
                             # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         # print('Done, adaptor', k)
-                    
+
                     elif 'adaptor4_base' in k:
                         if model_dict[k].shape == state_dict['layer4.2'+k[13:]].shape:
                             model_dict[k] = state_dict['layer4.2'+k[13:]]
@@ -882,7 +862,7 @@ def build_meta_dynamic_router_resnet_backbone(cfg):
                             model_dict[k] = ops.Transpose()(mindspore.Tensor(temp), (0, 3, 1, 2))
                             # model_dict[k] = F.avg_pool1d(v.permute(0, 2, 3, 1).reshape(Cout, H*W, Cin), kernel_size=K).reshape(Cout, H, W, -1).permute(0, 3, 1, 2)
                         # print('Done, adaptor', k)
-                            
+
                 except Exception:
                     pass
 

@@ -8,11 +8,13 @@ import math
 import warnings
 
 import torch
+import mindspore
 from torch import nn, Tensor
 
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
+    # print("ms classname", classname)
     if classname.find('Linear') != -1:
         nn.init.normal_(m.weight, 0, 0.01)
         if m.bias is not None:
@@ -22,9 +24,12 @@ def weights_init_kaiming(m):
         if m.bias is not None:
             nn.init.constant_(m.bias, 0.0)
     elif classname.find('BatchNorm') != -1:
+        # print("ms m.affine", m, m.affine)
         if m.affine:
-            nn.init.constant_(m.weight, 1.0)
-            nn.init.constant_(m.bias, 0.0)
+            m.gamma.set_data(mindspore.common.initializer.initializer("ones", m.gamma.shape, m.gamma.dtype))
+            m.beta.set_data(mindspore.common.initializer.initializer("zeros", m.beta.shape, m.beta.dtype))
+            # nn.init.constant_(m.weight, 1.0)
+            # nn.init.constant_(m.bias, 0.0)
 
 
 def weights_init_classifier(m):

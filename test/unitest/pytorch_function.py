@@ -26,7 +26,7 @@ def update_parameter(param, step_size, opt=-1, reserve=False):
 class MetaConv2d(nn.Conv2d):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
         super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
-    
+
     def forward(self, inputs, opt=-1):
         if opt != -1 and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
@@ -34,7 +34,7 @@ class MetaConv2d(nn.Conv2d):
             return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-        
+
 class MetaBNNorm(nn.BatchNorm2d):
     def __init__(self, num_features, eps=1e-05, momentum=0.1, affine=True, bias_freeze=False, weight_init=1.0, bias_init=0.0):
 
@@ -46,6 +46,7 @@ class MetaBNNorm(nn.BatchNorm2d):
         self.bias_freeze = bias_freeze
         self.weight.requires_grad_(True)
         self.bias.requires_grad_(not bias_freeze)
+        self.training = False
 
 
     def forward(self, inputs, opt = -1, reserve = False):
@@ -140,7 +141,7 @@ class MetaIBNNorm(nn.Module):
     def forward(self, inputs, opt=-1):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
-        
+
         split = torch.split(inputs, self.half, 1)
         out1 = self.IN(split[0].contiguous(), opt)
         out2 = self.BN(split[1].contiguous(), opt)
@@ -172,11 +173,11 @@ class Bottleneck2(nn.Module):
             self.se = nn.Identity()
         self.downsample = downsample
         self.stride = stride
-        
+
     def forward(self, x, opt=-1):
-        
+
         residual = x
-        
+
         out = self.conv1(x, opt)
         out = self.bn1(out, opt)
         out = self.relu(out)
@@ -196,7 +197,7 @@ class Bottleneck2(nn.Module):
         out = self.relu(out)
 
         return out
-    
+
 class Bottleneck(nn.Module):
     expansion = 4
 
@@ -227,11 +228,11 @@ class Bottleneck(nn.Module):
 
     def forward(self, x, opt=-1):
         residual = x
-        
+
         out = self.conv1(x, opt)
         out = self.bn1(out, opt)
         out = self.relu(out)
-        
+
         out = self.conv2(out, opt)
         out = self.bn2(out, opt)
         out = self.relu(out)
@@ -301,7 +302,7 @@ class MetaLinear(nn.Linear):
         else:
             # print("torch", self.weight)
             return F.linear(inputs, self.weight, self.bias)
-        
+
 class HyperRouter(nn.Module):
     def __init__(self, planes):
         super().__init__()
@@ -312,11 +313,11 @@ class HyperRouter(nn.Module):
         self.fc_classifier = MetaLinear(planes*K, 3)
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
-    
+
     def forward(self, x, opt=-1):
 
         x = self.avgpool(x).squeeze(-1).squeeze(-1)
-        
+
         weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         weight = self.fc2(weight, opt).reshape(-1, self.planes, K)
         domain_cls_logits = self.fc_classifier(weight.reshape(-1, self.planes*K), opt)
@@ -338,7 +339,7 @@ class MetaGate(nn.Module):
         else:
             gate = self.sigmoid(self.gate).reshape(1, -1, 1, 1)
             return gate * inputs1 + (1. - gate) * inputs2
-        
+
 class MetaSELayer(nn.Module):
     def __init__(self, channel, reduction=16):
         super(MetaSELayer, self).__init__()
@@ -355,14 +356,14 @@ class MetaSELayer(nn.Module):
         y = self.sigmoid(self.fc2(y, opt)).view(b, c, 1, 1)
 
         return x * y.expand_as(x)
-    
+
 class Identity(nn.Module):
     def __init__(self):
         super(Identity, self).__init__()
 
     def forward(self, x):
         return x, None
-    
+
 class IBN(nn.Module):
     def __init__(self, planes, bn_norm="BN", **kwargs):
         super(IBN, self).__init__()
@@ -378,7 +379,7 @@ class IBN(nn.Module):
         out2 = self.BN(split[1].contiguous())
         out = torch.cat((out1, out2), 1)
         return out
-    
+
 class Sequential_ext(nn.Module):
     """A Sequential container extended to also propagate the gating information
     that is needed in the target rate loss.

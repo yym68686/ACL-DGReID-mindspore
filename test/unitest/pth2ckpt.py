@@ -42,7 +42,7 @@ def pytorch2mindspore(pth_file):
 # ckpt_path = "resnet50.ckpt"
 # check_res(pth_path, ckpt_path)
 
-def param_convert(ms_params, pt_params, ckpt_path = "/home/yuming/.cache/torch/checkpoints/ACL-DGReID2.ckpt"):
+def param_convert(ms_params, pt_params, ckpt_path = "./ACL-DGReID2.ckpt"):
     # 参数名映射字典
     bn_ms2pt = {"gamma": "weight",
                 "beta": "bias",
@@ -54,7 +54,7 @@ def param_convert(ms_params, pt_params, ckpt_path = "/home/yuming/.cache/torch/c
     # print(ms_params.keys())
     for ms_param in ms_params.keys():
         # 在参数列表中，只有包含bn和downsample.1的参数是BatchNorm算子的参数
-        if "bn" in ms_param or "downsample.1" in ms_param or "norm" in ms_param or "map" in ms_param:
+        if "bn" in ms_param or "downsample.1" in ms_param or "norm" in ms_param or "map" in ms_param or "moving_mean" in ms_param or "moving_variance" in ms_param or "gamma" in ms_param or "beta" in ms_param:
             ms_param_item = ms_param.split(".")
             pt_param_item = ms_param_item[:-1] + [bn_ms2pt[ms_param_item[-1]]]
             pt_param = ".".join(pt_param_item)
@@ -62,7 +62,7 @@ def param_convert(ms_params, pt_params, ckpt_path = "/home/yuming/.cache/torch/c
             if pt_param in pt_params and pt_params[pt_param].shape == ms_params[ms_param].shape:
                 ms_value = pt_params[pt_param]
                 Parameter_map[pt_param] = ms_param
-                new_params_list.append({"name": ms_param, "data": ms.Tensor(ms_value.numpy().astype(np.float32))})
+                new_params_list.append({"name": ms_param, "data": ms.Tensor(ms_value.cpu().numpy().astype(np.float32))})
             else:
                 # print(ms_param, "not match in pt_params")
                 pass
@@ -73,7 +73,7 @@ def param_convert(ms_params, pt_params, ckpt_path = "/home/yuming/.cache/torch/c
             if ms_param in pt_params and pt_params[ms_param].shape == ms_params[ms_param].shape:
                 ms_value = pt_params[ms_param]
                 # print(type(ms_value))
-                new_params_list.append({"name": ms_param, "data": ms.Tensor(ms_value.numpy().astype(np.float32))})
+                new_params_list.append({"name": ms_param, "data": ms.Tensor(ms_value.cpu().numpy().astype(np.float32))})
                 Parameter_map[ms_param] = ms_param
             else:
                 # print(ms_param, "not match in pt_params")

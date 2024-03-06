@@ -3,21 +3,26 @@
 @author:  liaoxingyu
 @contact: sherlockliao01@gmail.com
 """
+# import os
+# os.system("clear")
+# import sys
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import copy
 from os import path
-from fastreid.modeling.losses.cluster_loss import intraCluster, interCluster
-from fastreid.modeling.losses.center_loss import centerLoss
-from fastreid.modeling.losses.triplet_loss import triplet_loss
-from fastreid.modeling.losses.triplet_loss_MetaIBN import triplet_loss_Meta
-from fastreid.modeling.losses.domain_SCT_loss import domain_SCT_loss
+from pytorch_fastreid.modeling.losses.cluster_loss import intraCluster, interCluster
+from pytorch_fastreid.modeling.losses.center_loss import centerLoss
+from pytorch_fastreid.modeling.losses.triplet_loss import triplet_loss
+from pytorch_fastreid.modeling.losses.triplet_loss_MetaIBN import triplet_loss_Meta
+from pytorch_fastreid.modeling.losses.domain_SCT_loss import domain_SCT_loss
 import torch
 from torch import nn
 import torch.nn.functional as F
 
-from fastreid.config import configurable
-from fastreid.modeling.backbones import build_backbone
-from fastreid.modeling.heads import build_heads
-from fastreid.modeling.losses import *
+from pytorch_fastreid.config import configurable
+from pytorch_fastreid.modeling.backbones import build_backbone
+from pytorch_fastreid.modeling.heads import build_heads
+from pytorch_fastreid.modeling.losses import *
 from .build import META_ARCH_REGISTRY
 
 
@@ -61,18 +66,25 @@ class Baseline(nn.Module):
         super().__init__()
         # backbone
         self.backbone = backbone
+
+
         # head
+
+        # print("__init__ heads.weight before", heads.bottleneck[0].weight)
         self.heads = heads
+        # print("__init__ self.heads.weight after", self.heads.bottleneck[0].weight)
 
         self.loss_kwargs = loss_kwargs
 
         self.register_buffer('pixel_mean', torch.Tensor(pixel_mean).view(1, -1, 1, 1), False)
         self.register_buffer('pixel_std', torch.Tensor(pixel_std).view(1, -1, 1, 1), False)
+        # print("__init__ self.heads.weight last", self.heads.bottleneck[0].weight)
 
     @classmethod
     def from_config(cls, cfg):
         backbone = build_backbone(cfg)
         heads = build_heads(cfg)
+        # print("from_config heads.weight before", heads.bottleneck[0].weight)
 
         return {
             'backbone': backbone,
@@ -114,10 +126,11 @@ class Baseline(nn.Module):
         return self.pixel_mean.device
 
     def forward(self, batched_inputs, epoch, opt=-1):
+        # print("self.heads.weight before", self.heads.bottleneck[0].weight)
         images = self.preprocess_image(batched_inputs)
-        
+
         features, paths, _ = self.backbone(images, epoch, opt)
-    
+
         if self.training:
             assert "targets" in batched_inputs, "Person ID annotation are missing in training!"
             targets = batched_inputs["targets"]
@@ -134,21 +147,23 @@ class Baseline(nn.Module):
             losses['loss_domain_intra'] = intraCluster(paths, domain_ids)
             losses['loss_domain_inter'] = interCluster(paths, domain_ids)
 
-            
+
             if opt == -1 or opt['type'] == 'basic':
                 # pass
                 losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 5e-4
-                
+
             elif opt['type'] == 'mtrain':
                 pass
-            
+
             elif opt['type'] == 'mtest':
                 losses['loss_Center'] = centerLoss(outputs['center_distmat'], targets) * 1e-3
             else:
                 raise NotImplementedError
-                
+
             return losses
         else:
+            # print("self.heads.weight", self.heads.bottleneck[0].weight)
+            # print("self.heads.weight", self.heads[1][0].weight)
             outputs = self.heads(features)
             return outputs
 
@@ -201,7 +216,7 @@ class Baseline(nn.Module):
 
 
         if opt == -1 or opt['type'] == 'basic':
-            
+
             if 'CrossEntropyLoss' in loss_names:
                 ce_kwargs = self.loss_kwargs.get('ce')
                 count = 0
@@ -251,9 +266,9 @@ class Baseline(nn.Module):
                     cosface_kwargs.get('margin'),
                     cosface_kwargs.get('gamma'),
                 ) * cosface_kwargs.get('scale')
-                
+
         elif opt['type'] == 'mtrain':
-            
+
             loss_dict['loss_triplet_add'] = triplet_loss_Meta(
                 pred_features,
                 gt_labels,
@@ -286,9 +301,9 @@ class Baseline(nn.Module):
                 True,
                 'cosine_sim',
             )
-            
+
         elif opt['type'] == 'mtest':
-            
+
             loss_dict['loss_triplet_mtest'] = triplet_loss_Meta(
                 pred_features,
                 gt_labels,
@@ -307,3 +322,51 @@ class Baseline(nn.Module):
 
 
         return loss_dict
+
+if __name__ == "__main__":
+
+    # 配置
+    import argparse
+    parser = argparse.ArgumentParser(description="fastreid Training")
+    parser.add_argument("--config-file", default="./configs/bagtricks_DR50_mix.yml", metavar="FILE", help="path to config file")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="whether to attempt to resume from the checkpoint directory",
+    )
+    parser.add_argument("--eval-only", type=bool, default=True, help="perform evaluation only")
+    parser.add_argument("--num-gpus", type=int, default=1, help="number of gpus *per machine*")
+    parser.add_argument("--num-machines", type=int, default=1, help="total number of machines")
+    parser.add_argument(
+        "--machine-rank", type=int, default=0, help="the rank of this machine (unique per machine)"
+    )
+
+    # PyTorch still may leave orphan processes in multi-gpu training.
+    # Therefore we use a deterministic way to obtain port,
+    # so that users are aware of orphan processes by seeing the port occupied.
+    port = 2 ** 15 + 2 ** 14 + hash(os.getuid() if sys.platform != "win32" else 1) % 2 ** 14
+    parser.add_argument("--dist-url", default="tcp://127.0.0.1:{}".format(port))
+    parser.add_argument(
+        "opts",
+        help="Modify config options using the command-line",
+        default=None,
+        nargs=argparse.REMAINDER,
+    )
+    args = parser.parse_args()
+
+    from fastreid.config import get_cfg
+    cfg = get_cfg()
+    cfg.merge_from_file(args.config_file)
+    cfg.merge_from_list(args.opts)
+    from fastreid.engine import default_setup
+    default_setup(cfg, args)
+    cfg.MODEL.BACKBONE.PRETRAIN = False
+    cfg.MODEL.HEADS.NUM_CLASSES1 = 600
+    cfg.MODEL.HEADS.NUM_CLASSES2 = 600
+    cfg.MODEL.HEADS.NUM_CLASSES3 = 600
+
+    # 初始化模型
+    # from pytorch_fastreid.modeling.meta_arch.baseline import Baseline as build_pytorch_model
+    # from pytorch_fastreid.modeling.meta_arch.build import build_model as build_pytorch_model
+    pt_model = Baseline(cfg).eval()
+    print(pt_model)
