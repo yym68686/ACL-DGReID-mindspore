@@ -11,6 +11,7 @@ import faiss
 import numpy as np
 import torch
 import torch.nn.functional as F
+import mindspore
 
 from .faiss_utils import (
     index_init_cpu,
@@ -49,7 +50,8 @@ def build_dist(feat_1: torch.Tensor, feat_2: torch.Tensor, metric: str = "euclid
         return compute_cosine_distance(feat_1, feat_2)
 
     elif metric == "jaccard":
-        feat = torch.cat((feat_1, feat_2), dim=0)
+        feat = mindspore.ops.cat((feat_1, feat_2), axis=0)
+        # feat = torch.cat((feat_1, feat_2), dim=0)
         dist = compute_jaccard_distance(feat, k1=kwargs["k1"], k2=kwargs["k2"], search_option=0)
         return dist[: feat_1.size(0), feat_1.size(0):]
 
@@ -194,10 +196,15 @@ def compute_cosine_distance(features, others):
     Returns:
         torch.Tensor: distance matrix.
     """
-    features = F.normalize(features, p=2, dim=1)
-    others = F.normalize(others, p=2, dim=1)
+    features = mindspore.ops.L2Normalize(axis=1)(features)
+    others = mindspore.ops.L2Normalize(axis=1)(others)
+    # features = F.normalize(features, p=2, dim=1)
+    # others = F.normalize(others, p=2, dim=1)
     dist_m = []
     for i in range(100):
-        dist_m.append(1 - torch.mm(features[int(features.shape[0]/100*i):int(features.shape[0]/100*(i+1))], others.t()))
-    dist_m = torch.cat(dist_m, 0)
-    return dist_m.cpu().numpy()
+        dist_m.append(1 - mindspore.ops.mm(features[int(features.shape[0]/100*i):int(features.shape[0]/100*(i+1))], others.t()))
+        # dist_m.append(1 - torch.mm(features[int(features.shape[0]/100*i):int(features.shape[0]/100*(i+1))], others.t()))
+    dist_m = mindspore.ops.cat(dist_m, 0)
+    # dist_m = torch.cat(dist_m, 0)
+    return dist_m.numpy()
+    # return dist_m.cpu().numpy()

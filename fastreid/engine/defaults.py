@@ -206,13 +206,13 @@ class DefaultTrainer(TrainerBase):
         # cfg = self.auto_scale_hyperparams(cfg, data_loader.dataset.num_classes1, data_loader.dataset.num_classes2, data_loader.dataset.num_classes3)
         model = self.build_model(cfg)
         optimizer, param_wrapper = self.build_optimizer(cfg, model)
-        optimizer_meta, param_wrapper_meta = self.build_optimizer(cfg, model, flag='meta') 
+        optimizer_meta, param_wrapper_meta = self.build_optimizer(cfg, model, flag='meta')
 
         # For training, wrap with DDP. But don't need this for inference.
         # if comm.get_world_size() > 1:
         #     # ref to https://github.com/pytorch/pytorch/issues/22049 to set `find_unused_parameters=True`
         #     # for part of the parameters is not updated.
-        #     #CHANGE Set find_unused_parameters as True to realize the KD process 
+        #     #CHANGE Set find_unused_parameters as True to realize the KD process
         #     model = DistributedDataParallel(
         #         model, device_ids=[comm.get_local_rank()], broadcast_buffers=False, find_unused_parameters=True
         #     )
@@ -488,6 +488,8 @@ class DefaultTrainer(TrainerBase):
             try:
                 data_loader, evaluator = cls.build_evaluator(cfg, dataset_name)
             except NotImplementedError:
+                import traceback
+                print(traceback.format_exc())
                 logger.warn(
                     "No evaluator found. implement its `build_evaluator` method."
                 )

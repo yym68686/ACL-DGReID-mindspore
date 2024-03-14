@@ -117,7 +117,7 @@ def build_reid_train_loader(
 
     # dataset = mindspore.dataset.GeneratorDataset(sampler=sampler)
     # batch_sampler = dataset.batch(mini_batch_size, True)
-    
+
     # batch_sampler = torch.utils.data.sampler.BatchSampler(sampler, mini_batch_size, True)
     for i in range(len(single_set)):
         # tmp_batch_sampler = mindspore.dataset.GeneratorDataset(single_sampler[i])
@@ -201,7 +201,7 @@ def _test_loader_from_config(cfg, *, dataset_name=None, test_set=None, num_query
 
 
 @configurable(from_config=_test_loader_from_config)
-def build_reid_test_loader(test_set, test_batch_size, num_query, num_workers=4):
+def build_reid_test_loader(test_set, test_batch_size, num_query, num_workers=1):
     """
     Similar to `build_reid_train_loader`. This sampler coordinates all workers to produce
     the exact set of all samples
@@ -224,17 +224,25 @@ def build_reid_test_loader(test_set, test_batch_size, num_query, num_workers=4):
         data_loader = build_reid_test_loader(cfg, "my_test")
     """
 
-    mini_batch_size = test_batch_size // comm.get_world_size()
-    data_sampler = samplers.InferenceSampler(len(test_set))
-    batch_sampler = torch.utils.data.BatchSampler(data_sampler, mini_batch_size, False)
-    test_loader = DataLoaderX(
-        comm.get_local_rank(),
-        dataset=test_set,
-        batch_sampler=batch_sampler,
-        num_workers=num_workers,  # save some memory
-        collate_fn=fast_batch_collator,
-        pin_memory=True,
+    # mini_batch_size = test_batch_size // comm.get_world_size()
+    # data_sampler = samplers.InferenceSampler(len(test_set))
+    # batch_sampler = torch.utils.data.BatchSampler(data_sampler, mini_batch_size, False)
+    # test_loader = DataLoaderX(
+    #     comm.get_local_rank(),
+    #     dataset=test_set,
+    #     batch_sampler=batch_sampler,
+    #     num_workers=num_workers,  # save some memory
+    #     collate_fn=fast_batch_collator,
+    #     pin_memory=True,
+    # )
+    # print("test_set", test_set)
+    test_loader = mindspore.dataset.GeneratorDataset(
+        source=test_set,
+        column_names=["images0" ,"images" ,"targets" ,"camids" ,"domainids" ,"img_paths"],
+        num_parallel_workers=num_workers,
     )
+    test_loader = test_loader.batch(test_batch_size, drop_remainder=True)
+
     return test_loader, num_query
 
 

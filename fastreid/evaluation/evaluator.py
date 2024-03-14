@@ -73,7 +73,8 @@ def inference_on_dataset(model, data_loader, evaluator, flip_test=False, epoch=-
     assert epoch >= 0, "Epoch during inference get a wrong number"
     num_devices = comm.get_world_size()
     logger = logging.getLogger(__name__)
-    logger.info("Start inference on {} images".format(len(data_loader.dataset)))
+    logger.info("Start inference on {} images".format(data_loader.get_dataset_size()))
+    # logger.info("Start inference on {} images".format(len(data_loader.dataset)))
 
     total = len(data_loader)  # inference data loader must have a fixed length
     evaluator.reset()
@@ -145,6 +146,7 @@ def inference_context(model):
         model: a torch Module
     """
     training_mode = model.training
-    model.eval()
+    model.set_train(False)
+    # model.eval()
     yield
-    model.train(training_mode)
+    # model.train(training_mode)

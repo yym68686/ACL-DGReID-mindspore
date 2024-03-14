@@ -86,7 +86,8 @@ class TestBackbones(unittest.TestCase):
 
         from fastreid.utils.checkpoint import Checkpointer
         # print("pt_model baseline.weight", pt_model.heads.bottleneck[0].weight)
-        Checkpointer(pt_model).load("/mnt/ssd3/yuming/model_final.pth")
+        Checkpointer(pt_model).load("/mnt/ssd3/yuming/model_0004.pth")
+        # Checkpointer(pt_model).load("/mnt/ssd3/yuming/model_final.pth")
         # print("pt_model baseline.weight before", pt_model.heads.bottleneck[0].weight)
         # pt_model.load_state_dict(torch.load('/mnt/ssd3/yuming/model_best.pth'))
 
@@ -296,7 +297,7 @@ class TestBackbones(unittest.TestCase):
         #     print()
         #     # if np.allclose(pt_Parameter_list_for_each_layer[index]["output"], ms_Parameter_list_for_each_layer[index]["output"], atol=1e-5) == False:
         #     #     break
-    
+
         # maxnum = len(pt_Parameter_list_for_each_layer) if len(pt_Parameter_list_for_each_layer) < len(ms_Parameter_list_for_each_layer) else len(ms_Parameter_list_for_each_layer)
         # for index in range(maxnum):
         #     print(pt_Parameter_list_for_each_layer[index]["name"])

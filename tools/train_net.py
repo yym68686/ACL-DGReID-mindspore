@@ -12,7 +12,7 @@ sys.path.append('.')
 from fastreid.config import get_cfg
 from fastreid.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from fastreid.utils.checkpoint import Checkpointer
-
+import mindspore
 
 def setup(args):
     """
@@ -28,15 +28,19 @@ def setup(args):
 def main(args):
     cfg = setup(args)
 
-    # if args.eval_only:
-    #     cfg.defrost()
-    #     cfg.MODEL.BACKBONE.PRETRAIN = False
-    #     model = DefaultTrainer.build_model(cfg)
+    if args.eval_only:
+        cfg.defrost()
+        cfg.MODEL.BACKBONE.PRETRAIN = False
+        cfg.MODEL.HEADS.NUM_CLASSES1 = 11934
+        cfg.MODEL.HEADS.NUM_CLASSES2 = 767
+        cfg.MODEL.HEADS.NUM_CLASSES3 = 1041
+        model = DefaultTrainer.build_model(cfg)
+        mindspore.load_checkpoint(cfg.MODEL.WEIGHTS, model)
 
-    #     Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
+        # Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
 
-    #     res = DefaultTrainer.test(cfg, model, 0)
-    #     return res
+        res = DefaultTrainer.test(cfg, model, 0)
+        return res
 
     trainer = DefaultTrainer(cfg)
 

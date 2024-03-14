@@ -88,8 +88,8 @@ class CommDataset(Dataset):
                 pid_set[domain_id].add(i[1])
                 cam_set[domain_id].add(i[2])
 
-            self.pids = [] 
-            self.cams = [] 
+            self.pids = []
+            self.cams = []
             for temp_pid, temp_cam in zip(pid_set, cam_set):
                 self.pids += sorted(list(temp_pid))
                 self.cams += sorted(list(temp_cam))
@@ -102,7 +102,7 @@ class CommDataset(Dataset):
 
             self.pids = sorted(list(pid_set))
             self.cams = sorted(list(cam_set))
-        
+
         if relabel:
             self.pid_dict = dict([(p, i+offset) for i, p in enumerate(self.pids)])
             self.cam_dict = dict([(p, i) for i, p in enumerate(self.cams)])
@@ -149,7 +149,7 @@ class CommDataset(Dataset):
     @property
     def num_cameras(self):
         return len(self.cams)
-    
+
     def __call__(self):
         # print("111")
         pass
@@ -190,7 +190,7 @@ def build_reid_train_loader(cfg):
     #                           input_columns=["images" ,"targets" ,"camids" ,"domainids" ,"img_paths"],
     #                           output_columns=["images0" ,"images" ,"targets" ,"camids" ,"domainids" ,"img_paths"],
     #                           num_parallel_workers=cfg.DATALOADER.NUM_WORKERS)
-    
+
     # train_loader = train_loader.map(operations=[transforms[1]],
     #                           input_columns=["images"],
     #                           output_columns=["images"],

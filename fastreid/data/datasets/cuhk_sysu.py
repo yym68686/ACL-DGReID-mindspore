@@ -30,7 +30,7 @@ class cuhkSYSU(ImageDataset):
     dataset_name = "cuhkSYSU"
 
     def __init__(self, root='datasets', **kwargs):
-        self.root = '/data/yuming/split_reid_data/'
+        self.root = '/mnt/ssd3/yuming/split_reid_data/'
         self.dataset_dir = osp.join(self.root, self.dataset_dir)
 
         self.data_dir = osp.join(self.dataset_dir, "cropped_images")

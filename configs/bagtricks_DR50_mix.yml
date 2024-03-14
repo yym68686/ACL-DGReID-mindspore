@@ -30,7 +30,7 @@ MODEL:
       HARD_MINING: True
       NORM_FEAT: False
       SCALE: 1.
-    
+
     CIRCLE:
       MARGIN: 0.25
       GAMMA: 32

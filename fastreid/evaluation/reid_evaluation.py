@@ -9,8 +9,9 @@ import itertools
 from collections import OrderedDict
 
 import numpy as np
-import torch
-import torch.nn.functional as F
+# import torch
+# import torch.nn.functional as F
+import mindspore
 from sklearn import metrics
 
 from fastreid.utils import comm
@@ -29,7 +30,7 @@ class ReidEvaluator(DatasetEvaluator):
         self._num_query = num_query
         self._output_dir = output_dir
 
-        self._cpu_device = torch.device('cpu')
+        # self._cpu_device = torch.device('cpu')
 
         self._predictions = []
 
@@ -37,10 +38,15 @@ class ReidEvaluator(DatasetEvaluator):
         self._predictions = []
 
     def process(self, inputs, outputs):
+        pids = inputs[2]
+        camids = inputs[3]
         prediction = {
-            'feats': outputs.to(self._cpu_device, torch.float32),
-            'pids': inputs['targets'].to(self._cpu_device),
-            'camids': inputs['camids'].to(self._cpu_device)
+            'feats': outputs,
+            'pids': pids,
+            'camids': camids
+            # 'feats': outputs.to(self._cpu_device, torch.float32),
+            # 'pids': inputs['targets'].to(self._cpu_device),
+            # 'camids': inputs['camids'].to(self._cpu_device)
 
         }
         self._predictions.append(prediction)
@@ -65,13 +71,18 @@ class ReidEvaluator(DatasetEvaluator):
             pids.append(prediction['pids'])
             camids.append(prediction['camids'])
 
-        features = torch.cat(features, dim=0)
-        pids = torch.cat(pids, dim=0).numpy()
-        camids = torch.cat(camids, dim=0).numpy()
+        features = mindspore.ops.cat(features, axis=0)
+        pids = mindspore.ops.cat(pids, axis=0).numpy()
+        camids = mindspore.ops.cat(camids, axis=0).numpy()
+        # features = torch.cat(features, dim=0)
+        # pids = torch.cat(pids, dim=0).numpy()
+        # camids = torch.cat(camids, dim=0).numpy()
         # query feature, person ids and camera ids
         query_features = features[:self._num_query]
         query_pids = pids[:self._num_query]
         query_camids = camids[:self._num_query]
+
+        # print("features.shape, self._num_query", features.shape, self._num_query)
 
         # gallery features, person ids and camera ids
         gallery_features = features[self._num_query:]
@@ -87,6 +98,7 @@ class ReidEvaluator(DatasetEvaluator):
             alpha = self.cfg.TEST.AQE.ALPHA
             query_features, gallery_features = aqe(query_features, gallery_features, qe_time, qe_k, alpha)
 
+        # print(query_features.shape, gallery_features.shape)
         dist = build_dist(query_features, gallery_features, self.cfg.TEST.METRIC)
 
         if self.cfg.TEST.RERANK.ENABLED:
@@ -96,8 +108,10 @@ class ReidEvaluator(DatasetEvaluator):
             lambda_value = self.cfg.TEST.RERANK.LAMBDA
 
             if self.cfg.TEST.METRIC == "cosine":
-                query_features = F.normalize(query_features, dim=1)
-                gallery_features = F.normalize(gallery_features, dim=1)
+                query_features = mindspore.ops.L2Normalize(axis=1)(query_features)
+                gallery_features = mindspore.ops.L2Normalize(axis=1)(gallery_features)
+                # query_features = F.normalize(query_features, dim=1)
+                # gallery_features = F.normalize(gallery_features, dim=1)
 
             rerank_dist = build_dist(query_features, gallery_features, metric="jaccard", k1=k1, k2=k2)
             dist = rerank_dist * (1 - lambda_value) + dist * lambda_value

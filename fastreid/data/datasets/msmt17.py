@@ -46,7 +46,7 @@ class MSMT17(ImageDataset):
     dataset_name = 'MSMT17'
 
     def __init__(self, root='datasets', **kwargs):
-        root='/data/yuming/split_reid_data/msmt17v2/'
+        root='/mnt/ssd3/yuming/split_reid_data/msmt17v2/'
         self.dataset_dir = root
 
         has_main_dir = False
