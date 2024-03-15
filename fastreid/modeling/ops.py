@@ -88,65 +88,65 @@ class MetaParam(nn.Cell):
             return distmat
 
 
-class MetaConv2d(nn.Conv2d):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, group=1, bias=True, pad_mode='pad'):
-        super().__init__(in_channels, out_channels, kernel_size, stride, pad_mode, padding, dilation, group, has_bias=bias)
-        self.conv = mindspore.ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
-    def construct(self, inputs, opt=-1):
-        if opt != -1 and opt['meta']:
-            updated_weight = update_parameter(self.weight, self.w_step_size, opt)
-            updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-            # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-            output = self.conv(inputs, updated_weight)
-            return output
-        else:
-            # output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-            # conv = mindspore.ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
-            output = self.conv(inputs, self.weight)
-            return output
-
 # class MetaConv2d(nn.Conv2d):
-#     # def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
 #     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, group=1, bias=True, pad_mode='pad'):
 #         super().__init__(in_channels, out_channels, kernel_size, stride, pad_mode, padding, dilation, group, has_bias=bias)
-#         # super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
-#         # super().__init__()
-#         # super(MetaConv2d, self).__init__()
-#         self.pad_mode = 'pad'
-#         # self.kernel_size = kernel_size
-#         self.w_step_size = 1
-#         self.b_step_size = 1
-#         self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
-#         self.conv.weight = self.weight
-#         # self.conv.weight.set_data(self.weight)
-#         # self.weight = mindspore.ops.randn((out_channels, in_channels, kernel_size, kernel_size))
+#         self.conv = mindspore.ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
+#     def construct(self, inputs, opt=-1):
+#         if opt != -1 and opt['meta']:
+#             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+#             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+#             # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+#             output = self.conv(inputs, updated_weight)
+#             return output
+#         else:
+#             # output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+#             # conv = mindspore.ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
+#             output = self.conv(inputs, self.weight)
+#             return output
 
-#     # def forward(self, inputs, opt=-1):
-#     def construct(self, inputs):
-#         # if opt:
-#         output = self.conv(inputs)
-#         return output
-#         # else:
-#         #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
-#         #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-#         #     output = self.conv(inputs)
-#         # return output
-#         # if opt != -1 and opt['meta']:
-#         #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
-#         #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-#         #     # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
-#         #     # self.conv.weight = updated_weight
-#         #     # self.conv.bias = updated_bias
-#         #     output = self.conv(inputs)
-#         #     # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-#         #     return output
-#         # else:
-#         #     # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-#         #     # self.conv.weight = self.weight
-#         #     # self.conv.bias = self.bias
-#         #     output = self.conv(inputs)
-#         #     # output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-#         #     return output
+class MetaConv2d(nn.Conv2d):
+    # def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, group=1, bias=True, pad_mode='pad'):
+        super().__init__(in_channels, out_channels, kernel_size, stride, pad_mode, padding, dilation, group, has_bias=bias)
+        # super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
+        # super().__init__()
+        # super(MetaConv2d, self).__init__()
+        self.pad_mode = 'pad'
+        # self.kernel_size = kernel_size
+        self.w_step_size = 1
+        self.b_step_size = 1
+        self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
+        self.conv.weight = self.weight
+        # self.conv.weight.set_data(self.weight)
+        # self.weight = mindspore.ops.randn((out_channels, in_channels, kernel_size, kernel_size))
+
+    # def forward(self, inputs, opt=-1):
+    def construct(self, inputs):
+        # if opt:
+        output = self.conv(inputs)
+        return output
+        # else:
+        #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+        #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+        #     output = self.conv(inputs)
+        # return output
+        # if opt != -1 and opt['meta']:
+        #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+        #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+        #     # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
+        #     # self.conv.weight = updated_weight
+        #     # self.conv.bias = updated_bias
+        #     output = self.conv(inputs)
+        #     # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+        #     return output
+        # else:
+        #     # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+        #     # self.conv.weight = self.weight
+        #     # self.conv.bias = self.bias
+        #     output = self.conv(inputs)
+        #     # output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+        #     return output
 
 
 class MetaLinear(nn.Dense):

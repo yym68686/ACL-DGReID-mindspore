@@ -704,6 +704,7 @@ mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
 parser = argparse.ArgumentParser(description="fastreid Training")
 parser.add_argument("--config-file", default="./configs/bagtricks_DR50_mix.yml", metavar="FILE", help="path to config file")
 parser.add_argument("--num-gpus", type=int, default=4, help="number of gpus *per machine*")
+# parser.add_argument("--eval-only", action="store_false", help="perform evaluation only", default=True)
 args = parser.parse_args()
 cfg = get_cfg()
 cfg.merge_from_file(args.config_file)
@@ -715,6 +716,34 @@ data_loader, num_classes = build_reid_train_loader(cfg)
 cfg.MODEL.HEADS.NUM_CLASSES1 = num_classes[0]
 cfg.MODEL.HEADS.NUM_CLASSES2 = num_classes[1]
 cfg.MODEL.HEADS.NUM_CLASSES3 = num_classes[2]
+
+# if args.eval_only:
+#     cfg.defrost()
+#     cfg.MODEL.BACKBONE.PRETRAIN = False
+
+#     from fastreid.modeling.meta_arch.build import build_model
+#     model = build_model(cfg)
+#     model.set_train(False)
+
+#     # from fastreid.utils.checkpoint import Checkpointer
+#     # cfg.MODEL.WEIGHTS = 'result/epoch_59_loss_5.615273.ckpt'
+#     # Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
+#     # mindspore.load_checkpoint("/home/yuming/.cache/torch/checkpoints/ACL-DGReID.ckpt", model)
+#     mindspore.load_checkpoint("result/epoch_59_loss_5.615273.ckpt", model)
+
+#     res = DefaultTrainer.test(cfg, model, 0)
+#     print(res)
+#     exit(0)
+
+# if args.eval_only:
+#     cfg.defrost()
+#     cfg.MODEL.BACKBONE.PRETRAIN = False
+#     model = DefaultTrainer.build_model(cfg)
+
+#     Checkpointer(model).load(cfg.MODEL.WEIGHTS)  # load trained model
+
+#     res = DefaultTrainer.test(cfg, model, 0)
+#     return res
 
 from fastreid.modeling.meta_arch.build import build_model
 model = build_model(cfg)
@@ -745,6 +774,7 @@ with EventStorage(start_iter) as storage:
         for epoch in range(start_epoch, max_epoch):
             dataset_iter = iter(dataset)
             for _ in range(iters_per_epoch):
+                model.set_train(True)
                 # images, targets, camids, domainids, img_paths = next(dataset_iter)
                 images0, images, targets, camids, domainids, img_paths = next(dataset_iter)
                 images = images.sub(pixel_mean).div(pixel_std)
@@ -759,6 +789,11 @@ with EventStorage(start_iter) as storage:
                 total_loss = loss_cls + loss_center + loss_triplet + loss_circle + loss_cosface + loss_triplet_add + loss_triplet_mtrain + loss_stc + loss_triplet_mtest + loss_domain_intra + loss_domain_inter + loss_Center
                 print(f"epoch: {epoch}, iters: {_}, loss: {total_loss}")
                 iter_ += 1
+            # model.set_train(False)
+            # # mindspore.load_checkpoint(f"./result/epoch_{epoch}_loss_{total_loss}.ckpt", model)
+            # res = DefaultTrainer.test(cfg, model, 0)
+            # mindspore.save_checkpoint(model, f"./result/epoch_{epoch}_loss_{total_loss}_{res}.ckpt")
+            # # print(res)
             mindspore.save_checkpoint(model, f"./result/epoch_{epoch}_loss_{total_loss}.ckpt")
     # except Exception:
     #     logger.exception("Exception during training:")
