@@ -18,7 +18,7 @@ import mindspore
 
 from fastreid.config import CfgNode
 from fastreid.utils.params import ContiguousParams
-# from . import lr_scheduler
+from . import lr_scheduler
 
 _GradientClipperInput = Union[mindspore.Tensor, Iterable[mindspore.Tensor]]
 # _GradientClipperInput = Union[torch.Tensor, Iterable[torch.Tensor]]
@@ -162,18 +162,22 @@ def _generate_optimizer_class_with_freeze_layer(
 
 
 def maybe_add_freeze_layer(
-        cfg: CfgNode, optimizer: Type[mindspore.nn.Optimizer]
+        cfg: CfgNode, optimizer: Type[mindspore.experimental.optim.Optimizer]
+        # cfg: CfgNode, optimizer: Type[mindspore.nn.Optimizer]
         # cfg: CfgNode, optimizer: Type[torch.optim.Optimizer]
-) -> Type[mindspore.nn.Optimizer]:
+) -> Type[mindspore.experimental.optim.Optimizer]:
+# ) -> Type[mindspore.nn.Optimizer]:
     if len(cfg.MODEL.FREEZE_LAYERS) == 0 or cfg.SOLVER.FREEZE_ITERS <= 0:
         return optimizer
 
     # if isinstance(optimizer, torch.optim.Optimizer):
-    if isinstance(optimizer, mindspore.nn.Optimizer):
+    if isinstance(optimizer, mindspore.experimental.optim.Optimizer):
+    # if isinstance(optimizer, mindspore.nn.Optimizer):
         optimizer_type = type(optimizer)
     else:
         # assert issubclass(optimizer, torch.optim.Optimizer), optimizer
-        assert issubclass(optimizer, mindspore.nn.Optimizer), optimizer
+        assert issubclass(optimizer, mindspore.experimental.optim.Optimizer), optimizer
+        # assert issubclass(optimizer, mindspore.nn.Optimizer), optimizer
         optimizer_type = optimizer
 
     OptimizerWithFreezeLayer = _generate_optimizer_class_with_freeze_layer(
@@ -181,8 +185,10 @@ def maybe_add_freeze_layer(
         freeze_iters=cfg.SOLVER.FREEZE_ITERS
     )
     # if isinstance(optimizer, torch.optim.Optimizer):
-    print(optimizer, isinstance(optimizer, mindspore.nn.Optimizer))
-    if isinstance(optimizer, mindspore.nn.Optimizer):
+    # print(optimizer, isinstance(optimizer, mindspore.nn.Optimizer))
+    # print(optimizer, isinstance(optimizer, mindspore.nn.Optimizer))
+    if isinstance(optimizer, mindspore.experimental.optim.Optimizer):
+    # if isinstance(optimizer, mindspore.nn.Optimizer):
         optimizer.__class__ = OptimizerWithFreezeLayer  # a bit hacky, not recommended
         return optimizer
     else:
@@ -208,7 +214,8 @@ def build_optimizer(cfg, model, contiguous=False, flag=None):
         if solver_opt == "SGD":
             return maybe_add_freeze_layer(
                 cfg,
-                maybe_add_gradient_clipping(cfg, mindspore.nn.optim_ex.SGD)
+                maybe_add_gradient_clipping(cfg, mindspore.experimental.optim.SGD)
+                # maybe_add_gradient_clipping(cfg, mindspore.nn.optim_ex.SGD)
                 # maybe_add_gradient_clipping(cfg, torch.optim.SGD)
             )(
                 # params.contiguous() if contiguous else params,
@@ -240,7 +247,7 @@ def build_optimizer(cfg, model, contiguous=False, flag=None):
         if solver_opt == "SGD":
             return maybe_add_freeze_layer(
                 cfg,
-                maybe_add_gradient_clipping(cfg, mindspore.nn.optim_ex.SGD)
+                maybe_add_gradient_clipping(cfg, mindspore.experimental.optim.SGD)
                 # maybe_add_gradient_clipping(cfg, mindspore.nn.optim_ex.SGD)
                 # maybe_add_gradient_clipping(cfg, torch.optim.SGD)
             )(
@@ -353,8 +360,13 @@ def get_default_optimizer_params(
     for module_name, module in model.cells_and_names():
         for item in module.get_parameters():
             module_param_name = item.name
+            # print("item", type(item), item)
             value = item.value()
             value = mindspore.Parameter(value)
+            # print("value", type(value), value)
+            # if value.dtype == mindspore.int64:
+            #     value = mindspore.Parameter(value, mindspore.float32)
+
             if not value.requires_grad:
                 continue
             # Avoid duplicating parameters
@@ -392,6 +404,7 @@ def get_default_optimizer_params(
 
             params.append({"params": [value], **hyperparams})
             # params.append({"freeze_status": freeze_status, "params": [value], **hyperparams})
+    # print("params", type(params), params)
     return params
 
 
@@ -408,44 +421,44 @@ def build_lr_scheduler(cfg, optimizer, iters_per_epoch):
             "milestones": cfg.SOLVER.STEPS,
             "gamma": cfg.SOLVER.GAMMA,
         },
-        "CosineAnnealingLR": {
-            # cosine annealing lr scheduler options
-            "max_lr": cfg.SOLVER.BASE_LR,
-            "min_lr": cfg.SOLVER.ETA_MIN_LR,
-            "total_step": max_epoch,
-            "step_per_epoch": cfg.SOLVER.STEPS[0],
-            "decay_epoch": 1,
-        },
         # "CosineAnnealingLR": {
-        #     "optimizer": optimizer,
         #     # cosine annealing lr scheduler options
-        #     "T_max": max_epoch,
-        #     "eta_min": cfg.SOLVER.ETA_MIN_LR,
+        #     "max_lr": cfg.SOLVER.BASE_LR,
+        #     "min_lr": cfg.SOLVER.ETA_MIN_LR,
+        #     "total_step": max_epoch,
+        #     "step_per_epoch": cfg.SOLVER.STEPS[0],
+        #     "decay_epoch": 1,
         # },
+        "CosineAnnealingLR": {
+            "optimizer": optimizer,
+            # cosine annealing lr scheduler options
+            "T_max": max_epoch,
+            "eta_min": cfg.SOLVER.ETA_MIN_LR,
+        },
     }
 
-    if cfg.SOLVER.SCHED == 'CosineAnnealingLR':
-        scheduler_dict["lr_sched"] = mindspore.nn.cosine_decay_lr(**scheduler_args[cfg.SOLVER.SCHED])
-    else:
-        print("error")
-        exit(0)
-    # scheduler_dict["lr_sched"] = getattr(lr_scheduler, cfg.SOLVER.SCHED)(
-    #     **scheduler_args[cfg.SOLVER.SCHED])
+    # if cfg.SOLVER.SCHED == 'CosineAnnealingLR':
+    #     scheduler_dict["lr_sched"] = mindspore.nn.cosine_decay_lr(**scheduler_args[cfg.SOLVER.SCHED])
+    # else:
+    #     print("error")
+    #     exit(0)
+    scheduler_dict["lr_sched"] = getattr(lr_scheduler, cfg.SOLVER.SCHED)(
+        **scheduler_args[cfg.SOLVER.SCHED])
 
     if cfg.SOLVER.WARMUP_ITERS > 0:
-        warmup_args = {
-            "learning_rate": cfg.SOLVER.BASE_LR,
-            "warmup_steps": cfg.SOLVER.WARMUP_ITERS,
-        }
-        scheduler_dict["warmup_sched"] = mindspore.nn.WarmUpLR(**warmup_args)
         # warmup_args = {
-        #     "optimizer": optimizer,
-
-        #     # warmup options
-        #     "warmup_factor": cfg.SOLVER.WARMUP_FACTOR,
-        #     "warmup_iters": cfg.SOLVER.WARMUP_ITERS,
-        #     "warmup_method": cfg.SOLVER.WARMUP_METHOD,
+        #     "learning_rate": cfg.SOLVER.BASE_LR,
+        #     "warmup_steps": cfg.SOLVER.WARMUP_ITERS,
         # }
-        # scheduler_dict["warmup_sched"] = lr_scheduler.WarmupLR(**warmup_args)
+        # scheduler_dict["warmup_sched"] = mindspore.nn.WarmUpLR(**warmup_args)
+        warmup_args = {
+            "optimizer": optimizer,
+
+            # warmup options
+            "warmup_factor": cfg.SOLVER.WARMUP_FACTOR,
+            "warmup_iters": cfg.SOLVER.WARMUP_ITERS,
+            "warmup_method": cfg.SOLVER.WARMUP_METHOD,
+        }
+        scheduler_dict["warmup_sched"] = lr_scheduler.WarmupLR(**warmup_args)
 
     return scheduler_dict

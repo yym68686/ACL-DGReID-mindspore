@@ -301,34 +301,46 @@ class SimpleTrainer(TrainerBase):
         data_time = time.perf_counter() - start
         # losses, loss_dict = self.basic_forward(data, self.model, epoch, opt) # forward
 
-        data = data[0]
+        # data = data[0]
         # print("type(data['images'])", type(data["images"]))
-        print("data", data)
-        images0 = data["images0"]
-        
-        # images0 = mindspore.Tensor(data["images0"].numpy().astype(np.int32), mindspore.int32)
-        images = data["images"]
-        # images = mindspore.Tensor(data["images"].numpy().astype(np.int32), mindspore.int32)
-        targets = data["targets"]
-        # print("targets", type(targets))
-        camids = data["camids"]
-        # print("targets", type(targets))
-        domainids = data["domainids"]
-        img_paths = data["img_paths"]
+        # print("data", len(data), data)
+        images0 = data[0]
+        images = data[1]
+        targets = data[2]
+        # print("targets", type(targets), targets)
+        camids = data[3]
+        domainids = data[4]
+        img_paths = data[5]
+        # images0 = data["images0"]
+        # images = data["images"]
+        # targets = data["targets"]
+        # camids = data["camids"]
+        # domainids = data["domainids"]
+        # img_paths = data["img_paths"]
 
         # loss_dict = model(data, epoch, opt)
         weights = self.optimizer.parameters
+        # print("weights", type(weights), weights)
+
         grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=False)
         opt = -1
 
-        loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
+        loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
+        # loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
 
         # losses = sum(loss_dict.values()).mean()
+
+        # inputs_gradient = list(inputs_gradient)
+        # for index, i in enumerate(inputs_gradient):
+        #     if i.dtype == mindspore.int64:
+        #         inputs_gradient[index] = mindspore.Tensor(inputs_gradient[index], dtype=mindspore.float32)
+        # inputs_gradient = tuple(inputs_gradient)
+        # print("inputs_gradient", type(inputs_gradient), inputs_gradient)
 
         self.optimizer(inputs_gradient)
 
         # self.basic_backward(losses, self.optimizer)
-        
+
         # Open this if and only if the 'run_step_meta_learnig2()' function is not exeucted
         # QUES 似乎没啥用
         # self._write_metrics(loss_dict, data_time)
@@ -346,37 +358,61 @@ class SimpleTrainer(TrainerBase):
 
         opt = self.opt_setting('mtrain')
 
-        data_mtrain = {}
+        data_mtrain = []
         for i in range(len(self._single_data_loader_iter)):
             if i == metaTestID:
                 continue
             temp_data = next(self._single_data_loader_iter[i])
-            for key in temp_data.keys():
-                if key in data_mtrain.keys():
-                    if isinstance(temp_data[key], torch.Tensor):
-                        data_mtrain[key].append(temp_data[key])
+            # print("temp_data", type(temp_data), temp_data)
+            for index, item in enumerate(temp_data):
+                if index < len(data_mtrain):
+                    if isinstance(temp_data[index], mindspore.Tensor):
+                        data_mtrain[index].append(temp_data[index])
                     else:
-                        data_mtrain[key].extend(temp_data[key])
+                        data_mtrain[index].extend(temp_data[index])
                 else:
-                    if isinstance(temp_data[key], torch.Tensor):
-                        data_mtrain[key] = [temp_data[key]]
+                    if isinstance(temp_data[index], mindspore.Tensor):
+                        data_mtrain.append([temp_data[index]])
                     else:
-                        data_mtrain[key] = temp_data[key]
-        for key in data_mtrain.keys():
-            if isinstance(temp_data[key][0], torch.Tensor):
-                data_mtrain[key] = torch.cat(data_mtrain[key], 0)
+                        data_mtrain.append(temp_data[index])
+        for index, item in enumerate(data_mtrain):
+            if isinstance(data_mtrain[index][0], mindspore.Tensor) and data_mtrain[index][0].dtype != mindspore.string:
+                # print("data_mtrain[index]", type(data_mtrain[index]), len(data_mtrain[index]), type(data_mtrain[index][0]), data_mtrain[index][0].shape)
+                data_mtrain[index] = mindspore.ops.stack(data_mtrain[index], 0)
+                # print("data_mtrain[index] 2", type(data_mtrain[index]), data_mtrain[index].shape, type(data_mtrain[index][0]), data_mtrain[index][0].shape)
+        # data_mtrain = {}
+        # for i in range(len(self._single_data_loader_iter)):
+        #     if i == metaTestID:
+        #         continue
+        #     temp_data = next(self._single_data_loader_iter[i])
+        #     print("temp_data", type(temp_data), temp_data)
+        #     for key in temp_data.keys():
+        #         if key in data_mtrain.keys():
+        #             if isinstance(temp_data[key], torch.Tensor):
+        #                 data_mtrain[key].append(temp_data[key])
+        #             else:
+        #                 data_mtrain[key].extend(temp_data[key])
+        #         else:
+        #             if isinstance(temp_data[key], torch.Tensor):
+        #                 data_mtrain[key] = [temp_data[key]]
+        #             else:
+        #                 data_mtrain[key] = temp_data[key]
+        # for key in data_mtrain.keys():
+        #     if isinstance(temp_data[key][0], torch.Tensor):
+        #         data_mtrain[key] = torch.cat(data_mtrain[key], 0)
 
-        losses, loss_dict = self.basic_forward(data_mtrain, self.model, epoch, opt) # forward
+        losses, loss_dict, inputs_gradient = self.basic_forward(data_mtrain, self.model, epoch, opt) # forward
         mtrain_losses.append(losses)
         for name, val in loss_dict.items():
             metrics_dict[name] = metrics_dict[name] + val if name in metrics_dict.keys() else val
 
         opt = self.opt_setting('mtest', losses) # auto_grad based on requires_grad of model
-        num_gpus = torch.cuda.device_count()
+        # num_gpus = torch.cuda.device_count()
+        num_gpus = 4
         if num_gpus > 1:
             opt['grad_params'] = [param.repeat(*([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
         data_mtest = next(self._single_data_loader_iter[metaTestID])
-        losses, loss_dict = self.basic_forward(data_mtest, self.model, epoch, opt) # forward
+        losses, loss_dict, inputs_gradient = self.basic_forward(data_mtest, self.model, epoch, opt) # forward
         mtest_losses.append(losses)
         for name, val in loss_dict.items():
             metrics_dict[name] = metrics_dict[name] + val if name in metrics_dict.keys() else val
@@ -387,9 +423,10 @@ class SimpleTrainer(TrainerBase):
             mtest_losses = mtest_losses[0]
 
         total_losses = mtrain_losses + mtest_losses
-        self.basic_backward(total_losses, self.optimizer_meta, True)
+        self.basic_backward(inputs_gradient, self.optimizer_meta, True)
+        # self.basic_backward(total_losses, self.optimizer_meta, True)
         data_time = time.perf_counter() - start
-        
+
         self._write_metrics(metrics_dict, data_time)
 
         # if isinstance(self.param_wrapper_meta, ContiguousParams):
@@ -399,29 +436,38 @@ class SimpleTrainer(TrainerBase):
         # print('train_loop.py   basic_forward')
         # print("targets" in data)
         # print("data", len(data), type(data), data)
-        data = data[0]
-        print("type(data['images'])", type(data["images"]))
+        # data = data[0]
+        # print("type(data['images'])", type(data["images"]))
         # print("data", data)
+        images0 = data[0]
+        images = data[1]
+        # print("images", images.shape)
+        targets = data[2]
+        # print("targets", targets.shape)
+        camids = data[3]
+        domainids = data[4]
+        # print("domainids", domainids.shape)
+        img_paths = data[5]
 
-        loss_dict = model(data, epoch, opt)
-        loss_dict, inputs_gradient = mindspore.value_and_grad(model)
+        weights = self.optimizer.parameters
+        grad_fn = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)
+        loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
+        # loss_dict = model(data, epoch, opt)
         losses = sum(loss_dict.values()).mean()
 
-        return losses, loss_dict
+        return losses, loss_dict, inputs_gradient
 
-    def basic_backward(self, losses, optimizer, retain_graph=False):
-        
+    def basic_backward(self, inputs_gradient, optimizer, retain_graph=False):
+    # def basic_backward(self, losses, optimizer, retain_graph=False):
+
+        if (inputs_gradient != None) and (optimizer != None):
+            optimizer(inputs_gradient)
         # torch.distributed.barrier()
-        if (losses != None) and (optimizer != None):
-            # print('start train_loop.py   basic_backward', torch.distributed.get_rank())
-            optimizer.zero_grad()
-            # print('after train_loop.py   zero_grad', torch.distributed.get_rank())
-            # print(losses.device, torch.distributed.get_rank())
-            losses.backward(retain_graph=retain_graph)
-
-            optimizer.step()
-            # print('train_loop.py   basic_backward', torch.distributed.get_rank())
-            # torch.distributed.barrier()
+        # if (losses != None) and (optimizer != None):
+        #     optimizer.zero_grad()
+        #     losses.backward(retain_graph=retain_graph)
+        #     optimizer.step()
+        #     # torch.distributed.barrier()
 
     def opt_setting(self, flag, losses=None):
         if flag == 'basic':
@@ -472,7 +518,7 @@ class SimpleTrainer(TrainerBase):
                         logger.info("[{}th grad] This parameter does have gradient".format(i))
             grad_params = tuple(grad_params)
             opt['grad_params'] = [p if p != None else None for p in grad_params ]
-        
+
         return opt
 
     def run_step(self, epoch):

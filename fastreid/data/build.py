@@ -98,7 +98,7 @@ def _train_loader_from_config(cfg, *, train_set=None, transforms=None, sampler=N
 
 @configurable(from_config=_train_loader_from_config)
 def build_reid_train_loader(
-        train_set, single_set, *, sampler=None, single_sampler=None, total_batch_size, num_workers=0,
+        train_set, single_set, *, sampler=None, single_sampler=None, total_batch_size, num_workers=1,
 ):
     """
     Build a dataloader for object re-identification with some default features.
@@ -109,6 +109,7 @@ def build_reid_train_loader(
     """
 
     mini_batch_size = total_batch_size // comm.get_world_size()
+    print("mini_batch_size", mini_batch_size)
 
     single_batch_sampler = []
     single_train_loader = []
@@ -127,10 +128,11 @@ def build_reid_train_loader(
 
     train_loader = mindspore.dataset.GeneratorDataset(
         source=train_set,
-        column_names=["data"],
-        # column_names=["images0", "images", "targets", "camids", "domainids", "img_paths"],
-        num_parallel_workers=1,
+        # column_names=["data"],
+        column_names=["images0", "images", "targets", "camids", "domainids", "img_paths"],
+        num_parallel_workers=num_workers,
     )
+
     # iterator = iter(train_loader)
     # print(next(iterator))
 
@@ -157,7 +159,8 @@ def build_reid_train_loader(
     for i in range(len(single_set)):
         single_train_loader.append(mindspore.dataset.GeneratorDataset(
             source=single_set[i],
-            column_names=["data"],
+            column_names=["images0", "images", "targets", "camids", "domainids", "img_paths"],
+            # column_names=["data"],
             num_parallel_workers=num_workers,
         ))
         # single_train_loader.append(DataLoaderX(

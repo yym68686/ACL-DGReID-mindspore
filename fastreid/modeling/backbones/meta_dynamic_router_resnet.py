@@ -382,7 +382,7 @@ class ResNet(nn.Cell):
         # self._build_nonlocal(layers, non_layers, bn_norm)
         if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
         else:
-            self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter([-1], requires_grad=False)
+            self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter(mindspore.Tensor([-1], mindspore.float32), requires_grad=False)
             self.NL_1 = self.NL_2 = self.NL_3 = self.NL_4 = nn.SequentialCell(nn.Sigmoid())
         # else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
         # fmt: on
@@ -515,6 +515,7 @@ class ResNet(nn.Cell):
         x_specific = self.specific_norm2(x_specific)
         x = self.meta_fuse2(x_invariant, x_specific, opt)
         x = self.meta_se2(x, opt)
+        # print("x", type(x), x.shape)
         temp = self.map2(self.avgpool(x))
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)

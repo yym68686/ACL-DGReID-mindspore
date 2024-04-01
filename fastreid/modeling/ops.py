@@ -4,6 +4,8 @@
 
 import mindspore
 import mindspore.nn as nn
+from mindspore.ops import operations as P
+
 # from mindspore import ops
 import numpy as np
 
@@ -116,37 +118,37 @@ class MetaConv2d(nn.Conv2d):
         # self.kernel_size = kernel_size
         self.w_step_size = 1
         self.b_step_size = 1
-        self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
-        self.conv.weight = self.weight
+        # self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
+        # self.conv.weight = self.weight
         # self.conv.weight.set_data(self.weight)
         # self.weight = mindspore.ops.randn((out_channels, in_channels, kernel_size, kernel_size))
 
     # def forward(self, inputs, opt=-1):
-    def construct(self, inputs):
-        # if opt:
-        output = self.conv(inputs)
-        return output
-        # else:
-        #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
-        #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-        #     output = self.conv(inputs)
+    def construct(self, inputs, opt=-1):
+        # # if opt:
+        # output = self.conv(inputs)
         # return output
-        # if opt != -1 and opt['meta']:
-        #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
-        #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
-        #     # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
-        #     # self.conv.weight = updated_weight
-        #     # self.conv.bias = updated_bias
-        #     output = self.conv(inputs)
-        #     # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-        #     return output
-        # else:
-        #     # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
-        #     # self.conv.weight = self.weight
-        #     # self.conv.bias = self.bias
-        #     output = self.conv(inputs)
-        #     # output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
-        #     return output
+        # # else:
+        # #     updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+        # #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+        # #     output = self.conv(inputs)
+        # # return output
+        if opt != -1 and opt['meta']:
+            updated_weight = update_parameter(self.weight, self.w_step_size, opt)
+            updated_bias = update_parameter(self.bias, self.b_step_size, opt)
+            # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
+            # self.conv.weight = updated_weight
+            # self.conv.bias = updated_bias
+            # output = self.conv(inputs)
+            output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+            return output
+        else:
+            # return F.conv2d(inputs, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            # self.conv.weight = self.weight
+            # self.conv.bias = self.bias
+            # output = self.conv(inputs)
+            output = mindspore.ops.conv2d(inputs, self.weight, self.bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
+            return output
 
 
 class MetaLinear(nn.Dense):
@@ -180,6 +182,7 @@ class MetaLinear(nn.Dense):
             # self.linear.bias.set_data(mindspore.common.initializer.initializer(self.bias, self.linear.bias.shape, self.linear.bias.dtype))
             # self.linear.weight = self.weight
             # self.linear.bias = self.bias
+            # print("output = self.linear(inputs)", type(inputs), inputs)
             output = self.linear(inputs)
             return output
             # return F.linear(inputs, self.weight, self.bias)
@@ -204,7 +207,9 @@ class MetaIBNNorm(nn.Cell):
         # print("ms split", mindspore.ops.flatten(split[0], order='C', start_dim=0, end_dim=-1))
         # print("ms split", mindspore.ops.flatten(split[1], order='C', start_dim=0, end_dim=-1))
         out1 = self.IN(split[0], opt)
+        # print("out1", type(out1))
         out2 = self.BN(split[1], opt)
+        # print("out2", type(out2))
         # out1 = self.IN(split[0].contiguous(), opt)
         # out2 = self.BN(split[1].contiguous(), opt)
         # out = torch.cat((out1, out2), 1)
@@ -240,6 +245,7 @@ class MetaBNNorm(nn.BatchNorm2d):
     # def forward(self, inputs, opt = -1, reserve = False):
     def construct(self, inputs, opt = -1, reserve = False):
         # print("ms self.gamma before", self.gamma.value())
+        # print("inputs", type(inputs), len(inputs), inputs)
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
         if opt != -1 and opt['meta']:
@@ -276,13 +282,18 @@ class MetaBNNorm(nn.BatchNorm2d):
                                 updated_gamma, updated_beta,
                                 self.training, self.momentum, self.eps)
         elif norm_type == "hold": # not update, not apply running_mean/var
-            # bn = nn.BatchNorm2d(self.num_features, eps=self.eps, momentum=self.momentum, affine=self.affine, gamma_init=self.gamma_init, beta_init=self.beta_init, moving_mean_init=None, moving_var_init=None, use_batch_statistics=True)
-            # bn.gamma = updated_gamma
-            # bn.beta = updated_beta
-            # result = bn(inputs)
-            result = mindspore.ops.batch_norm(inputs, None, None,
-                                updated_gamma, updated_beta,
-                                True, self.momentum, self.eps)
+            # print("ms result rwe 1", type(inputs), inputs)
+            inputs = mindspore.Tensor(inputs)
+            # print("ms result rwe 2", type(inputs), inputs)
+            bn = nn.BatchNorm2d(self.num_features, eps=self.eps, momentum=self.momentum, affine=self.affine, gamma_init=self.gamma_init, beta_init=self.beta_init, moving_mean_init="zeros", moving_var_init="ones", use_batch_statistics=True)
+            bn.gamma = updated_gamma
+            bn.beta = updated_beta
+            result = bn(inputs)
+            # result = mindspore.ops.batch_norm(inputs, None, None,
+            #                     updated_gamma, updated_beta,
+            #                     True, self.momentum, self.eps)
+            # result = P.BatchNorm(True, self.eps, self.momentum)(inputs, updated_gamma, updated_beta, None, None)[0]
+            # print("ms result rwe 3", type(result), result)
         elif norm_type == "eval": # fix and apply running_mean/var,
             # bn = nn.BatchNorm2d(self.num_features, eps=self.eps, momentum=self.momentum, affine=self.training, gamma_init=self.gamma_init, beta_init=self.beta_init, moving_mean_init=self.moving_mean, moving_var_init=self.moving_variance, use_batch_statistics=False)
             # # bn = nn.BatchNorm2d(self.num_features, eps=self.eps, momentum=self.momentum, affine=self.affine, gamma_init=self.gamma_init, beta_init=self.beta_init, moving_mean_init=self.moving_mean, moving_var_init=self.moving_variance, use_batch_statistics=True)
@@ -296,7 +307,6 @@ class MetaBNNorm(nn.BatchNorm2d):
             result = mindspore.ops.batch_norm(inputs, self.moving_mean, self.moving_variance,
                                 updated_gamma, updated_beta,
                                 False, self.momentum, self.eps)
-            # print("ms result rwe", result)
 
         # if norm_type == "general": # update, but not apply running_mean/var
         #     result = F.batch_norm(inputs, self.running_mean, self.running_var,
@@ -551,8 +561,9 @@ class MetaINNorm(nn.InstanceNorm2d):
             # self.moving_mean = None
             # if self.moving_mean is None:
             # net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, affine=self.affine)
-            net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, affine=True, gamma_init=updated_gamma, beta_init=updated_beta)
-            return net(inputs)
+            # net = nn.InstanceNorm2d(num_features=self.num_features, eps=self.eps, momentum=self.momentum, affine=True, gamma_init=updated_gamma, beta_init=updated_beta)
+
+            return mindspore.ops.operations.nn_ops.InstanceNorm(self.eps, self.momentum)(inputs, updated_gamma, updated_beta, self.beta, self.beta)[0]
             # if self.moving_mean is None:
                 # return F.instance_norm(inputs, None, None,
                 #                         updated_weight, updated_bias,

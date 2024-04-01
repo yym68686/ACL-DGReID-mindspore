@@ -72,16 +72,11 @@ class Baseline(nn.Cell):
 
         # print("pixel_mean", type(pixel_mean), pixel_mean)
         self.pixel_mean = mindspore.Tensor(pixel_mean).view(1, -1, 1, 1)
-        # self.pixel_mean = mindspore.Tensor(self.pixel_mean)
         # print("self.pixel_mean", type(self.pixel_mean), self.pixel_mean)
         self.pixel_std = mindspore.Tensor(pixel_std).view(1, -1, 1, 1)
         # self.pixel_std = mindspore.Tensor(self.pixel_std)
         # self.register_buffer('pixel_mean', torch.Tensor(pixel_mean).view(1, -1, 1, 1), False)
         # self.register_buffer('pixel_std', torch.Tensor(pixel_std).view(1, -1, 1, 1), False)
-        # self.conv1 = nn.Conv2d(3, 512, kernel_size=3, stride=1, padding=1, pad_mode="pad")
-        # self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        # self.conv2 = nn.Conv2d(512, 2048, kernel_size=3, stride=1, padding=1, pad_mode="pad")
-        # self.pool2 = nn.MaxPool2d(kernel_size=8, stride=8)
 
     @classmethod
     def from_config(cls, cfg):
@@ -129,9 +124,10 @@ class Baseline(nn.Cell):
 
     # def forward(self, batched_inputs, epoch, opt=-1):
     # def construct(self, images, targets, camids, domainids, img_paths, epoch, opt=-1):
-    # def construct(self, images, targets, domainids, epoch, opt=-1):
-    def construct(self, images, epoch, opt=-1):
+    def construct(self, images, targets, domainids, epoch, opt=-1):
+    # def construct(self, images, epoch, opt=-1):
         # print("type(batched_inputs['images'])", images)
+        # print("images 1", type(images))
         images = self.preprocess_image(images)
         # print("images", type(images), images)
 
@@ -143,6 +139,7 @@ class Baseline(nn.Cell):
         # features = self.pool2(features)
         # # paths (8, 16)
         # paths = mindspore.Tensor(np.random.randn(8, 16), mindspore.float32)
+        # print("images 2", type(images))
         features, paths, _ = self.backbone(images, epoch, opt)
         # print("features.shape", features.shape)
         # print("paths.shape", paths.shape)
@@ -280,7 +277,7 @@ class Baseline(nn.Cell):
         # pred_features     = outputs['features']
         # fmt: on
 
-        # print("cls_outputs1.shape", cls_outputs1.shape)
+        # print("cls_outputs1.shape", type(cls_outputs1), cls_outputs1.shape)
         num_classes1 = cls_outputs1.shape[-1]
         num_classes2 = cls_outputs1.shape[-1] + cls_outputs2.shape[-1]
         num_classes3 = cls_outputs1.shape[-1] + cls_outputs2.shape[-1] + cls_outputs3.shape[-1]
@@ -307,10 +304,20 @@ class Baseline(nn.Cell):
         #     # print("gt_labels[idx3]", type(gt_labels[idx3]), gt_labels)
         #     log_accuracy(pred_class_logits3[idx3], gt_labels)
         if idx1.sum().item():
+            # print("idx1", idx1)
+            # print("pred_class_logits1", pred_class_logits1)
+            # print("gt_labels", gt_labels)
+            # print("pred_class_logits1[idx1]", idx1, pred_class_logits1[idx1].shape, pred_class_logits1[idx1])
+            # print("gt_labels[idx1]", idx1, gt_labels[idx1].shape, gt_labels[idx1])
             log_accuracy(pred_class_logits1[idx1], gt_labels[idx1])
         if idx2.sum().item():
             log_accuracy(pred_class_logits2[idx2], gt_labels[idx2])
         if idx3.sum().item():
+            # print("idx3", idx3)
+            # print("pred_class_logits3", pred_class_logits3)
+            # print("gt_labels", gt_labels)
+            # print("pred_class_logits3[idx3]", idx3, pred_class_logits3[idx3].shape, pred_class_logits3[idx3])
+            # print("gt_labels[idx3]", idx3, gt_labels[idx3].shape, gt_labels[idx3])
             log_accuracy(pred_class_logits3[idx3], gt_labels[idx3])
 
         # loss_dict = {}

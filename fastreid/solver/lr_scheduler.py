@@ -6,14 +6,19 @@
 
 from typing import List
 
-import torch
-from torch.optim.lr_scheduler import *
+# import torch
+# from torch.optim.lr_scheduler import *
+import mindspore
+from mindspore.experimental import optim
+from mindspore.experimental.optim.lr_scheduler import *
 
 
-class WarmupLR(torch.optim.lr_scheduler._LRScheduler):
+class WarmupLR(optim.lr_scheduler.LRScheduler):
+# class WarmupLR(torch.optim.lr_scheduler._LRScheduler):
     def __init__(
             self,
-            optimizer: torch.optim.Optimizer,
+            optimizer: optim.Optimizer,
+            # optimizer: torch.optim.Optimizer,
             warmup_factor: float = 0.1,
             warmup_iters: int = 1000,
             warmup_method: str = "linear",

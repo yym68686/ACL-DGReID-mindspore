@@ -534,7 +534,7 @@ def build_transforms(cfg, is_train=True):
             res.append(TV.CenterCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size))
             # res.append(T.CenterCrop(size=crop_size[0] if len(crop_size) == 1 else crop_size))
         res.append(ToTensor())
-        
+
         return [T.Compose(res), T.Compose(res)]
 
 def read_image(file_name, format=None):
@@ -604,8 +604,8 @@ class CommDataset(Dataset):
                 pid_set[domain_id].add(i[1])
                 cam_set[domain_id].add(i[2])
 
-            self.pids = [] 
-            self.cams = [] 
+            self.pids = []
+            self.cams = []
             for temp_pid, temp_cam in zip(pid_set, cam_set):
                 self.pids += sorted(list(temp_pid))
                 self.cams += sorted(list(temp_cam))
@@ -618,7 +618,7 @@ class CommDataset(Dataset):
 
             self.pids = sorted(list(pid_set))
             self.cams = sorted(list(cam_set))
-        
+
         if relabel:
             self.pid_dict = dict([(p, i+offset) for i, p in enumerate(self.pids)])
             self.cam_dict = dict([(p, i) for i, p in enumerate(self.cams)])
@@ -659,7 +659,7 @@ class CommDataset(Dataset):
     @property
     def num_cameras(self):
         return len(self.cams)
-    
+
     def __call__(self):
         print("111")
 
@@ -824,7 +824,7 @@ def build_reid_train_loader(
 
     # dataset = mindspore.dataset.GeneratorDataset(sampler=sampler)
     # batch_sampler = dataset.batch(mini_batch_size, True)
-    
+
     # batch_sampler = torch.utils.data.sampler.BatchSampler(sampler, mini_batch_size, True)
     for i in range(len(single_set)):
         # tmp_batch_sampler = mindspore.dataset.GeneratorDataset(single_sampler[i])
@@ -1250,7 +1250,7 @@ def maybe_add_gradient_clipping(
         return optimizer
     else:
         return OptimizerWithGradientClip
-    
+
 
 def build_optimizer(cfg, model, contiguous=False, flag=None):
     solver_opt = cfg.SOLVER.OPT
@@ -1654,7 +1654,7 @@ class SimpleTrainer(TrainerBase):
         # print("type(data['images'])", type(data["images"]))
         print("data", data)
         images0 = data["images0"]
-        
+
         # images0 = mindspore.Tensor(data["images0"].numpy().astype(np.int32), mindspore.int32)
         images = data["images"]
         # images = mindspore.Tensor(data["images"].numpy().astype(np.int32), mindspore.int32)
@@ -1670,14 +1670,14 @@ class SimpleTrainer(TrainerBase):
         grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=False)
         opt = -1
 
-        loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
+        loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
 
         # losses = sum(loss_dict.values()).mean()
 
         self.optimizer(inputs_gradient)
 
         # self.basic_backward(losses, self.optimizer)
-        
+
         # Open this if and only if the 'run_step_meta_learnig2()' function is not exeucted
         # QUES 似乎没啥用
         # self._write_metrics(loss_dict, data_time)
@@ -1738,7 +1738,7 @@ class SimpleTrainer(TrainerBase):
         total_losses = mtrain_losses + mtest_losses
         self.basic_backward(total_losses, self.optimizer_meta, True)
         data_time = time.perf_counter() - start
-        
+
         self._write_metrics(metrics_dict, data_time)
 
         # if isinstance(self.param_wrapper_meta, ContiguousParams):
@@ -1759,7 +1759,7 @@ class SimpleTrainer(TrainerBase):
         return losses, loss_dict
 
     def basic_backward(self, losses, optimizer, retain_graph=False):
-        
+
         # torch.distributed.barrier()
         if (losses != None) and (optimizer != None):
             # print('start train_loop.py   basic_backward', torch.distributed.get_rank())
@@ -1821,7 +1821,7 @@ class SimpleTrainer(TrainerBase):
                         logger.info("[{}th grad] This parameter does have gradient".format(i))
             grad_params = tuple(grad_params)
             opt['grad_params'] = [p if p != None else None for p in grad_params ]
-        
+
         return opt
 
     def run_step(self, epoch):
@@ -2014,13 +2014,13 @@ def main(args):
     # cfg = self.auto_scale_hyperparams(cfg, data_loader.dataset.num_classes1, data_loader.dataset.num_classes2, data_loader.dataset.num_classes3)
     model = build_model(cfg)
     optimizer, param_wrapper = build_optimizer(cfg, model)
-    optimizer_meta, param_wrapper_meta = build_optimizer(cfg, model, flag='meta') 
+    optimizer_meta, param_wrapper_meta = build_optimizer(cfg, model, flag='meta')
 
     # For training, wrap with DDP. But don't need this for inference.
     # if comm.get_world_size() > 1:
     #     # ref to https://github.com/pytorch/pytorch/issues/22049 to set `find_unused_parameters=True`
     #     # for part of the parameters is not updated.
-    #     #CHANGE Set find_unused_parameters as True to realize the KD process 
+    #     #CHANGE Set find_unused_parameters as True to realize the KD process
     #     model = DistributedDataParallel(
     #         model, device_ids=[comm.get_local_rank()], broadcast_buffers=False, find_unused_parameters=True
     #     )

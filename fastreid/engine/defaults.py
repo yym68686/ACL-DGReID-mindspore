@@ -232,6 +232,7 @@ class DefaultTrainer(TrainerBase):
         self.scheduler = self.build_lr_scheduler(cfg, optimizer, self.iters_per_epoch)
         self.scheduler_meta = self.build_lr_scheduler(cfg, optimizer_meta, self.iters_per_epoch)
 
+        data_loader = data_loader.batch(cfg.SOLVER.IMS_PER_BATCH, True, output_columns=["images0" ,"images" ,"targets" ,"camids" ,"domainids" ,"img_paths"])
         self._trainer = (AMPTrainer if cfg.SOLVER.AMP.ENABLED else SimpleTrainer)(
             model, data_loader, single_data_loader, optimizer, param_wrapper, optimizer_meta, param_wrapper_meta, self.iters_per_epoch
         )

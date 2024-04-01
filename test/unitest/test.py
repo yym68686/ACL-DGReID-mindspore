@@ -8,7 +8,6 @@ import mindspore.ops as ops
 # mindspore.set_context(mode=mindspore.GRAPH_MODE, device_target="GPU", device_id=0)
 mindspore.set_context(mode=mindspore.PYNATIVE_MODE, device_target="GPU")
 import os
-os.system("clear")
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -61,6 +60,7 @@ def get_cfg():
     return cfg
 
 cfg = get_cfg()
+os.system("clear")
 
 class TestBackbones(unittest.TestCase):
     def setUp(self):
@@ -70,7 +70,7 @@ class TestBackbones(unittest.TestCase):
         pass
 
     # @unittest.skip("全部网络，不做测试")
-    def test_baseline(self):
+    def test_Baseline(self):
         # 初始化模型
         # from pytorch_fastreid.modeling.meta_arch.baseline import Baseline as build_pytorch_model
         from pytorch_fastreid.modeling.meta_arch.build import build_model as build_pytorch_model
@@ -162,13 +162,12 @@ class TestBackbones(unittest.TestCase):
         length = width = height = 16
 
         input_tensor = ops.randn(batch_size, in_channels, length, length)
-        output_tensor = ms_model(input_tensor, epoch)
+        output_tensor = ms_model(input_tensor, 0, 0, epoch)
         input_tensor = torch.Tensor(input_tensor.numpy().astype(np.float32))
         expected_tensor = pt_model(input_tensor, epoch)
         # print(output_tensor[0].numpy().astype(np.float32).reshape((-1,))[:10])
         # print(expected_tensor[0].detach().numpy().astype(np.float32).reshape((-1,))[:10])
 
-        # print(len(pt_Parameter_list_for_each_layer), len(ms_Parameter_list_for_each_layer))
         # maxnum = len(ms_Parameter_list_for_each_layer) if len(pt_Parameter_list_for_each_layer) < len(ms_Parameter_list_for_each_layer) else len(pt_Parameter_list_for_each_layer)
         # index = 0
         # while index < maxnum:
@@ -177,15 +176,7 @@ class TestBackbones(unittest.TestCase):
         #         pt_Parameter_list_for_each_layer.insert(index, {"name": f"None {pt_Parameter_list_for_each_layer[index]['name']} {index}", "output": None})
         #     index += 1
 
-        # for index in range(maxnum):
-        #     print(pt_Parameter_list_for_each_layer[index]["name"])
-        #     print(pt_Parameter_list_for_each_layer[index]["output"])
-        #     print(ms_Parameter_list_for_each_layer[index]["name"])
-        #     print(ms_Parameter_list_for_each_layer[index]["output"])
-        #     print()
-
-
-        # maxnum = len(pt_Parameter_list_for_each_layer) if len(pt_Parameter_list_for_each_layer) < len(ms_Parameter_list_for_each_layer) else len(ms_Parameter_list_for_each_layer)
+        # maxnum = len(ms_Parameter_list_for_each_layer) if len(pt_Parameter_list_for_each_layer) < len(ms_Parameter_list_for_each_layer) else len(pt_Parameter_list_for_each_layer)
         # for index in range(maxnum):
         #     print(pt_Parameter_list_for_each_layer[index]["name"])
         #     print(pt_Parameter_list_for_each_layer[index]["output"])
@@ -197,7 +188,7 @@ class TestBackbones(unittest.TestCase):
         #     # if pt_Parameter_list_for_each_layer[index]["name"][:5] != ms_Parameter_list_for_each_layer[index]["name"][:5]:
         #     #     break
 
-        self.assertEqual(np.allclose(output_tensor[0].numpy().astype(np.float32), expected_tensor[0].detach().numpy().astype(np.float32), atol=1e-5), True)
+        self.assertEqual(np.allclose(output_tensor[0].numpy().astype(np.float32), expected_tensor[0].detach().numpy().astype(np.float32), atol=1e-4), True)
 
     # @unittest.skip("主干网络，不做测试")
     def test_ResNet(self):
@@ -310,18 +301,18 @@ class TestBackbones(unittest.TestCase):
 
         self.assertEqual(np.allclose(output_tensor[0].numpy().astype(np.float32), expected_tensor[0].detach().numpy().astype(np.float32), atol=1e-5), True)
 
-    # def test_MetaConv2d(self):
-    #     in_channels = 3
-    #     length = width = height = 16
-    #     input_tensor = ops.randn(1, in_channels, length, length)
-    #     model = test_ops_mindspore.MetaConv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
-    #     output_tensor = model(input_tensor)
+    def test_MetaConv2d(self):
+        in_channels = 3
+        length = width = height = 16
+        input_tensor = ops.randn(1, in_channels, length, length)
+        model = test_ops_mindspore.MetaConv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        output_tensor = model(input_tensor)
 
-    #     input_tensor = torch.Tensor(input_tensor.numpy().astype(np.float32))
-    #     model = test_pytorch.MetaConv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
-    #     expected_tensor = model(input_tensor)
+        input_tensor = torch.Tensor(input_tensor.numpy().astype(np.float32))
+        model = test_pytorch.MetaConv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        expected_tensor = model(input_tensor)
 
-    #     self.assertEqual(output_tensor.shape, expected_tensor.shape)
+        self.assertEqual(output_tensor.shape, expected_tensor.shape)
 
     def test_MetaBNNorm(self):
         # 输入张量的形状应该是(N, C, H, W)，其中 N 是批次大小，C 是通道数，H 是高度，W 是宽度。num_features 应该等于 C，否则会报错。

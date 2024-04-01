@@ -38,8 +38,8 @@ print(result)
 
 # 文档 https://www.mindspore.cn/docs/zh-CN/r2.0/api_python/nn/mindspore.nn.BatchNorm2d.html?highlight=batchnorm2d#mindspore.nn.BatchNorm2d
 input = mindspore.Tensor(input.numpy().astype(np.float32))
-# running_mean =  mindspore.Tensor(running_mean.numpy().astype(np.float32))
-# running_var =  mindspore.Tensor(running_var.numpy().astype(np.float32))
+running_mean =  mindspore.Tensor(running_mean.numpy().astype(np.float32))
+running_var =  mindspore.Tensor(running_var.numpy().astype(np.float32))
 bias_freeze = False
 updated_weight = mindspore.Parameter(mindspore.common.initializer.initializer("ones", updated_weight.shape), name="gamma", requires_grad=True)
 updated_bias = mindspore.Parameter(mindspore.common.initializer.initializer("zeros", updated_bias.shape), name="beta", requires_grad=not bias_freeze)
@@ -55,8 +55,8 @@ num_features = in_channels
 # moving_var_init='ones',
 # use_batch_statistics=None,
 # data_format='NCHW'
-bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=False, momentum=momentum, eps=eps, affine=training)
-# bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=True, momentum=momentum, eps=eps, affine=training)
-output = bn(input)
-# output = ops.batch_norm(input, running_mean, running_var, updated_weight, updated_bias, training, momentum, eps)
+# bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=False, momentum=momentum, eps=eps, affine=training)
+# # bn = nn.BatchNorm2d(num_features, gamma_init=updated_weight, beta_init=updated_bias, use_batch_statistics=True, momentum=momentum, eps=eps, affine=training)
+# output = bn(input)
+output = ops.batch_norm(input, running_mean, running_var, updated_weight, updated_bias, training, momentum, eps)
 print(output)
