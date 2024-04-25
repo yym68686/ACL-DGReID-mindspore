@@ -8,9 +8,10 @@ from mindspore.ops import operations as P
 
 # from mindspore import ops
 import numpy as np
+import inspect
 
 
-def update_parameter(param, step_size, opt=-1, reserve=False):
+def update_parameter(param, step_size, opt=None, reserve=False):
     flag_update = False
     updated_param = None
     if step_size is not None:
@@ -22,6 +23,37 @@ def update_parameter(param, step_size, opt=-1, reserve=False):
                         # del opt['grad_params'][0]
                     updated_param = param
                 else:
+                    # print("param", param.shape, step_size, opt['grad_params'][0].shape, opt['grad_params'][1].shape, end=" ")
+                    # stack = inspect.stack()
+                    # flag = 0
+                    # for item in stack:
+                    #     if "fastreid" in item.filename:
+                    #         flag += 1
+                    #         if flag <= 3:
+                    #             print(item.filename.split('/')[-1], item.lineno, item.code_context[0].strip())
+                    #         else:
+                    #             break
+                    # print()
+                    # if param.shape[0] == 2048 and opt['grad_params'][0].shape[0] == 2048 and opt['grad_params'][1].shape[0] == 2048 and opt['grad_params'][2].shape[0] == 11934:
+                    #     print("-"*30)
+                    #     stack = inspect.stack()
+                    #     for item in stack:
+                    #         if "fastreid" in item.filename:
+                    #             print(item.filename.split('/')[-1], item.lineno, item.code_context[0].strip())
+                    #     print("-"*30)
+                    # if param.shape[0] == 11934 and opt['grad_params'][0].shape[0] == 2048 and opt['grad_params'][1].shape[0] == 11934 and opt['grad_params'][2].shape[0] == 751:
+                    #     print("-"*30)
+                    #     stack = inspect.stack()
+                    #     for item in stack:
+                    #         if "fastreid" in item.filename:
+                    #             print(item.filename.split('/')[-1], item.lineno, item.code_context[0].strip())
+                    #     print("-"*30)
+
+                    # try:
+                    #     for index, param in enumerate(opt['grad_params']):
+                    #         print(index, param.shape)
+                    # except:
+                    #     pass
                     updated_param = param - step_size * opt['grad_params'][0]
                     if not reserve:
                         opt['grad_params'].pop(0)
@@ -41,9 +73,9 @@ class MetaGate(nn.Cell):
         # self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
         self.sigmoid = nn.Sigmoid()
 
-    # def forward(self, inputs1, inputs2, opt=-1):
-    def construct(self, inputs1, inputs2, opt=-1):
-        if opt != -1 and opt['meta']:
+    # def forward(self, inputs1, inputs2, opt=None):
+    def construct(self, inputs1, inputs2, opt=None):
+        if opt != None and opt['meta']:
             updated_gate = self.sigmoid(update_parameter(self.gate, self.w_step_size, opt)).reshape(1, -1, 1, 1)
 
             return updated_gate * inputs1 + (1. - updated_gate) * inputs2
@@ -59,13 +91,15 @@ class MetaParam(nn.Cell):
         self.centers = mindspore.Parameter(mindspore.ops.randn(num_classes, feat_dim))
         # self.centers = nn.Parameter(torch.randn(num_classes, feat_dim))
 
-    # def forward(self, inputs, opt=-1):
-    def construct(self, inputs, opt=-1):
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
         op = mindspore.ops.ReduceSum(keep_dims=True)
-        if opt != -1 and opt['meta']:
+        if opt != None and opt['meta']:
             updated_centers = update_parameter(self.centers, self.w_step_size, opt)
-            batch_size = inputs.size(0)
-            num_classes = self.centers.size(0)
+            batch_size = inputs.shape[0]
+            num_classes = self.centers.shape[0]
+            # batch_size = inputs.size(0)
+            # num_classes = self.centers.size(0)
             distmat = op(mindspore.ops.pow(inputs, 2), axis=1).broadcast_to((batch_size, num_classes)) + \
                         op(mindspore.ops.pow(updated_centers, 2), axis=1).broadcast_to((num_classes, batch_size)).t()
             # distmat = torch.pow(inputs, 2).sum(dim=1, keepdim=True).expand(batch_size, num_classes) + \
@@ -94,8 +128,8 @@ class MetaParam(nn.Cell):
 #     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, group=1, bias=True, pad_mode='pad'):
 #         super().__init__(in_channels, out_channels, kernel_size, stride, pad_mode, padding, dilation, group, has_bias=bias)
 #         self.conv = mindspore.ops.Conv2D(out_channel=self.out_channels, kernel_size=self.kernel_size, mode=1, pad_mode=self.pad_mode, pad=self.padding, stride=self.stride, dilation=self.dilation, group=self.group)
-#     def construct(self, inputs, opt=-1):
-#         if opt != -1 and opt['meta']:
+#     def construct(self, inputs, opt=None):
+#         if opt != None and opt['meta']:
 #             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
 #             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
 #             # output = mindspore.ops.conv2d(inputs, updated_weight, updated_bias, self.stride, self.pad_mode, self.padding, self.dilation, self.group)
@@ -116,15 +150,15 @@ class MetaConv2d(nn.Conv2d):
         # super(MetaConv2d, self).__init__()
         self.pad_mode = 'pad'
         # self.kernel_size = kernel_size
-        self.w_step_size = 1
-        self.b_step_size = 1
+        # self.w_step_size = 1
+        # self.b_step_size = 1
         # self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, pad_mode=pad_mode, padding=padding, dilation=dilation, group=group)
         # self.conv.weight = self.weight
         # self.conv.weight.set_data(self.weight)
         # self.weight = mindspore.ops.randn((out_channels, in_channels, kernel_size, kernel_size))
 
-    # def forward(self, inputs, opt=-1):
-    def construct(self, inputs, opt=-1):
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
         # # if opt:
         # output = self.conv(inputs)
         # return output
@@ -133,7 +167,7 @@ class MetaConv2d(nn.Conv2d):
         # #     updated_bias = update_parameter(self.bias, self.b_step_size, opt)
         # #     output = self.conv(inputs)
         # # return output
-        if opt != -1 and opt['meta']:
+        if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
             # return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
@@ -155,16 +189,19 @@ class MetaLinear(nn.Dense):
     def __init__(self, in_channels, out_channels, has_bias=False):
         super().__init__(in_channels, out_channels, has_bias=has_bias)
         # super().__init__(in_feat, reduction_dim, bias=bias)
-        self.linear = nn.Dense(self.in_channels, self.out_channels, has_bias=self.has_bias)
-        self.linear.weight = self.weight
+        # self.linear = nn.Dense(self.in_channels, self.out_channels, has_bias=self.has_bias)
+        # self.linear.weight = self.weight
         # self.linear.weight.set_data(self.weight)
         # self.linear.bias.set_data(self.bias)
         # self.weight = mindspore.Parameter(mindspore.Tensor(np.random.rand(in_channels, out_channels).astype(np.float32)), name='weight')
         # self.bias = mindspore.Parameter(mindspore.Tensor(np.random.rand(out_channels).astype(np.float32)), name='bias')
 
 
-    def construct(self, inputs, opt = -1, reserve = False):
-        if opt != -1 and opt['meta']:
+    def construct(self, inputs, opt = None, reserve = False):
+        # print("opt", opt)
+        if opt != None and opt['meta']:
+            # print("inputs", inputs.shape)
+            # print("in_feat, reduction_dim", self.in_channels, self.out_channels)
             updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
 
@@ -174,8 +211,17 @@ class MetaLinear(nn.Dense):
             # self.linear.bias.set_data(mindspore.common.initializer.initializer(updated_bias, self.linear.bias.shape, self.linear.bias.dtype))
             # self.linear.weight = updated_weight
             # self.linear.bias = updated_bias
-            output = self.linear(inputs)
-            return output
+            # output = self.linear(inputs)
+            # print("updated_weight", updated_weight.shape)
+            # try:
+            #     for index, param in enumerate(opt['grad_params']):
+            #         print(index, param.shape)
+            # except:
+            #     pass
+            if updated_bias:
+                return mindspore.ops.matmul(inputs, updated_weight.T) + updated_bias
+            else:
+                return mindspore.ops.matmul(inputs, updated_weight.T)
             # return F.linear(inputs, updated_weight, updated_bias)
         else:
             # self.linear.weight.set_data(mindspore.common.initializer.initializer(self.weight, self.linear.weight.shape, self.linear.weight.dtype))
@@ -183,8 +229,12 @@ class MetaLinear(nn.Dense):
             # self.linear.weight = self.weight
             # self.linear.bias = self.bias
             # print("output = self.linear(inputs)", type(inputs), inputs)
-            output = self.linear(inputs)
-            return output
+            # output = self.linear(inputs)
+            # return output
+            if self.bias:
+                return mindspore.ops.matmul(inputs, self.weight.T) + self.bias
+            else:
+                return mindspore.ops.matmul(inputs, self.weight.T)
             # return F.linear(inputs, self.weight, self.bias)
 
 
@@ -197,8 +247,8 @@ class MetaIBNNorm(nn.Cell):
         self.IN = MetaINNorm(half1, **kwargs)
         self.BN = MetaBNNorm(half2, **kwargs)
 
-    # def forward(self, inputs, opt=-1):
-    def construct(self, inputs, opt=-1):
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -242,20 +292,20 @@ class MetaBNNorm(nn.BatchNorm2d):
         # self.gamma = mindspore.Parameter(mindspore.common.initializer.initializer(gamma_init, num_features), name="gamma", requires_grad=affine)
 
 
-    # def forward(self, inputs, opt = -1, reserve = False):
-    def construct(self, inputs, opt = -1, reserve = False):
+    # def forward(self, inputs, opt = None, reserve = False):
+    def construct(self, inputs, opt = None, reserve = False):
         # print("ms self.gamma before", self.gamma.value())
         # print("inputs", type(inputs), len(inputs), inputs)
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
-        if opt != -1 and opt['meta']:
+        if opt != None and opt['meta']:
             use_meta_learning = True
         else:
             use_meta_learning = False
 
         # print("ms self.training", self.training)
         if self.training:
-            if opt != -1:
+            if opt != None:
                 norm_type = opt['type_running_stats']
             else:
                 norm_type = "hold"
@@ -367,14 +417,14 @@ class MetaBNNorm(nn.BatchNorm2d):
 #             raise ValueError('expected 4D input (got {}D input)'.format(inputs.ndim))
 #         # inputs = mindspore.Tensor(inputs)
 #         use_meta_learning = False
-#         # if opt != -1 and opt['meta']:
+#         # if opt != None and opt['meta']:
 #         #     use_meta_learning = True
 #         # else:
 #         #     use_meta_learning = False
 
 #         if self.training:
 #             norm_type = "hold"
-#             # if opt != -1:
+#             # if opt != None:
 #             #     norm_type = opt['type_running_stats']
 #             # else:
 #             #     norm_type = "hold"
@@ -492,7 +542,7 @@ class MetaBNNorm(nn.BatchNorm2d):
 #         self.instance_bn = P.InstanceNorm(epsilon=self.eps, momentum=self.momentum)
 #         self.in_fc_multiply = 0.0
 
-#     def construct(self, inputs, opt=-1):
+#     def construct(self, inputs, opt=None):
 #         if inputs.dim() != 4:
 #             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -500,7 +550,7 @@ class MetaBNNorm(nn.BatchNorm2d):
 #             inputs[:] *= self.in_fc_multiply
 #             return inputs
 #         else:
-#             if opt != -1 and opt['meta']:
+#             if opt != None and opt['meta']:
 #                 use_meta_learning = True
 #             else:
 #                 use_meta_learning = False
@@ -537,8 +587,8 @@ class MetaINNorm(nn.InstanceNorm2d):
         #     self.bias.requires_grad_(not bias_freeze)
         self.in_fc_multiply = 0.0
 
-    # def forward(self, inputs, opt=-1):
-    def construct(self, inputs, opt=-1):
+    # def forward(self, inputs, opt=None):
+    def construct(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -546,7 +596,7 @@ class MetaINNorm(nn.InstanceNorm2d):
             inputs[:] *= self.in_fc_multiply
             return inputs
         else:
-            if opt != -1 and opt['meta']:
+            if opt != None and opt['meta']:
                 use_meta_learning = True
             else:
                 use_meta_learning = False

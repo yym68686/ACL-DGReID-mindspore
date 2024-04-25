@@ -3,7 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 
 
-def update_parameter(param, step_size, opt=-1, reserve=False):
+def update_parameter(param, step_size, opt=None, reserve=False):
     flag_update = False
     if step_size is not None:
         if param is not None:
@@ -28,8 +28,8 @@ class MetaGate(nn.Module):
         self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, inputs1, inputs2, opt=-1):
-        if opt != -1 and opt['meta']:
+    def forward(self, inputs1, inputs2, opt=None):
+        if opt != None and opt['meta']:
             updated_gate = self.sigmoid(update_parameter(self.gate, self.w_step_size, opt)).reshape(1, -1, 1, 1)
 
             return updated_gate * inputs1 + (1. - updated_gate) * inputs2
@@ -43,8 +43,8 @@ class MetaParam(nn.Module):
         super().__init__()
         self.centers = nn.Parameter(torch.randn(num_classes, feat_dim))
 
-    def forward(self, inputs, opt=-1):
-        if opt != -1 and opt['meta']:
+    def forward(self, inputs, opt=None):
+        if opt != None and opt['meta']:
             updated_centers = update_parameter(self.centers, self.w_step_size, opt)
             batch_size = inputs.size(0)
             num_classes = self.centers.size(0)
@@ -68,8 +68,8 @@ class MetaConv2d(nn.Conv2d):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
         super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
 
-    def forward(self, inputs, opt=-1):
-        if opt != -1 and opt['meta']:
+    def forward(self, inputs, opt=None):
+        if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
             return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
@@ -81,8 +81,8 @@ class MetaLinear(nn.Linear):
     def __init__(self, in_feat, reduction_dim, bias=False):
         super().__init__(in_feat, reduction_dim, bias=bias)
 
-    def forward(self, inputs, opt = -1, reserve = False):
-        if opt != -1 and opt['meta']:
+    def forward(self, inputs, opt = None, reserve = False):
+        if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
 
@@ -100,7 +100,7 @@ class MetaIBNNorm(nn.Module):
         self.IN = MetaINNorm(half1, **kwargs)
         self.BN = MetaBNNorm(half2, **kwargs)
 
-    def forward(self, inputs, opt=-1):
+    def forward(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -131,18 +131,18 @@ class MetaBNNorm(nn.BatchNorm2d):
         self.bias.requires_grad_(not bias_freeze)
 
 
-    def forward(self, inputs, opt = -1, reserve = False):
+    def forward(self, inputs, opt = None, reserve = False):
         # print("pt self.weight before", self.weight)
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
-        if opt != -1 and opt['meta']:
+        if opt != None and opt['meta']:
             use_meta_learning = True
         else:
             use_meta_learning = False
 
         # print("self.training", self.training)
         if self.training:
-            if opt != -1:
+            if opt != None:
                 norm_type = opt['type_running_stats']
             else:
                 norm_type = "hold"
@@ -197,7 +197,7 @@ class MetaINNorm(nn.InstanceNorm2d):
             self.bias.requires_grad_(not bias_freeze)
         self.in_fc_multiply = 0.0
 
-    def forward(self, inputs, opt=-1):
+    def forward(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -205,7 +205,7 @@ class MetaINNorm(nn.InstanceNorm2d):
             inputs[:] *= self.in_fc_multiply
             return inputs
         else:
-            if opt != -1 and opt['meta']:
+            if opt != None and opt['meta']:
                 use_meta_learning = True
             else:
                 use_meta_learning = False

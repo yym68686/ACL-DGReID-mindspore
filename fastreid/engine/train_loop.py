@@ -15,6 +15,7 @@ import numpy as np
 # from torch.autograd import Variable
 # from torch.nn.parallel import DataParallel, DistributedDataParallel
 import mindspore
+from mindspore.communication import get_group_size
 
 import fastreid.utils.comm as comm
 from fastreid.utils.events import EventStorage, get_event_storage
@@ -204,6 +205,14 @@ class TrainerBase:
 #     ds.batch(batch_size=bs)
 #     return ds
 
+def get_gpu_num():
+    import argparse
+    parser = argparse.ArgumentParser(description="处理命令行参数")
+    parser.add_argument('--num-gpus', type=int, default=1, help='GPU的数量')
+    parser.add_argument("--config-file", default="", metavar="FILE", help="path to config file")
+    args = parser.parse_args()
+    return args.num_gpus
+
 class SimpleTrainer(TrainerBase):
     """
     A simple trainer for the most common type of task:
@@ -323,7 +332,6 @@ class SimpleTrainer(TrainerBase):
         # print("weights", type(weights), weights)
 
         grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=False)
-        opt = -1
 
         loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
         # loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
@@ -408,9 +416,13 @@ class SimpleTrainer(TrainerBase):
 
         opt = self.opt_setting('mtest', losses) # auto_grad based on requires_grad of model
         # num_gpus = torch.cuda.device_count()
-        num_gpus = 4
+        num_gpus = get_gpu_num()
+        # num_gpus = get_group_size()
+        print("num_gpus", num_gpus)
+        # QUES 应该取消注释，多卡并行
         if num_gpus > 1:
-            opt['grad_params'] = [param.repeat(*([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
+            opt['grad_params'] = [param.tile(tuple([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
+            # opt['grad_params'] = [param.repeat(*([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
         data_mtest = next(self._single_data_loader_iter[metaTestID])
         losses, loss_dict, inputs_gradient = self.basic_forward(data_mtest, self.model, epoch, opt) # forward
         mtest_losses.append(losses)
@@ -427,12 +439,12 @@ class SimpleTrainer(TrainerBase):
         # self.basic_backward(total_losses, self.optimizer_meta, True)
         data_time = time.perf_counter() - start
 
-        self._write_metrics(metrics_dict, data_time)
+        # self._write_metrics(metrics_dict, data_time)
 
         # if isinstance(self.param_wrapper_meta, ContiguousParams):
         #     self.param_wrapper_meta.assert_buffer_is_valid()
 
-    def basic_forward(self, data, model, epoch, opt=-1):
+    def basic_forward(self, data, model, epoch, opt=None):
         # print('train_loop.py   basic_forward')
         # print("targets" in data)
         # print("data", len(data), type(data), data)
@@ -449,11 +461,24 @@ class SimpleTrainer(TrainerBase):
         # print("domainids", domainids.shape)
         img_paths = data[5]
 
-        weights = self.optimizer.parameters
+        weights = self.optimizer.trainable_params()
+        # weights = self.optimizer.parameters
+        # print("self.optimizer", self.optimizer)
+        # print("self.optimizer.parameters", self.optimizer.trainable_params())
         grad_fn = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)
-        loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
+        (loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center), inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
+
+        loss_dict = {}
+        # 使用locals()函数获取当前局部变量的字典
+        for var_name in ['loss_cls', 'loss_center', 'loss_triplet', 'loss_circle', 'loss_cosface', 'loss_triplet_add', 'loss_triplet_mtrain', 'loss_stc', 'loss_triplet_mtest', "loss_domain_intra", "loss_domain_inter", "loss_Center"]:
+            value = locals()[var_name]
+            if value != 0:
+                loss_dict[var_name] = value
+
+        # loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
         # loss_dict = model(data, epoch, opt)
         losses = sum(loss_dict.values()).mean()
+        # losses = (loss_cls + loss_center + loss_triplet + loss_circle + loss_cosface + loss_triplet_add + loss_triplet_mtrain + loss_stc + loss_triplet_mtest + loss_domain_intra + loss_domain_inter + loss_Center) / 12
 
         return losses, loss_dict, inputs_gradient
 
@@ -493,31 +518,45 @@ class SimpleTrainer(TrainerBase):
                 exec('self.model.{}.{} = {}'.format(name, 'b_step_size', self.optimizer_meta.param_groups[0]['lr'] * meta_ratio))
 
             names_weights_copy = dict()
-            for name, param in self.model.named_parameters():
-                # if 'certainty_param' in name:
-                #     continue
-                if param.requires_grad:
-                    names_weights_copy['self.model.' + name] = param
-                else:
-                    if self.iter == 0:
-                        logger.info("[{}] This parameter does have requires_grad".format(name))
+            for item in self.model.trainable_params():
+                names_weights_copy['self.model.' + item.name] = item.value()
+            # for name, param in self.model.named_parameters():
+            #     # if 'certainty_param' in name:
+            #     #     continue
+            #     if param.requires_grad:
+            #         names_weights_copy['self.model.' + name] = param
+            #     else:
+            #         if self.iter == 0:
+            #             logger.info("[{}] This parameter does have requires_grad".format(name))
 
             opt['grad_name'] = list()
             for key in names_weights_copy.keys():
                 opt['grad_name'].append(key)
-            self.optimizer_meta.zero_grad()
-            grad_params = torch.autograd.grad(
-                losses.mean(), names_weights_copy.values(),
-                create_graph=True, allow_unused=True)
+
+            grad_params = mindspore.grad(lambda x: x, grad_position=None, weights=self.model.trainable_params(), has_aux=False)(losses.mean())
             grad_params = list(grad_params)
             for i in range(len(grad_params)):
                 if grad_params[i] != None:
-                    grad_params[i] = Variable(grad_params[i].data, requires_grad=False)
+                    grad_params[i] = mindspore.Parameter(grad_params[i].value(), requires_grad=False)
                 else:
                     if self.iter == 0:
                         logger.info("[{}th grad] This parameter does have gradient".format(i))
             grad_params = tuple(grad_params)
             opt['grad_params'] = [p if p != None else None for p in grad_params ]
+
+            # self.optimizer_meta.zero_grad()
+            # grad_params = torch.autograd.grad(
+            #     losses.mean(), names_weights_copy.values(),
+            #     create_graph=True, allow_unused=True)
+            # grad_params = list(grad_params)
+            # for i in range(len(grad_params)):
+            #     if grad_params[i] != None:
+            #         grad_params[i] = Variable(grad_params[i].data, requires_grad=False)
+            #     else:
+            #         if self.iter == 0:
+            #             logger.info("[{}th grad] This parameter does have gradient".format(i))
+            # grad_params = tuple(grad_params)
+            # opt['grad_params'] = [p if p != None else None for p in grad_params ]
 
         return opt
 
@@ -548,7 +587,7 @@ class SimpleTrainer(TrainerBase):
 
         losses.backward()
 
-        self._write_metrics(loss_dict, data_time)
+        # self._write_metrics(loss_dict, data_time)
 
         """
         If you need gradient clipping/scaling or other processing, you can
@@ -558,6 +597,7 @@ class SimpleTrainer(TrainerBase):
         if isinstance(self.param_wrapper, ContiguousParams):
             self.param_wrapper.assert_buffer_is_valid()
 
+    # # def _write_metrics(self, loss_dict: Dict[str, mindspore.Tensor], data_time: float):
     # def _write_metrics(self, loss_dict: Dict[str, torch.Tensor], data_time: float):
     #     """
     #     Args:
@@ -646,7 +686,7 @@ class AMPTrainer(SimpleTrainer):
         self.optimizer.zero_grad()
         self.grad_scaler.scale(losses).backward()
 
-        self._write_metrics(loss_dict, data_time)
+        # self._write_metrics(loss_dict, data_time)
 
         self.grad_scaler.step(self.optimizer)
         self.grad_scaler.update()

@@ -27,3 +27,8 @@ a = mindspore.Tensor([10, -5], mindspore.float32)
 
 
 # 7.0
+
+b = mindspore.Tensor(True)
+print(b, b.shape == (), )
+b = b.reshape(1)
+print(b, b.shape == ())

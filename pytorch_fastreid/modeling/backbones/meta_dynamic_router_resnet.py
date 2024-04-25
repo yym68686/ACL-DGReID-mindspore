@@ -72,7 +72,7 @@ class Sequential_ext(nn.Module):
     def __len__(self):
         return len(self._modules)
 
-    def forward(self, input, opt=-1):
+    def forward(self, input, opt=None):
         for i, module in enumerate(self._modules.values()):
             input = module(input, opt)
         return input
@@ -128,7 +128,7 @@ class MetaSELayer(nn.Module):
         self.fc2 = MetaLinear(int(channel / reduction), channel, bias=False)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
         b, c, _, _ = x.size()
         y = self.avg_pool(x).view(b, c)
         y = self.relu(self.fc1(y, opt))
@@ -162,7 +162,7 @@ class Bottleneck2(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
 
         residual = x
 
@@ -214,7 +214,7 @@ class Bottleneck(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
         residual = x
 
         out = self.conv1(x, opt)
@@ -259,7 +259,7 @@ class HyperRouter(nn.Module):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
 
         x = self.avgpool(x).squeeze(-1).squeeze(-1)
 
@@ -376,7 +376,7 @@ class ResNet(nn.Module):
                     if isinstance(_m, nn.Conv2d):
                         yield _m
 
-    def forward(self, x, epoch, opt=-1):
+    def forward(self, x, epoch, opt=None):
 
 
         x = self.conv1(x, opt)

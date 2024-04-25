@@ -779,7 +779,7 @@ with EventStorage(start_iter) as storage:
                 images0, images, targets, camids, domainids, img_paths = next(dataset_iter)
                 images = images.sub(pixel_mean).div(pixel_std)
                 weights = optimizer.parameters
-                opt = -1
+                opt = None
                 # loss_dict, inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images, targets, camids, domainids, img_paths, epoch, opt)
                 (loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center), inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images, targets, domainids, epoch, opt)
                 # loss_dict, inputs_gradient = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)(images0, images, targets, camids, domainids, img_paths, epoch, opt)

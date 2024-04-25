@@ -80,13 +80,10 @@ class Sequential_ext(nn.Cell):
     def __len__(self):
         return len(self._cells)
 
-    # def forward(self, input, opt=-1):
-    def construct(self, input, opt=-1):
+    # def forward(self, input, opt=None):
+    def construct(self, input, opt=None):
         for i, module in enumerate(self._cells.values()):
-            if isinstance(module, MetaConv2d) or isinstance(module, MetaBNNorm):
-                input = module(input)
-            else:
-                input = module(input, opt)
+            input = module(input, opt)
         return input
 
 
@@ -215,9 +212,9 @@ class MetaEmbeddingHead(nn.Cell):
         }
 
     #CHANGE Add reduction version
-    def construct(self, features, targets=None, opt=-1):
-    # def forward(self, features, targets=None, opt=-1):
-    # def forward(self, features, targets=None, opt=-1):
+    def construct(self, features, targets=None, opt=None):
+    # def forward(self, features, targets=None, opt=None):
+    # def forward(self, features, targets=None, opt=None):
         """
         See :class:`ReIDHeads.forward`.
         """

@@ -122,10 +122,11 @@ class Baseline(nn.Cell):
     def device(self):
         return self.pixel_mean.device
 
-    # def forward(self, batched_inputs, epoch, opt=-1):
-    # def construct(self, images, targets, camids, domainids, img_paths, epoch, opt=-1):
-    def construct(self, images, targets, domainids, epoch, opt=-1):
-    # def construct(self, images, epoch, opt=-1):
+    # def forward(self, batched_inputs, epoch, opt=None):
+    # def construct(self, images, targets, camids, domainids, img_paths, epoch, opt=None):
+    def construct(self, images, targets, domainids, epoch, opt=None):
+        # print("opt", opt)
+    # def construct(self, images, epoch, opt=None):
         # print("type(batched_inputs['images'])", images)
         # print("images 1", type(images))
         images = self.preprocess_image(images)
@@ -191,7 +192,8 @@ class Baseline(nn.Cell):
 
 
             # print("targets loss_Center 2", type(targets), targets)
-            if opt == -1 or opt['type'] == 'basic':
+            loss_Center_ = 0
+            if opt == None or opt['type'] == 'basic':
                 # pass
                 # print("targets loss_Center", type(targets), targets)
                 loss_Center_ = centerLoss(center_distmat, targets) * 5e-4
@@ -239,7 +241,6 @@ class Baseline(nn.Cell):
                 # print(type(tmp_images))
                 # if isinstance(tmp_images, mindspore.Tensor):
                 #     images = tmp_images
-                # print(111)
             # raise TypeError("batched_inputs must be dict or mindspore.Tensor, but get {}".format(type(batched_inputs)))
             # raise TypeError("batched_inputs must be dict or torch.Tensor, but get {}".format(type(batched_inputs)))
 
@@ -257,7 +258,7 @@ class Baseline(nn.Cell):
         # images.sub_(self.pixel_mean).div_(self.pixel_std)
         return images
 
-    def losses(self, pred_class_logits1, pred_class_logits2, pred_class_logits3, cls_outputs1, cls_outputs2, cls_outputs3, pred_features, gt_labels, domain_labels=None, paths=None, opt=-1):
+    def losses(self, pred_class_logits1, pred_class_logits2, pred_class_logits3, cls_outputs1, cls_outputs2, cls_outputs3, pred_features, gt_labels, domain_labels=None, paths=None, opt=None):
         """
         Compute loss from modeling's outputs, the loss function input arguments
         must be the same as the outputs of the model forwarding.
@@ -303,17 +304,30 @@ class Baseline(nn.Cell):
         # if idx3:
         #     # print("gt_labels[idx3]", type(gt_labels[idx3]), gt_labels)
         #     log_accuracy(pred_class_logits3[idx3], gt_labels)
+        if gt_labels.shape == ():
+            gt_labels = gt_labels.reshape(1)
         if idx1.sum().item():
-            # print("idx1", idx1)
+            if idx1.shape == ():
+                idx1 = idx1.reshape(1)
+            # print("idx1", type(idx1), idx1.shape, idx1)
             # print("pred_class_logits1", pred_class_logits1)
             # print("gt_labels", gt_labels)
             # print("pred_class_logits1[idx1]", idx1, pred_class_logits1[idx1].shape, pred_class_logits1[idx1])
             # print("gt_labels[idx1]", idx1, gt_labels[idx1].shape, gt_labels[idx1])
             log_accuracy(pred_class_logits1[idx1], gt_labels[idx1])
         if idx2.sum().item():
+            if idx2.shape == ():
+                idx2 = idx2.reshape(1)
+            # print("idx2", type(idx2), idx2.shape, idx2)
+            # print("pred_class_logits2", pred_class_logits2)
+            # print("gt_labels", gt_labels)
+            # print("pred_class_logits2[idx1]", idx2, pred_class_logits2[idx1].shape, pred_class_logits2[idx2])
+            # print("gt_labels[idx2]", idx2, gt_labels[idx2].shape, gt_labels[idx2])
             log_accuracy(pred_class_logits2[idx2], gt_labels[idx2])
         if idx3.sum().item():
-            # print("idx3", idx3)
+            if idx3.shape == ():
+                idx3 = idx3.reshape(1)
+            # print("idx3", type(idx3), idx3.shape, idx3)
             # print("pred_class_logits3", pred_class_logits3)
             # print("gt_labels", gt_labels)
             # print("pred_class_logits3[idx3]", idx3, pred_class_logits3[idx3].shape, pred_class_logits3[idx3])
@@ -327,7 +341,12 @@ class Baseline(nn.Cell):
         loss_triplet_mtrain = 0
         loss_stc = 0
         loss_triplet_mtest = 0
-        if opt == -1 or opt['type'] == 'basic':
+        loss_cls = 0
+        loss_center = 0
+        loss_triplet = 0
+        loss_circle = 0
+        loss_cosface = 0
+        if opt == None or opt['type'] == 'basic':
 
             if 'CrossEntropyLoss' in loss_names:
                 ce_kwargs = self.loss_kwargs.get('ce')
@@ -364,7 +383,6 @@ class Baseline(nn.Cell):
                 loss_cls = temp_loss / count
                 # loss_dict['loss_cls'] = temp_loss / count
 
-            loss_center = 0
             if 'CenterLoss' in loss_names:
                 loss_center = 5e-4 * self.center_loss(
                     pred_features,
@@ -374,7 +392,6 @@ class Baseline(nn.Cell):
                 #     pred_features,
                 #     gt_labels
                 # )
-            loss_triplet = 0
             if 'TripletLoss' in loss_names:
                 tri_kwargs = self.loss_kwargs.get('tri')
                 loss_triplet = triplet_loss(
@@ -392,7 +409,6 @@ class Baseline(nn.Cell):
                 #     tri_kwargs.get('hard_mining')
                 # ) * tri_kwargs.get('scale')
 
-            loss_circle = 0
             if 'CircleLoss' in loss_names:
                 circle_kwargs = self.loss_kwargs.get('circle')
                 loss_circle = pairwise_circleloss(
@@ -408,7 +424,6 @@ class Baseline(nn.Cell):
                 #     circle_kwargs.get('gamma')
                 # ) * circle_kwargs.get('scale')
 
-            loss_cosface = 0
             if 'Cosface' in loss_names:
                 cosface_kwargs = self.loss_kwargs.get('cosface')
                 loss_cosface = pairwise_cosface(

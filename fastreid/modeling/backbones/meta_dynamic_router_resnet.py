@@ -76,13 +76,10 @@ class Sequential_ext(nn.Cell):
     def __len__(self):
         return len(self._cells)
 
-    # def forward(self, input, opt=-1):
-    def construct(self, input, opt=-1):
+    # def forward(self, input, opt=None):
+    def construct(self, input, opt=None):
         for i, module in enumerate(self._cells.values()):
-            if isinstance(module, MetaConv2d) or isinstance(module, MetaBNNorm):
-                input = module(input)
-            else:
-                input = module(input, opt)
+            input = module(input, opt)
         return input
 
 
@@ -145,8 +142,8 @@ class MetaSELayer(nn.Cell):
         self.fc2 = MetaLinear(int(channel / reduction), channel, has_bias=False)
         self.sigmoid = nn.Sigmoid()
 
-    # def forward(self, x, opt=-1):
-    def construct(self, x, opt=-1):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
         # b, c, _, _ = x.size()
         b, c, _, _ = x.shape
         # print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
@@ -184,21 +181,21 @@ class Bottleneck2(nn.Cell):
         self.downsample = downsample
         self.stride = stride
 
-    # def forward(self, x, opt=-1):
-    def construct(self, x, opt=-1):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
 
         residual = x
 
-        out = self.conv1(x)
-        out = self.bn1(out)
+        out = self.conv1(x, opt)
+        out = self.bn1(out, opt)
         out = self.relu(out)
 
-        out = self.conv2(out)
-        out = self.bn2(out)
+        out = self.conv2(out, opt)
+        out = self.bn2(out, opt)
         out = self.relu(out)
 
-        out = self.conv3(out)
-        out = self.bn3(out)
+        out = self.conv3(out, opt)
+        out = self.bn3(out, opt)
         out = self.se(out)
 
         if self.downsample is not None:
@@ -239,21 +236,20 @@ class Bottleneck(nn.Cell):
         self.downsample = downsample
         self.stride = stride
 
-    # def forward(self, x, opt=-1):
-    def construct(self, x, opt=-1):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
         residual = x
 
-        out = self.conv1(x)
-        out = self.bn1(out)
+        out = self.conv1(x, opt)
+        out = self.bn1(out, opt)
         out = self.relu(out)
 
-        out = self.conv2(out)
-        out = self.bn2(out)
+        out = self.conv2(out, opt)
+        out = self.bn2(out, opt)
         out = self.relu(out)
 
-        out = self.conv3(out)
-        out = self.bn3(out)
-        # print("ms", mindspore.ops.flatten(out, order='C', start_dim=0, end_dim=-1))
+        out = self.conv3(out, opt)
+        out = self.bn3(out, opt)
         out = self.se(out)
 
         if self.downsample is not None:
@@ -289,14 +285,20 @@ class HyperRouter(nn.Cell):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
 
-    # def forward(self, x, opt=-1):
-    def construct(self, x, opt=-1):
+    # def forward(self, x, opt=None):
+    def construct(self, x, opt=None):
 
         # print("ReduceMean x", x.shape, tuple(range(len(x.shape)))[-2:], x)
         # x = self.avgpool(x, tuple(range(len(x.shape)))[-2:]).squeeze(-1).squeeze(-1)
         x = self.avgpool(x).squeeze(-1).squeeze(-1)
         # weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
         l2_normalize = ops.L2Normalize(axis=-1)
+        # try:
+        #     for index, param in enumerate(opt['grad_params']):
+        #         print(index, param.shape)
+        # except:
+        #     pass
+        # exit(0)
         x_normalized = l2_normalize(self.fc1(x, opt))
         # x_normalized = l2_normalize(self.fc1(x.reshape(-1, self.planes)))
 
@@ -381,10 +383,10 @@ class ResNet(nn.Cell):
         # fmt: off
         # self._build_nonlocal(layers, non_layers, bn_norm)
         if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
-        else:
-            self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter(mindspore.Tensor([-1], mindspore.float32), requires_grad=False)
-            self.NL_1 = self.NL_2 = self.NL_3 = self.NL_4 = nn.SequentialCell(nn.Sigmoid())
-        # else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
+        # else:
+        #     self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = mindspore.Parameter(mindspore.Tensor([-1], mindspore.float32), requires_grad=False)
+        #     self.NL_1 = self.NL_2 = self.NL_3 = self.NL_4 = nn.SequentialCell(nn.Sigmoid())
+        else:       self.NL_1_idx = self.NL_2_idx = self.NL_3_idx = self.NL_4_idx = []
         # fmt: on
 
     def _make_layer(self, block, planes, blocks, stride=1, bn_norm="BN", with_ibn=False, with_se=False):
@@ -439,70 +441,62 @@ class ResNet(nn.Cell):
                         yield _m
 
     # def construct(self, x):
-    def construct(self, x, epoch, opt=-1):
-    # def forward(self, x, epoch, opt=-1):
+    def construct(self, x, epoch, opt=None):
+    # def forward(self, x, epoch, opt=None):
 
 
-        # print(4)
-        # opt=-1
-        # print(f"ndim {x.shape}")
-        # print("x type 1", type(x), x)
-        x = self.conv1(x)
-        # print("x type 2", type(x), x)
-        x = self.bn1(x)
-        # print("x type 3", type(x), x)
+        x = self.conv1(x, opt)
+        x = self.bn1(x, opt)
         x = self.relu(x)
-        # print("x type 4", type(x))
         x = self.maxpool(x)
-        # x = mindspore.Tensor(x)
-        # print("x type 5", type(x))
 
         weights = []
         out_features = []
 
         # layer 1
-        # NL1_counter = 0
-        # if len(self.NL_1_idx) == 0:
-        #     self.NL_1_idx = mindspore.Parameter([-1])
-        #     # self.NL_1_idx = [-1]
-        x = self.layer1(x)
-        # for i in range(len(self.layer1)):
-        #     # x = self.layer1[i](x, opt)
-        #     if i == self.NL_1_idx[NL1_counter]:
-        #         _, C, H, W = x.shape
-        #         # x = self.NL_1[NL1_counter](x)
-        #         NL1_counter += 1
+        NL1_counter = 0
+        if len(self.NL_1_idx) == 0:
+            # self.NL_1_idx = mindspore.Parameter([-1])
+            self.NL_1_idx = [-1]
+        # x = self.layer1(x, opt)
+        for i in range(len(self.layer1)):
+            x = self.layer1[i](x, opt)
+            if i == self.NL_1_idx[NL1_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_1[NL1_counter](x)
+                NL1_counter += 1
 
         x_invariant = self.adaptor1_base(x, opt)
         # x_invariant = self.adaptor1_base(x.tile((1, K, 1, 1)), opt)
         N, C, H, W = x_invariant.shape
+        # print("K", K)
         x_specific = self.adaptor1_sub(x.tile((1, K, 1, 1)), opt).reshape(N, K, C, H, W)
         # x_specific = self.adaptor1_sub(x.repeat(1, K, 1, 1), opt).reshape(N, K, C, H, W)
         weight, domain_cls_logit = self.router1(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm1(x_invariant)
-        x_specific = self.specific_norm1(x_specific)
+        x_invariant = self.invariant_norm1(x_invariant, opt)
+        x_specific = self.specific_norm1(x_specific, opt)
         x = self.meta_fuse1(x_invariant, x_specific, opt)
         x = self.meta_se1(x, opt)
-        temp = self.map1(self.avgpool(x))
+        temp = self.map1(self.avgpool(x), opt)
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])
         # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 2
-        # NL2_counter = 0
-        # if len(self.NL_2_idx) == 0:
-        #     self.NL_2_idx = mindspore.Parameter([-1])
-        #     # self.NL_2_idx = [-1]
-        x = self.layer2(x)
-        # for i in range(len(self.layer2)):
-        #     # x = self.layer2[i](x, opt)
-        #     if i == self.NL_2_idx[NL2_counter]:
-        #         _, C, H, W = x.shape
-        #         # x = self.NL_2[NL2_counter](x)
-        #         NL2_counter += 1
+        NL2_counter = 0
+        if len(self.NL_2_idx) == 0:
+            # self.NL_2_idx = mindspore.Parameter([-1])
+            self.NL_2_idx = [-1]
+        # x = self.layer2(x, opt)
+        for i in range(len(self.layer2)):
+            x = self.layer2[i](x, opt)
+            if i == self.NL_2_idx[NL2_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_2[NL2_counter](x)
+                NL2_counter += 1
 
         x_invariant = self.adaptor2_base(x, opt)
         N, C, H, W = x_invariant.shape
@@ -511,29 +505,29 @@ class ResNet(nn.Cell):
         weight, domain_cls_logit = self.router2(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm2(x_invariant)
-        x_specific = self.specific_norm2(x_specific)
+        x_invariant = self.invariant_norm2(x_invariant, opt)
+        x_specific = self.specific_norm2(x_specific, opt)
         x = self.meta_fuse2(x_invariant, x_specific, opt)
         x = self.meta_se2(x, opt)
         # print("x", type(x), x.shape)
-        temp = self.map2(self.avgpool(x))
+        temp = self.map2(self.avgpool(x), opt)
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])
         # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 3
-        # NL3_counter = 0
-        # if len(self.NL_3_idx) == 0:
-        #     self.NL_3_idx = mindspore.Parameter([-1])
-        #     # self.NL_3_idx = [-1]
-        x = self.layer3(x)
-        # for i in range(len(self.layer3)):
-        #     # x = self.layer3[i](x, opt)
-        #     if i == self.NL_3_idx[NL3_counter]:
-        #         _, C, H, W = x.shape
-        #         # x = self.NL_3[NL3_counter](x)
-        #         NL3_counter += 1
+        NL3_counter = 0
+        if len(self.NL_3_idx) == 0:
+            # self.NL_3_idx = mindspore.Parameter([-1])
+            self.NL_3_idx = [-1]
+        # x = self.layer3(x, opt)
+        for i in range(len(self.layer3)):
+            x = self.layer3[i](x, opt)
+            if i == self.NL_3_idx[NL3_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_3[NL3_counter](x)
+                NL3_counter += 1
 
         x_invariant = self.adaptor3_base(x, opt)
         N, C, H, W = x_invariant.shape
@@ -541,28 +535,28 @@ class ResNet(nn.Cell):
         weight, domain_cls_logit = self.router3(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm3(x_invariant)
-        x_specific = self.specific_norm3(x_specific)
+        x_invariant = self.invariant_norm3(x_invariant, opt)
+        x_specific = self.specific_norm3(x_specific, opt)
         x = self.meta_fuse3(x_invariant, x_specific, opt)
         x = self.meta_se3(x, opt)
-        temp = self.map3(self.avgpool(x))
+        temp = self.map3(self.avgpool(x), opt)
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])
         # out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
 
         # layer 4
-        # NL4_counter = 0
-        # if len(self.NL_4_idx) == 0:
-        #     self.NL_4_idx = mindspore.Parameter([-1])
-        #     # self.NL_4_idx = [-1]
-        x = self.layer4(x)
-        # for i in range(len(self.layer4)):
-        #     # x = self.layer4[i](x, opt)
-        #     if i == self.NL_4_idx[NL4_counter]:
-        #         _, C, H, W = x.shape
-        #         # x = self.NL_4[NL4_counter](x)
-        #         NL4_counter += 1
+        NL4_counter = 0
+        if len(self.NL_4_idx) == 0:
+            # self.NL_4_idx = mindspore.Parameter([-1])
+            self.NL_4_idx = [-1]
+        # x = self.layer4(x, opt)
+        for i in range(len(self.layer4)):
+            x = self.layer4[i](x, opt)
+            if i == self.NL_4_idx[NL4_counter]:
+                _, C, H, W = x.shape
+                x = self.NL_4[NL4_counter](x)
+                NL4_counter += 1
 
         # print("x.shape", x.shape)
         # print("out_features.len", len(out_features))
@@ -573,11 +567,11 @@ class ResNet(nn.Cell):
         weight, domain_cls_logit = self.router4(x, opt)
         weights.append(weight)
         x_specific = (x_specific * weight.reshape(-1, K, 1, 1, 1)).sum(1)
-        x_invariant = self.invariant_norm4(x_invariant)
-        x_specific = self.specific_norm4(x_specific)
+        x_invariant = self.invariant_norm4(x_invariant, opt)
+        x_specific = self.specific_norm4(x_specific, opt)
         x = self.meta_fuse4(x_invariant, x_specific, opt)
         x = self.meta_se4(x, opt)
-        temp = self.map4(self.avgpool(x))
+        temp = self.map4(self.avgpool(x), opt)
         l2_normalize = ops.L2Normalize(axis=1)
         x_normalized = l2_normalize(temp)
         out_features.append(x_normalized[..., 0, 0])
@@ -651,7 +645,6 @@ def init_pretrained_weights(key):
 
     logger.info(f"Loading pretrained model from {cached_file}")
     # print(cached_file)
-    print(1)
     state_dict = mindspore.load_checkpoint(cached_file)
     # state_dict = torch.load(cached_file, map_location=torch.device('cpu'))
     #CHANGE Reduction Version

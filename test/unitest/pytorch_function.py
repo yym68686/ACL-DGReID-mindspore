@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from collections import OrderedDict
 
 
-def update_parameter(param, step_size, opt=-1, reserve=False):
+def update_parameter(param, step_size, opt=None, reserve=False):
     flag_update = False
     if step_size is not None:
         if param is not None:
@@ -27,8 +27,8 @@ class MetaConv2d(nn.Conv2d):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
         super().__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias, padding_mode)
 
-    def forward(self, inputs, opt=-1):
-        if opt != -1 and opt['meta']:
+    def forward(self, inputs, opt=None):
+        if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt)
             return F.conv2d(inputs, updated_weight, updated_bias, self.stride, self.padding, self.dilation, self.groups)
@@ -49,16 +49,16 @@ class MetaBNNorm(nn.BatchNorm2d):
         self.training = False
 
 
-    def forward(self, inputs, opt = -1, reserve = False):
+    def forward(self, inputs, opt = None, reserve = False):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
-        if opt != -1 and opt['meta']:
+        if opt != None and opt['meta']:
             use_meta_learning = True
         else:
             use_meta_learning = False
 
         if self.training:
-            if opt != -1:
+            if opt != None:
                 norm_type = opt['type_running_stats']
             else:
                 norm_type = "hold"
@@ -104,7 +104,7 @@ class MetaINNorm(nn.InstanceNorm2d):
             self.bias.requires_grad_(not bias_freeze)
         self.in_fc_multiply = 0.0
 
-    def forward(self, inputs, opt=-1):
+    def forward(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -112,7 +112,7 @@ class MetaINNorm(nn.InstanceNorm2d):
             inputs[:] *= self.in_fc_multiply
             return inputs
         else:
-            if opt != -1 and opt['meta']:
+            if opt != None and opt['meta']:
                 use_meta_learning = True
             else:
                 use_meta_learning = False
@@ -138,7 +138,7 @@ class MetaIBNNorm(nn.Module):
         self.IN = MetaINNorm(half1, **kwargs)
         self.BN = MetaBNNorm(half2, **kwargs)
 
-    def forward(self, inputs, opt=-1):
+    def forward(self, inputs, opt=None):
         if inputs.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(inputs.dim()))
 
@@ -174,7 +174,7 @@ class Bottleneck2(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
 
         residual = x
 
@@ -226,7 +226,7 @@ class Bottleneck(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
         residual = x
 
         out = self.conv1(x, opt)
@@ -293,8 +293,8 @@ class MetaLinear(nn.Linear):
     def __init__(self, in_feat, reduction_dim, bias=False):
         super().__init__(in_feat, reduction_dim, bias=bias)
 
-    def forward(self, inputs, opt = -1, reserve = False):
-        if opt != -1 and opt['meta']:
+    def forward(self, inputs, opt = None, reserve = False):
+        if opt != None and opt['meta']:
             updated_weight = update_parameter(self.weight, self.w_step_size, opt, reserve)
             updated_bias = update_parameter(self.bias, self.b_step_size, opt, reserve)
 
@@ -314,7 +314,7 @@ class HyperRouter(nn.Module):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(-1)
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
 
         x = self.avgpool(x).squeeze(-1).squeeze(-1)
 
@@ -331,8 +331,8 @@ class MetaGate(nn.Module):
         self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, inputs1, inputs2, opt=-1):
-        if opt != -1 and opt['meta']:
+    def forward(self, inputs1, inputs2, opt=None):
+        if opt != None and opt['meta']:
             updated_gate = self.sigmoid(update_parameter(self.gate, self.w_step_size, opt)).reshape(1, -1, 1, 1)
 
             return updated_gate * inputs1 + (1. - updated_gate) * inputs2
@@ -349,7 +349,7 @@ class MetaSELayer(nn.Module):
         self.fc2 = MetaLinear(int(channel / reduction), channel, bias=False)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x, opt=-1):
+    def forward(self, x, opt=None):
         b, c, _, _ = x.size()
         y = self.avg_pool(x).view(b, c)
         y = self.relu(self.fc1(y, opt))
@@ -407,7 +407,7 @@ class Sequential_ext(nn.Module):
     def __len__(self):
         return len(self._modules)
 
-    def forward(self, input, opt=-1):
+    def forward(self, input, opt=None):
         for i, module in enumerate(self._modules.values()):
             input = module(input, opt)
         return input
@@ -517,7 +517,7 @@ class ResNet(nn.Module):
                     if isinstance(_m, nn.Conv2d):
                         yield _m
 
-    def forward(self, x, epoch, opt=-1):
+    def forward(self, x, epoch, opt=None):
 
 
         x = self.conv1(x, opt)

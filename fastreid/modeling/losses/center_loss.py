@@ -77,6 +77,8 @@ def centerLoss(distmat, labels):
     # print("labels.shape", type(labels), labels.dtype, labels)
     # labels = mindspore.Tensor(labels, mindspore.float32)
     # print("labels", type(labels), labels)
+    if labels.shape == ():
+        labels = labels.reshape(1)
     labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
     # print("labels", type(labels), labels)
     # labels = labels.unsqueeze(1).broadcast_to((batch_size, num_classes))
@@ -99,7 +101,7 @@ def centerLoss(distmat, labels):
     # print("mask", type(mask), mask.shape)
     dist = distmat * mask.float()
     loss = dist.clamp(min=1e-12, max=1e+12).sum() / batch_size
-    
+
     return loss
 
 

@@ -50,7 +50,7 @@ def _train_loader_from_config(cfg, *, train_set=None, transforms=None, sampler=N
             train_items.extend(data.train)
             # print("data.train", type(data.train), data.train)
             mapper[d] = idx
-        print(mapper, num_pids)
+        # print(mapper, num_pids)
 
         train_set = CommDataset(train_items, transforms, relabel=True, mapping=mapper)
         for temp_set in single_set:

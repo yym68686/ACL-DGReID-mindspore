@@ -279,7 +279,7 @@ class SimpleTrainer(TrainerBase):
         losses, loss_dict = self.basic_forward(data, self.model, epoch, opt) # forward
 
         self.basic_backward(losses, self.optimizer)
-        
+
         # Open this if and only if the 'run_step_meta_learnig2()' function is not exeucted
         self._write_metrics(loss_dict, data_time)
 
@@ -339,13 +339,13 @@ class SimpleTrainer(TrainerBase):
         total_losses = mtrain_losses + mtest_losses
         self.basic_backward(total_losses, self.optimizer_meta, True)
         data_time = time.perf_counter() - start
-        
+
         self._write_metrics(metrics_dict, data_time)
 
         # if isinstance(self.param_wrapper_meta, ContiguousParams):
         #     self.param_wrapper_meta.assert_buffer_is_valid()
 
-    def basic_forward(self, data, model, epoch, opt=-1):
+    def basic_forward(self, data, model, epoch, opt=None):
         # print('train_loop.py   basic_forward')
         loss_dict = model(data, epoch, opt)
         losses = sum(loss_dict.values()).mean()
@@ -353,7 +353,7 @@ class SimpleTrainer(TrainerBase):
         return losses, loss_dict
 
     def basic_backward(self, losses, optimizer, retain_graph=False):
-        
+
         # torch.distributed.barrier()
         if (losses != None) and (optimizer != None):
             # print('start train_loop.py   basic_backward', torch.distributed.get_rank())
@@ -415,7 +415,7 @@ class SimpleTrainer(TrainerBase):
                         logger.info("[{}th grad] This parameter does have gradient".format(i))
             grad_params = tuple(grad_params)
             opt['grad_params'] = [p if p != None else None for p in grad_params ]
-        
+
         return opt
 
     def run_step(self, epoch):

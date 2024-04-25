@@ -20,7 +20,7 @@
   - [X] 7.1 Identity
   - [X] 7.1 HyperRouter
   - [ ] model = ResNet()
-    - [X] 6.16 class ResNet(nn.Module): 
+    - [X] 6.16 class ResNet(nn.Module):
     - [X] 6.11 self.conv1 = MetaConv2d() class MetaConv2d(nn.Conv2d)
       - [X] 6.11 torch.nn.functional.conv2d()
     - [X] 6.11 self.bn1 = MetaBNNorm(64)
@@ -35,10 +35,10 @@
       - [X] 6.25 self.bn1 = MetaIBNNorm()
         - [X] 6.18 class MetaIBNNorm(nn.Module):
         - [X] 6.16 self.IN = MetaINNorm(half1, **kwargs)
-          - [X] 6.16 def forward(self, inputs, opt=-1):
+          - [X] 6.16 def forward(self, inputs, opt=None):
           - [X] 6.16 return F.instance_norm()
         - [X] 6.11 self.BN = MetaBNNorm(half2, **kwargs)
-        - [X] 6.16 def forward(self, inputs, opt=-1):
+        - [X] 6.16 def forward(self, inputs, opt=None):
         - [X] 6.17 split = torch.split(inputs, self.half, 1)
         - [X] 6.25 out1 = self.IN(split[0].contiguous(), opt)
         - [X] 6.25 out2 = self.BN(split[1].contiguous(), opt)
@@ -51,25 +51,25 @@
         - [X] 6.29 self.fc = nn.Sequential()
         - [X] 6.29 def forward(self, x):
       - [X] 6.25 self.se = nn.Identity()
-      - [X] 6.16 def forward(self, x, opt=-1):
+      - [X] 6.16 def forward(self, x, opt=None):
     - [X] 6.25 self.router1 = HyperRouter(256)
       - [X] 6.18 class HyperRouter(nn.Module):
       - [X] 6.18 self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
       - [X] 6.18 self.fc1 = MetaLinear(planes, planes//16)
         - [X] 6.18 class MetaLinear(nn.Linear):
-        - [X] 6.18 def forward(self, inputs, opt = -1, reserve = False):
+        - [X] 6.18 def forward(self, inputs, opt = None, reserve = False):
         - [X] 6.18 return F.linear(inputs, updated_weight, updated_bias)
         - [X] 6.18 return F.linear(inputs, self.weight, self.bias)
       - [X] 6.19 self.relu = nn.ReLU()
       - [X] 6.25 self.softmax = nn.Softmax(-1)
-      - [X] 6.25 def forward(self, x, opt=-1):
+      - [X] 6.25 def forward(self, x, opt=None):
       - [X] 6.25 x = self.avgpool(x).squeeze(-1).squeeze(-1)
       - [X] 6.25 weight = self.relu(F.normalize(self.fc1(x, opt), 2, -1))
       - [X] 6.25 x = self.softmax(torch.einsum('bi,bil->bl', x, weight))
     - [X] 6.25 self.meta_fuse1 = MetaGate(256)
       - [X] 6.25 class MetaGate(nn.Module):
       - [X] 6.25 self.gate = nn.Parameter(torch.randn(feat_dim) * 0.1)
-      - [X] 6.25 def forward(self, inputs1, inputs2, opt=-1):
+      - [X] 6.25 def forward(self, inputs1, inputs2, opt=None):
     - [X] 6.25 self.meta_se1 = MetaSELayer(256)
       - [X] 6.25 class MetaSELayer(nn.Module):
     - [X] 6.18 self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -83,7 +83,7 @@
     - [X] 6.30 if with_nl: self._build_nonlocal(layers, non_layers, bn_norm)
       - [X] 6.30 self.NL_1 = nn.ModuleList()
     - [X] 7.1 def get_all_conv_layers(self, module):
-    - [X] 6.25 def forward(self, x, epoch, opt=-1):
+    - [X] 6.25 def forward(self, x, epoch, opt=None):
       - [X] 6.25 out_features.append(F.normalize(temp, 2, 1)[..., 0, 0])
       - [X] 6.25 weights = torch.cat(weights, -1)
   - [ ] state_dict = torch.load(pretrain_path, map_location=torch.device('cpu'))

@@ -17,6 +17,8 @@ from collections import OrderedDict
 
 # import torch
 import mindspore
+from mindspore.communication import init, get_group_size
+from mindspore.profiler import Profiler
 # from torch.nn.parallel import DistributedDataParallel
 
 from fastreid.data import build_reid_test_loader, build_reid_train_loader
@@ -216,8 +218,18 @@ class DefaultTrainer(TrainerBase):
         #     model = DistributedDataParallel(
         #         model, device_ids=[comm.get_local_rank()], broadcast_buffers=False, find_unused_parameters=True
         #     )
-        ms.set_context(mode=ms.PYNATIVE_MODE, device_target="GPU", device_id=0)
+        ms.set_context(mode=ms.PYNATIVE_MODE, device_target="GPU")
         # ms.set_context(mode=ms.PYNATIVE_MODE, device_target="GPU", device_id=0)
+
+        # self.profiler = Profiler(output_path='./data', is_detail=True, is_show_op_path=False, subgraph='all')
+
+
+        # init("nccl")
+        # mindspore.reset_auto_parallel_context()
+        # device_num = get_group_size()
+        # print("device_num", device_num)
+        # mindspore.set_auto_parallel_context(device_num=device_num, parallel_mode=mindspore.ParallelMode.DATA_PARALLEL, parameter_broadcast=True, gradients_mean=True)
+
         # model = torch.nn.DataParallel(model)
 
 
