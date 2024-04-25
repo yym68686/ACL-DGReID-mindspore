@@ -366,28 +366,56 @@ class SimpleTrainer(TrainerBase):
 
         opt = self.opt_setting('mtrain')
 
-        data_mtrain = []
+        data_mtrain = {}
+        keys = ["images0", "images", "targets", "camids", "domainids", "img_paths"]
         for i in range(len(self._single_data_loader_iter)):
             if i == metaTestID:
                 continue
             temp_data = next(self._single_data_loader_iter[i])
-            # print("temp_data", type(temp_data), temp_data)
-            for index, item in enumerate(temp_data):
-                if index < len(data_mtrain):
+            for index, key in enumerate(keys):
+                if key == "img_paths":
+                    continue
+                if key in data_mtrain.keys():
                     if isinstance(temp_data[index], mindspore.Tensor):
-                        data_mtrain[index].append(temp_data[index])
+                        data_mtrain[key].append(temp_data[index])
                     else:
-                        data_mtrain[index].extend(temp_data[index])
+                        data_mtrain[key].extend(temp_data[index])
                 else:
                     if isinstance(temp_data[index], mindspore.Tensor):
-                        data_mtrain.append([temp_data[index]])
+                        data_mtrain[key] = [temp_data[index]]
                     else:
-                        data_mtrain.append(temp_data[index])
-        for index, item in enumerate(data_mtrain):
-            if isinstance(data_mtrain[index][0], mindspore.Tensor) and data_mtrain[index][0].dtype != mindspore.string:
-                # print("data_mtrain[index]", type(data_mtrain[index]), len(data_mtrain[index]), type(data_mtrain[index][0]), data_mtrain[index][0].shape)
-                data_mtrain[index] = mindspore.ops.stack(data_mtrain[index], 0)
-                # print("data_mtrain[index] 2", type(data_mtrain[index]), data_mtrain[index].shape, type(data_mtrain[index][0]), data_mtrain[index][0].shape)
+                        data_mtrain[key] = temp_data[index]
+        for key in data_mtrain.keys():
+            if isinstance(temp_data[index][0], mindspore.Tensor):
+                data_mtrain[key] = mindspore.ops.cat(data_mtrain[key], 0)
+
+        # print("data_mtrain", data_mtrain["images0"].shape, data_mtrain["targets"].shape, data_mtrain["domainids"].shape, data_mtrain)
+
+
+        # for i in range(len(self._single_data_loader_iter)):
+        #     if i == metaTestID:
+        #         continue
+        #     temp_data = next(self._single_data_loader_iter[i])
+        #     # print("temp_data", type(temp_data), temp_data)
+        #     for index, item in enumerate(temp_data):
+        #         print("temp_data[index]", temp_data[index].shape)
+        #         if index < len(data_mtrain):
+        #             if isinstance(temp_data[index], mindspore.Tensor):
+        #                 data_mtrain[index].append(temp_data[index])
+        #             else:
+        #                 data_mtrain[index].extend(temp_data[index])
+        #         else:
+        #             if isinstance(temp_data[index], mindspore.Tensor):
+        #                 data_mtrain.append([temp_data[index]])
+        #             else:
+        #                 data_mtrain.append(temp_data[index])
+        # for index, item in enumerate(data_mtrain):
+        #     if isinstance(data_mtrain[index][0], mindspore.Tensor) and data_mtrain[index][0].dtype != mindspore.string:
+        #         # print("data_mtrain[index]", type(data_mtrain[index]), len(data_mtrain[index]), type(data_mtrain[index][0]), data_mtrain[index][0].shape)
+        #         data_mtrain[index] = mindspore.ops.stack(data_mtrain[index], 0)
+        #         # print("data_mtrain[index] 2", type(data_mtrain[index]), data_mtrain[index].shape, type(data_mtrain[index][0]), data_mtrain[index][0].shape)
+
+
         # data_mtrain = {}
         # for i in range(len(self._single_data_loader_iter)):
         #     if i == metaTestID:
@@ -418,12 +446,12 @@ class SimpleTrainer(TrainerBase):
         # num_gpus = torch.cuda.device_count()
         num_gpus = get_gpu_num()
         # num_gpus = get_group_size()
-        print("num_gpus", num_gpus)
-        # QUES 应该取消注释，多卡并行
+        # print("num_gpus", num_gpus)
         if num_gpus > 1:
             opt['grad_params'] = [param.tile(tuple([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
             # opt['grad_params'] = [param.repeat(*([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
         data_mtest = next(self._single_data_loader_iter[metaTestID])
+        data_mtest = {key: value for key, value in zip(keys, data_mtest)}
         losses, loss_dict, inputs_gradient = self.basic_forward(data_mtest, self.model, epoch, opt) # forward
         mtest_losses.append(losses)
         for name, val in loss_dict.items():
@@ -451,15 +479,15 @@ class SimpleTrainer(TrainerBase):
         # data = data[0]
         # print("type(data['images'])", type(data["images"]))
         # print("data", data)
-        images0 = data[0]
-        images = data[1]
+        images0 = data["images0"]
+        images = data["images"]
         # print("images", images.shape)
-        targets = data[2]
+        targets = data["targets"]
         # print("targets", targets.shape)
-        camids = data[3]
-        domainids = data[4]
+        camids = data["camids"]
+        domainids = data["domainids"]
         # print("domainids", domainids.shape)
-        img_paths = data[5]
+        # img_paths = data["img_paths"]
 
         weights = self.optimizer.trainable_params()
         # weights = self.optimizer.parameters

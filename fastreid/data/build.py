@@ -109,7 +109,7 @@ def build_reid_train_loader(
     """
 
     mini_batch_size = total_batch_size // comm.get_world_size()
-    print("mini_batch_size", mini_batch_size)
+    # print("mini_batch_size", mini_batch_size)
 
     single_batch_sampler = []
     single_train_loader = []
@@ -156,7 +156,9 @@ def build_reid_train_loader(
     #     collate_fn=fast_batch_collator,
     #     pin_memory=True,
     # )
+    # print("len(single_set)", len(single_set))
     for i in range(len(single_set)):
+        # print("single_set[i]", type(single_set[i]), len(single_set[i]))
         single_train_loader.append(mindspore.dataset.GeneratorDataset(
             source=single_set[i],
             column_names=["images0", "images", "targets", "camids", "domainids", "img_paths"],

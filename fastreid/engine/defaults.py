@@ -245,6 +245,11 @@ class DefaultTrainer(TrainerBase):
         self.scheduler_meta = self.build_lr_scheduler(cfg, optimizer_meta, self.iters_per_epoch)
 
         data_loader = data_loader.batch(cfg.SOLVER.IMS_PER_BATCH, True, output_columns=["images0" ,"images" ,"targets" ,"camids" ,"domainids" ,"img_paths"])
+        # single_data_loader = single_data_loader.batch(cfg.SOLVER.IMS_PER_BATCH, True, output_columns=["images0" ,"images" ,"targets" ,"camids" ,"domainids" ,"img_paths"])
+        new_single_data_loader = []
+        for single_loader in single_data_loader:
+            new_single_data_loader.append(single_loader.batch(cfg.SOLVER.IMS_PER_BATCH // 2, True, output_columns=["images0" ,"images" ,"targets" ,"camids" ,"domainids" ,"img_paths"]))
+        single_data_loader = new_single_data_loader
         self._trainer = (AMPTrainer if cfg.SOLVER.AMP.ENABLED else SimpleTrainer)(
             model, data_loader, single_data_loader, optimizer, param_wrapper, optimizer_meta, param_wrapper_meta, self.iters_per_epoch
         )
@@ -416,12 +421,14 @@ class DefaultTrainer(TrainerBase):
         #     print('defaults.py   self.iter', self.iter)
 
         while self.cnt < base_iter:
+            # print("run_step_meta_learning1", self.cnt)
             self._trainer.run_step_meta_learning1(self.epoch)
             self.cnt += 1
 
         if self.iter % 3 == 0:
             self.cnt = 0
             while self.cnt < 1:
+                # print("run_step_meta_learning2", self.cnt)
                 self._trainer.run_step_meta_learning2(self.epoch)
                 self.cnt += 1
 
