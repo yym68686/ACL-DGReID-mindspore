@@ -459,7 +459,11 @@ class SimpleTrainer(TrainerBase):
         if num_gpus > 1:
             opt['grad_params'] = [param.tile(tuple([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
             # opt['grad_params'] = [param.repeat(*([num_gpus]+[1]*(len(param.shape)-1))) for param in opt['grad_params']]
-        data_mtest = next(self._single_data_loader_iter[metaTestID])
+        try:
+            data_mtest = next(self._single_data_loader_iter[metaTestID])
+        except StopIteration:
+            self._single_data_loader_iter = [iter(single_loader) for single_loader in self.single_data_loader]
+            data_mtest = next(self._single_data_loader_iter[metaTestID])
         data_mtest = {key: value for key, value in zip(keys, data_mtest)}
         losses, loss_dict, inputs_gradient = self.basic_forward(data_mtest, self.model, epoch, opt) # forward
         mtest_losses.append(losses)
