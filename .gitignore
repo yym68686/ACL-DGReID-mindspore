@@ -38,3 +38,5 @@ _darcs
 .DS_Store
 
 result
+
+nohup.out

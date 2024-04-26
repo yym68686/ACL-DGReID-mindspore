@@ -304,7 +304,11 @@ class SimpleTrainer(TrainerBase):
 
         opt = self.opt_setting('basic')
         # data = self._data_loader_iter
-        data = next(self._data_loader_iter)
+        try:
+            data = next(self._data_loader_iter)
+        except StopIteration:
+            self._data_loader_iter = iter(self.data_loader)
+            data = next(self._data_loader_iter)
         # data = self.data_loader.batch(32)
         # print("data.shape", len(data), data[0]['images0'].shape)
         data_time = time.perf_counter() - start
@@ -371,7 +375,12 @@ class SimpleTrainer(TrainerBase):
         for i in range(len(self._single_data_loader_iter)):
             if i == metaTestID:
                 continue
-            temp_data = next(self._single_data_loader_iter[i])
+            temp_data = None
+            try:
+                temp_data = next(self._single_data_loader_iter[i])
+            except StopIteration:
+                self._single_data_loader_iter = [iter(single_loader) for single_loader in self.single_data_loader]
+                temp_data = next(self._single_data_loader_iter[i])
             for index, key in enumerate(keys):
                 if key == "img_paths":
                     continue

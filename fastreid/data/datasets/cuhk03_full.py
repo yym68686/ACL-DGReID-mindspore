@@ -95,7 +95,7 @@ class CUHK03FULL(ImageDataset):
     dataset_name = "CUHK03FULL"
 
     def __init__(self, root='datasets', split_id=0, cuhk03_labeled=True, cuhk03_classic_split=False, **kwargs):
-        root='/mnt/ssd3/yuming/split_reid_data/cuhk03/cuhk03_release'
+        root='/data0/yuming/split_reid_data/cuhk03/cuhk03_release'
         self.root = root
         self.split_id = split_id
         self.meta = None

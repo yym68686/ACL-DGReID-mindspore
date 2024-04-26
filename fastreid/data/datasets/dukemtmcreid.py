@@ -32,7 +32,7 @@ class DukeMTMC(ImageDataset):
     dataset_name = "DukeMTMC"
 
     def __init__(self, root='datasets', **kwargs):
-        root='/mnt/ssd3/yuming/split_reid_data/dukemtmc/'
+        root='/data0/yuming/split_reid_data/dukemtmc/'
         # self.root = osp.abspath(osp.expanduser(root))
         self.root = root
         self.dataset_dir = osp.join(self.root, self.dataset_dir)
