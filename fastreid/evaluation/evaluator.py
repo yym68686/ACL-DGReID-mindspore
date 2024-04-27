@@ -89,11 +89,18 @@ def inference_on_dataset(model, data_loader, evaluator, flip_test=False, epoch=-
                 total_compute_time = 0
 
             start_compute_time = time.perf_counter()
-            outputs = model(inputs, epoch)
+            images0 = inputs[0]
+            images = inputs[1]
+            targets = inputs[2]
+            camids = inputs[3]
+            domainids = inputs[4]
+            img_paths = inputs[5]
+            outputs = model(images, targets, domainids, epoch)
             # Flip test
             if flip_test:
-                inputs["images"] = inputs["images"].flip(dims=[3])
-                flip_outputs = model(inputs, epoch)
+                images = images.flip(dims=[3])
+                # inputs["images"] = inputs["images"].flip(dims=[3])
+                flip_outputs = model(images, targets, domainids, epoch)
                 outputs = (outputs + flip_outputs) / 2
             if torch.cuda.is_available():
                 torch.cuda.synchronize()

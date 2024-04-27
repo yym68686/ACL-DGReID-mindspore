@@ -11,8 +11,9 @@ from typing import Optional, List, Dict, NamedTuple, Tuple, Iterable
 import numpy as np
 import torch
 import torch.nn as nn
+import mindspore
 from termcolor import colored
-from torch.nn.parallel import DistributedDataParallel, DataParallel
+# from torch.nn.parallel import DistributedDataParallel, DataParallel
 
 from fastreid.utils.file_io import PathManager
 
@@ -59,8 +60,8 @@ class Checkpointer(object):
                 example, it can be used like
                 `Checkpointer(model, "dir", optimizer=optimizer)`.
         """
-        if isinstance(model, (DistributedDataParallel, DataParallel)):
-            model = model.module
+        # if isinstance(model, (DistributedDataParallel, DataParallel)):
+        #     model = model.module
         self.model = model
         self.checkpointables = copy.copy(checkpointables)
         self.logger = logging.getLogger(__name__)
@@ -80,18 +81,20 @@ class Checkpointer(object):
         if not self.save_dir or not self.save_to_disk:
             return
 
-        data = {}
-        data["model"] = self.model.state_dict()
-        for key, obj in self.checkpointables.items():
-            data[key] = obj.state_dict()
-        data.update(kwargs)
+        # data = {}
+        # data["model"] = self.model.state_dict()
+        # for key, obj in self.checkpointables.items():
+        #     data[key] = obj.state_dict()
+        # data.update(kwargs)
 
-        basename = "{}.pth".format(name)
+        # basename = "{}.pth".format(name)
+        basename = "{}.ckpt".format(name)
         save_file = os.path.join(self.save_dir, basename)
         assert os.path.basename(save_file) == basename, basename
         self.logger.info("Saving checkpoint to {}".format(save_file))
-        with PathManager.open(save_file, "wb") as f:
-            torch.save(data, f)
+        mindspore.save_checkpoint(self.model, save_file)
+        # with PathManager.open(save_file, "wb") as f:
+        #     torch.save(data, f)
         self.tag_last_checkpoint(basename)
 
     def load(self, path: str, checkpointables: Optional[List[str]] = None) -> object:
