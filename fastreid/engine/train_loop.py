@@ -295,6 +295,7 @@ class SimpleTrainer(TrainerBase):
             self.grad_name.append(name)
 
     def run_step_meta_learning1(self, epoch):
+        self.model.set_train(True)
         assert self.model.training, "[SimpleTrainer] model was changed to eval mode!"
         start = time.perf_counter()
         """
