@@ -210,7 +210,8 @@ class Baseline(nn.Cell):
                 raise NotImplementedError
 
             # print("domain_ids", type(domain_ids), domain_ids.shape, domain_ids)
-            return loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center_
+            total_loss = loss_cls + loss_center + loss_triplet + loss_circle + loss_cosface + loss_triplet_add + loss_triplet_mtrain + loss_stc + loss_triplet_mtest + loss_domain_intra + loss_domain_inter + loss_Center_
+            return total_loss, loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center_
             # return losses
         else:
             outputs = self.heads(features)

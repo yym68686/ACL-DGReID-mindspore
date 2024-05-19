@@ -249,6 +249,7 @@ class SimpleTrainer(TrainerBase):
         self.data_loader = data_loader
         # self.data_loader = self.data_loader.batch(64, drop_remainder=True)
         self.single_data_loader = single_data_loader
+        self.keys = ["images0", "images", "targets", "camids", "domainids", "img_paths"]
         # self._data_loader_iter = dataLoader(data_loader, 32)
         # self._data_loader_iter = cycle(self._data_loader_iter)
         self._data_loader_iter = iter(data_loader)
@@ -295,7 +296,6 @@ class SimpleTrainer(TrainerBase):
             self.grad_name.append(name)
 
     def run_step_meta_learning1(self, epoch):
-        self.model.set_train(True)
         assert self.model.training, "[SimpleTrainer] model was changed to eval mode!"
         start = time.perf_counter()
         """
@@ -313,53 +313,62 @@ class SimpleTrainer(TrainerBase):
         # data = self.data_loader.batch(32)
         # print("data.shape", len(data), data[0]['images0'].shape)
         data_time = time.perf_counter() - start
-        # losses, loss_dict = self.basic_forward(data, self.model, epoch, opt) # forward
+        data = {key: value for key, value in zip(self.keys, data)}
+        losses, loss_dict, inputs_gradient = self.basic_forward(data, self.model, epoch, opt) # forward
+        self.basic_backward(inputs_gradient, self.optimizer, True)
 
-        # data = data[0]
-        # print("type(data['images'])", type(data["images"]))
-        # print("data", len(data), data)
-        images0 = data[0]
-        images = data[1]
-        targets = data[2]
-        # print("targets", type(targets), targets)
-        camids = data[3]
-        domainids = data[4]
-        img_paths = data[5]
-        # images0 = data["images0"]
-        # images = data["images"]
-        # targets = data["targets"]
-        # camids = data["camids"]
-        # domainids = data["domainids"]
-        # img_paths = data["img_paths"]
+        # # data = data[0]
+        # # print("type(data['images'])", type(data["images"]))
+        # # print("data", len(data), data)
+        # images0 = data[0]
+        # images = data[1]
+        # # print("images", images)
+        # targets = data[2]
+        # # print("targets", targets)
+        # # print("targets", type(targets), targets)
+        # camids = data[3]
+        # domainids = data[4]
+        # # print("domainids", domainids)
+        # img_paths = data[5]
+        # # images0 = data["images0"]
+        # # images = data["images"]
+        # # targets = data["targets"]
+        # # camids = data["camids"]
+        # # domainids = data["domainids"]
+        # # img_paths = data["img_paths"]
 
-        # loss_dict = model(data, epoch, opt)
-        weights = self.optimizer.parameters
-        # print("weights", type(weights), weights)
+        # # loss_dict = model(data, epoch, opt)
+        # weights = self.optimizer.parameters
+        # # print("weights", type(weights), weights)
 
-        grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=False)
+        # # grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=False)
+        # grad_fn = mindspore.value_and_grad(self.model, grad_position=None, weights=weights, has_aux=True)
 
-        loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
-        # loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
+        # loss_dict, inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
+        # # sum_num = mindspore.ops.sum(mindspore.ops.stack([mindspore.ops.sum(item) for item in inputs_gradient]))
+        # # print("sum_num", sum_num)
+        # # print("loss_dict, inputs_gradient", loss_dict, inputs_gradient)
+        # # loss_dict, inputs_gradient = grad_fn(images0, images, targets, camids, domainids, img_paths, epoch, opt)
 
-        # losses = sum(loss_dict.values()).mean()
+        # # losses = sum(loss_dict.values()).mean()
 
-        # inputs_gradient = list(inputs_gradient)
-        # for index, i in enumerate(inputs_gradient):
-        #     if i.dtype == mindspore.int64:
-        #         inputs_gradient[index] = mindspore.Tensor(inputs_gradient[index], dtype=mindspore.float32)
-        # inputs_gradient = tuple(inputs_gradient)
-        # print("inputs_gradient", type(inputs_gradient), inputs_gradient)
+        # # inputs_gradient = list(inputs_gradient)
+        # # for index, i in enumerate(inputs_gradient):
+        # #     if i.dtype == mindspore.int64:
+        # #         inputs_gradient[index] = mindspore.Tensor(inputs_gradient[index], dtype=mindspore.float32)
+        # # inputs_gradient = tuple(inputs_gradient)
+        # # print("inputs_gradient", type(inputs_gradient), inputs_gradient)
 
-        self.optimizer(inputs_gradient)
+        # self.optimizer(inputs_gradient)
 
-        # self.basic_backward(losses, self.optimizer)
+        # # self.basic_backward(losses, self.optimizer)
 
-        # Open this if and only if the 'run_step_meta_learnig2()' function is not exeucted
-        # QUES 似乎没啥用
-        # self._write_metrics(loss_dict, data_time)
+        # # Open this if and only if the 'run_step_meta_learnig2()' function is not exeucted
+        # # QUES 似乎没啥用
+        # # self._write_metrics(loss_dict, data_time)
 
-        # if isinstance(self.param_wrapper, ContiguousParams):
-        #     self.param_wrapper.assert_buffer_is_valid()
+        # # if isinstance(self.param_wrapper, ContiguousParams):
+        # #     self.param_wrapper.assert_buffer_is_valid()
 
     def run_step_meta_learning2(self, epoch):
         start = time.perf_counter()
@@ -372,7 +381,7 @@ class SimpleTrainer(TrainerBase):
         opt = self.opt_setting('mtrain')
 
         data_mtrain = {}
-        keys = ["images0", "images", "targets", "camids", "domainids", "img_paths"]
+
         for i in range(len(self._single_data_loader_iter)):
             if i == metaTestID:
                 continue
@@ -382,7 +391,7 @@ class SimpleTrainer(TrainerBase):
             except StopIteration:
                 self._single_data_loader_iter = [iter(single_loader) for single_loader in self.single_data_loader]
                 temp_data = next(self._single_data_loader_iter[i])
-            for index, key in enumerate(keys):
+            for index, key in enumerate(self.keys):
                 if key == "img_paths":
                     continue
                 if key in data_mtrain.keys():
@@ -465,7 +474,7 @@ class SimpleTrainer(TrainerBase):
         except StopIteration:
             self._single_data_loader_iter = [iter(single_loader) for single_loader in self.single_data_loader]
             data_mtest = next(self._single_data_loader_iter[metaTestID])
-        data_mtest = {key: value for key, value in zip(keys, data_mtest)}
+        data_mtest = {key: value for key, value in zip(self.keys, data_mtest)}
         losses, loss_dict, inputs_gradient = self.basic_forward(data_mtest, self.model, epoch, opt) # forward
         mtest_losses.append(losses)
         for name, val in loss_dict.items():
@@ -503,12 +512,17 @@ class SimpleTrainer(TrainerBase):
         # print("domainids", domainids.shape)
         # img_paths = data["img_paths"]
 
+        # weights = model.parameters
         weights = self.optimizer.trainable_params()
+        # print("self.optimizer.trainable_params()", self.optimizer.trainable_params())
         # weights = self.optimizer.parameters
         # print("self.optimizer", self.optimizer)
         # print("self.optimizer.parameters", self.optimizer.trainable_params())
-        grad_fn = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)
-        (loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center), inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
+        grad_fn = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=True)
+        # grad_fn = mindspore.value_and_grad(model, grad_position=None, weights=weights, has_aux=False)
+        (total_loss, loss_cls, loss_center, loss_triplet, loss_circle, loss_cosface, loss_triplet_add, loss_triplet_mtrain, loss_stc, loss_triplet_mtest, loss_domain_intra, loss_domain_inter, loss_Center), inputs_gradient = grad_fn(images, targets, domainids, epoch, opt)
+        sum_num = mindspore.ops.sum(mindspore.ops.stack([mindspore.ops.sum(item) for item in inputs_gradient]))
+        print("total_loss, sum_num", total_loss, sum_num)
 
         loss_dict = {}
         # 使用locals()函数获取当前局部变量的字典
@@ -576,6 +590,7 @@ class SimpleTrainer(TrainerBase):
                 opt['grad_name'].append(key)
 
             grad_params = mindspore.grad(lambda x: x, grad_position=None, weights=self.model.trainable_params(), has_aux=False)(losses.mean())
+
             grad_params = list(grad_params)
             for i in range(len(grad_params)):
                 if grad_params[i] != None:

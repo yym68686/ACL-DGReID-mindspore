@@ -102,8 +102,8 @@ def inference_on_dataset(model, data_loader, evaluator, flip_test=False, epoch=-
                 # inputs["images"] = inputs["images"].flip(dims=[3])
                 flip_outputs = model(images, targets, domainids, epoch)
                 outputs = (outputs + flip_outputs) / 2
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
+            # if torch.cuda.is_available():
+            #     torch.cuda.synchronize()
             total_compute_time += time.perf_counter() - start_compute_time
             evaluator.process(inputs, outputs)
 
@@ -119,6 +119,7 @@ def inference_on_dataset(model, data_loader, evaluator, flip_test=False, epoch=-
                     ),
                     n=30,
                 )
+    model.set_train(True)
 
     # Measure the time only for this worker (before the synchronization barrier)
     total_time = time.perf_counter() - start_time

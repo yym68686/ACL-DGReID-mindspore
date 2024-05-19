@@ -273,28 +273,28 @@ class DefaultTrainer(TrainerBase):
 
         self.register_hooks(self.build_hooks())
 
-    def custom_per_batch_map(self, data, BatchInfo):
-        # 自定义处理逻辑，将字典对象转换为适当的NumPy数组
-        # print(type(data['images0']))
-        data_list = []
-        for item in data:
-            data_list.append({
-            "images0": item["images0"],
-            "images": item["images"],
-            "targets": item["targets"],
-            "camids": item["camids"],
-            "domainids": item["domainids"],
-            "img_paths": item["img_paths"],
-        })
-        return data_list  # 返回转换后的数组
-        # images0_list = []
-        # images_list = []
-        # targets_list = []
-        # for item in data:
-        #     images0_list.append(np.array(item['images0']))  # 将'images0'键名的字典对象转换为NumPy数组
-        #     images_list.append(np.array(item['images']))  # 假设还有一个'labels'键名的字典对象，也进行转换
-        #     targets_list.append(np.array(item['targets']))  # 假设还有一个'labels'键名的字典对象，也进行转换
-        # return (images0_list, images_list, targets_list)  # 返回转换后的数组
+    # def custom_per_batch_map(self, data, BatchInfo):
+    #     # 自定义处理逻辑，将字典对象转换为适当的NumPy数组
+    #     # print(type(data['images0']))
+    #     data_list = []
+    #     for item in data:
+    #         data_list.append({
+    #         "images0": item["images0"],
+    #         "images": item["images"],
+    #         "targets": item["targets"],
+    #         "camids": item["camids"],
+    #         "domainids": item["domainids"],
+    #         "img_paths": item["img_paths"],
+    #     })
+    #     return data_list  # 返回转换后的数组
+    #     # images0_list = []
+    #     # images_list = []
+    #     # targets_list = []
+    #     # for item in data:
+    #     #     images0_list.append(np.array(item['images0']))  # 将'images0'键名的字典对象转换为NumPy数组
+    #     #     images_list.append(np.array(item['images']))  # 假设还有一个'labels'键名的字典对象，也进行转换
+    #     #     targets_list.append(np.array(item['targets']))  # 假设还有一个'labels'键名的字典对象，也进行转换
+    #     # return (images0_list, images_list, targets_list)  # 返回转换后的数组
 
 
     def resume_or_load(self, resume=True):

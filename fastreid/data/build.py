@@ -45,12 +45,16 @@ def _train_loader_from_config(cfg, *, train_set=None, transforms=None, sampler=N
                 data.show_train()
             else:
                 data.show_train(False)
-            single_set.append(CommDataset(data.train, transforms, relabel=True, mapping=idx, offset=sum(num_pids)))
-            num_pids.append(data.num_train_pids)
-            train_items.extend(data.train)
+            debug_num = 8
+            single_set.append(CommDataset(data.train[:debug_num], transforms, relabel=True, mapping=idx, offset=sum(num_pids)))
+            num_pids.append(debug_num)
+            train_items.extend(data.train[:debug_num])
+            # single_set.append(CommDataset(data.train, transforms, relabel=True, mapping=idx, offset=sum(num_pids)))
+            # num_pids.append(data.num_train_pids)
+            # train_items.extend(data.train)
             # print("data.train", type(data.train), data.train)
             mapper[d] = idx
-        # print(mapper, num_pids)
+        print("mapper", mapper, num_pids)
 
         train_set = CommDataset(train_items, transforms, relabel=True, mapping=mapper)
         for temp_set in single_set:

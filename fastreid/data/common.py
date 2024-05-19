@@ -58,7 +58,9 @@ class CommDataset(Dataset):
     def __getitem__(self, index):
         img_item = self.img_items[index]
         img_path = img_item[0]
+        # print("img_path", img_path)
         pid = img_item[1]
+        # print("pid", pid)
         camid = img_item[2]
         img = read_image(img_path)
         if self.transform is not None:

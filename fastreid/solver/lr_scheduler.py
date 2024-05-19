@@ -33,6 +33,7 @@ class WarmupLR(optim.lr_scheduler.LRScheduler):
         warmup_factor = _get_warmup_factor_at_epoch(
             self.warmup_method, self.last_epoch, self.warmup_iters, self.warmup_factor
         )
+        # print("get_lr", [(base_lr * warmup_factor).value() for base_lr in self.base_lrs])
         return [
             base_lr * warmup_factor for base_lr in self.base_lrs
         ]

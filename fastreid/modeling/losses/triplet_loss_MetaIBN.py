@@ -233,7 +233,12 @@ def triplet_loss_Meta(embedding, targets, margin, norm_feat, hard_mining, dist_t
         # loss = F.margin_ranking_loss(dist_an, dist_ap, y, margin=margin)
     else:
         if loss_type == 'logistic':
+            # print("dist_an", dist_an.shape, dist_an)
+            # print("dist_ap", dist_ap.shape, dist_ap)
+            # print("dist_an - dist_ap", (dist_an - dist_ap).shape, dist_an - dist_ap)
+            # print("y", y.shape, y)
             loss = mindspore.ops.soft_margin_loss(dist_an - dist_ap, y)
+            # print("soft_margin_loss", loss.shape, loss)
             # loss = F.soft_margin_loss(dist_an - dist_ap, y)
             # fmt: off
             if loss == float('Inf'): loss = mindspore.ops.margin_ranking_loss(dist_an, dist_ap, y, margin=0.3)

@@ -432,9 +432,17 @@ def build_lr_scheduler(cfg, optimizer, iters_per_epoch):
         "CosineAnnealingLR": {
             "optimizer": optimizer,
             # cosine annealing lr scheduler options
+            # "total_step": max_epoch,
             "T_max": max_epoch,
+            # "min_lr": cfg.SOLVER.ETA_MIN_LR,
             "eta_min": cfg.SOLVER.ETA_MIN_LR,
         },
+        # "CosineAnnealingLR": {
+        #     "optimizer": optimizer,
+        #     # cosine annealing lr scheduler options
+        #     "T_max": max_epoch,
+        #     "eta_min": cfg.SOLVER.ETA_MIN_LR,
+        # },
     }
 
     # if cfg.SOLVER.SCHED == 'CosineAnnealingLR':
@@ -460,5 +468,6 @@ def build_lr_scheduler(cfg, optimizer, iters_per_epoch):
             "warmup_method": cfg.SOLVER.WARMUP_METHOD,
         }
         scheduler_dict["warmup_sched"] = lr_scheduler.WarmupLR(**warmup_args)
+    print("scheduler_dict", scheduler_dict)
 
     return scheduler_dict
